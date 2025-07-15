@@ -20,7 +20,7 @@ Item {
 
     readonly property int workspaceGroup: Math.floor((monitor?.activeWorkspace?.id - 1 || 0) / ConfigOptions.bar.workspaces.shown)
     property list<bool> workspaceOccupied: []
-    property int widgetPadding: 4
+    property int widgetPadding: 5
     property int workspaceButtonWidth: 26
     property real workspaceIconSize: workspaceButtonWidth * 0.69
     property real workspaceIconSizeShrinked: workspaceButtonWidth * 0.55
@@ -49,12 +49,14 @@ Item {
         updateWorkspaceOccupied();
     }
 
-    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
-    implicitHeight: 36
+    implicitWidth: rowLayout.implicitWidth + widgetPadding * 2
+    implicitHeight: rowLayout.implicitHeight + widgetPadding * 2
 
     Rectangle {
         anchors.fill: parent
         color: Colors.surface
+        border.color: Colors.surfaceBright
+        border.width: 2
         radius: Appearance.rounding.global
     }
 
@@ -84,7 +86,8 @@ Item {
 
         spacing: 0
         anchors.fill: parent
-        implicitHeight: 40
+        anchors.margins: widgetPadding
+        implicitHeight: workspaceButtonWidth
 
         Repeater {
             model: ConfigOptions.bar.workspaces.shown
@@ -131,7 +134,7 @@ Item {
 
         property real idx1: workspaceIndexInGroup
         property real idx2: workspaceIndexInGroup
-        x: Math.min(idx1, idx2) * workspaceButtonWidth + activeWorkspaceMargin
+        x: Math.min(idx1, idx2) * workspaceButtonWidth + activeWorkspaceMargin + widgetPadding
         implicitWidth: Math.abs(idx1 - idx2) * workspaceButtonWidth + workspaceButtonWidth - activeWorkspaceMargin * 2
 
         Behavior on activeWorkspaceMargin {
@@ -157,7 +160,8 @@ Item {
 
         spacing: 0
         anchors.fill: parent
-        implicitHeight: 40
+        anchors.margins: widgetPadding
+        implicitHeight: workspaceButtonWidth
 
         Repeater {
             model: ConfigOptions.bar.workspaces.shown

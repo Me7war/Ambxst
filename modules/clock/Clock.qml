@@ -7,6 +7,8 @@ Rectangle {
 
     property string currentTime: ""
     color: Colors.surface
+    border.color: Colors.surfaceBright
+    border.width: 2
     radius: 16
 
     Layout.preferredWidth: timeDisplay.implicitWidth + 18

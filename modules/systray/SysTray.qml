@@ -13,6 +13,8 @@ Rectangle {
     implicitWidth: rowLayout.implicitWidth + 16
     implicitHeight: rowLayout.implicitHeight + 16
     color: Colors.surface
+    border.color: Colors.surfaceBright
+    border.width: 2
     radius: 16
 
     RowLayout {
