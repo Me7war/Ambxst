@@ -9,6 +9,7 @@ import "../theme"
 import "../clock"
 import "../systray"
 import "../launcher"
+import "../notch"
 
 PanelWindow {
     id: panel
@@ -118,112 +119,13 @@ PanelWindow {
         }
 
         // Center notch
-        Rectangle {
+        Notch {
             id: notchContainer
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-
-            width: Math.max(stackContainer.width + 32, 140)
-            height: Math.max(stackContainer.height + 20, 34)
-
-            color: Colors.surface
-            radius: Math.min(width / 8, height / 2)
-
-            Behavior on width {
-                NumberAnimation {
-                    duration: 300
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Behavior on height {
-                NumberAnimation {
-                    duration: 300
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Item {
-                id: stackContainer
-                anchors.centerIn: parent
-                width: stackView.currentItem ? stackView.currentItem.width : 0
-                height: stackView.currentItem ? stackView.currentItem.height : 0
-
-                StackView {
-                    id: stackView
-                    anchors.fill: parent
-                    initialItem: defaultViewComponent
-
-                    pushEnter: Transition {
-                        PropertyAnimation {
-                            property: "opacity"
-                            from: 0
-                            to: 1
-                            duration: 250
-                            easing.type: Easing.OutQuart
-                        }
-                        PropertyAnimation {
-                            property: "scale"
-                            from: 0.95
-                            to: 1
-                            duration: 250
-                            easing.type: Easing.OutBack
-                            easing.overshoot: 1.2
-                        }
-                    }
-
-                    pushExit: Transition {
-                        PropertyAnimation {
-                            property: "opacity"
-                            from: 1
-                            to: 0
-                            duration: 200
-                            easing.type: Easing.OutQuart
-                        }
-                        PropertyAnimation {
-                            property: "scale"
-                            from: 1
-                            to: 1.05
-                            duration: 200
-                            easing.type: Easing.OutQuart
-                        }
-                    }
-
-                    popEnter: Transition {
-                        PropertyAnimation {
-                            property: "opacity"
-                            from: 0
-                            to: 1
-                            duration: 250
-                            easing.type: Easing.OutQuart
-                        }
-                        PropertyAnimation {
-                            property: "scale"
-                            from: 1.05
-                            to: 1
-                            duration: 250
-                            easing.type: Easing.OutQuart
-                        }
-                    }
-
-                    popExit: Transition {
-                        PropertyAnimation {
-                            property: "opacity"
-                            from: 1
-                            to: 0
-                            duration: 200
-                            easing.type: Easing.OutQuart
-                        }
-                        PropertyAnimation {
-                            property: "scale"
-                            from: 1
-                            to: 0.95
-                            duration: 200
-                            easing.type: Easing.OutQuart
-                        }
-                    }
-                }
-            }
+            
+            defaultViewComponent: defaultViewComponent
+            launcherViewComponent: launcherViewComponent
         }
     }
 
@@ -232,14 +134,14 @@ PanelWindow {
         target: GlobalStates
         function onLauncherOpenChanged() {
             if (GlobalStates.launcherOpen) {
-                stackView.push(launcherViewComponent);
+                notchContainer.stackView.push(launcherViewComponent);
                 Qt.callLater(() => {
                     panel.requestActivate();
                     panel.forceActiveFocus();
                 });
             } else {
-                if (stackView.depth > 1) {
-                    stackView.pop();
+                if (notchContainer.stackView.depth > 1) {
+                    notchContainer.stackView.pop();
                 }
             }
         }
