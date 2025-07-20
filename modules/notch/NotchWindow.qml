@@ -13,6 +13,9 @@ PanelWindow {
 
     anchors {
         top: true
+        bottom: true
+        left: true
+        right: true
     }
 
     color: "transparent"
@@ -23,7 +26,10 @@ PanelWindow {
 
     implicitHeight: notchContainer.implicitHeight
     implicitWidth: notchContainer.implicitWidth
-    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.layer: WlrLayer.Top
+    mask: Region {
+        item: notchContainer
+    }
 
     // Default view component - user@host text
     Component {

@@ -13,7 +13,7 @@ Rectangle {
     property var stackView: stackViewInternal
     property bool isExpanded: stackViewInternal.currentItem !== stackViewInternal.initialItem
 
-    implicitWidth: Math.max(stackContainer.width, 140)
+    implicitWidth: Math.max(stackContainer.width, 250)
     implicitHeight: Math.max(stackContainer.height, 40)
 
     color: Colors.surface

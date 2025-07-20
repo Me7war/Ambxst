@@ -10,7 +10,6 @@ import "../clock"
 import "../systray"
 import "../launcher"
 
-
 PanelWindow {
     id: panel
 
@@ -27,8 +26,6 @@ PanelWindow {
 
     exclusiveZone: 40
     implicitHeight: 44
-
-
 
     Rectangle {
         id: bar
@@ -71,6 +68,4 @@ PanelWindow {
             }
         }
     }
-
-
 }
