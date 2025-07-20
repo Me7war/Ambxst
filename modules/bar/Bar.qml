@@ -41,8 +41,8 @@ PanelWindow {
                 text: `${Quickshell.env("USER")}@${Quickshell.env("HOSTNAME")}`
                 color: Colors.foreground
                 font.family: Styling.defaultFont
-                font.pixelSize: 13
-                font.weight: Font.Medium
+                font.pixelSize: 14
+                font.weight: Font.Bold
             }
         }
     }
@@ -87,7 +87,7 @@ PanelWindow {
         // Left side of bar
         RowLayout {
             id: leftSide
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
             anchors.left: parent.left
             anchors.margins: 4
             spacing: 4
@@ -106,7 +106,7 @@ PanelWindow {
         // Right side of bar
         RowLayout {
             id: rightSide
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
             anchors.right: parent.right
             anchors.margins: 4
             spacing: 4
@@ -125,7 +125,7 @@ PanelWindow {
     Notch {
         id: notchContainer
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.top: parent.top
 
         defaultViewComponent: defaultViewComponent
         launcherViewComponent: launcherViewComponent

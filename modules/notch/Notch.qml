@@ -15,7 +15,10 @@ Rectangle {
     implicitHeight: Math.max(stackContainer.height, 40)
 
     color: Colors.surface
-    radius: 20
+    topLeftRadius: 0
+    topRightRadius: 0
+    bottomLeftRadius: 20
+    bottomRightRadius: 20
 
     Behavior on width {
         NumberAnimation {
