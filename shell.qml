@@ -5,6 +5,7 @@ import "./modules/bar/"
 import "./modules/workspaces/"
 import "./modules/notifications/"
 import "./modules/wallpaper/"
+import "./modules/notch/"
 import "./services/"
 
 ShellRoot {
@@ -40,6 +41,26 @@ ShellRoot {
             required property ShellScreen modelData
             sourceComponent: Bar {
                 screen: barLoader.modelData
+            }
+        }
+    }
+
+    // Multi-monitor support - create notch for each screen
+    Variants {
+        model: {
+            const screens = Quickshell.screens;
+            const list = ConfigOptions.bar.screenList;
+            if (!list || list.length === 0)
+                return screens;
+            return screens.filter(screen => list.includes(screen.name));
+        }
+        
+        Loader {
+            id: notchLoader
+            active: true
+            required property ShellScreen modelData
+            sourceComponent: NotchWindow {
+                screen: notchLoader.modelData
             }
         }
     }
