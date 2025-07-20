@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
-import "../workspaces"
+import "../globals"
 import "../theme"
 import "../launcher"
 

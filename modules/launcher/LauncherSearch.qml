@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../theme"
-import "../../services"
+import "../services"
 
 Rectangle {
     id: root

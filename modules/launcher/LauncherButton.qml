@@ -3,7 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Hyprland
 import "../theme"
-import "../workspaces"
+import "../globals"
 
 Button {
     id: root

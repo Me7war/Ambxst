@@ -6,7 +6,7 @@ import "./modules/workspaces/"
 import "./modules/notifications/"
 import "./modules/wallpaper/"
 import "./modules/notch/"
-import "./services/"
+import "./modules/services/"
 
 ShellRoot {
     id: root

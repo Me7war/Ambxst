@@ -8,7 +8,9 @@ import Quickshell.Io
 import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
 import "../theme"
-import "color_utils.js" as ColorUtils
+import "../services"
+import "../globals"
+import "../utils/color_utils.js" as ColorUtils
 
 Item {
     required property var bar
