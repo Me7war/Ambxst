@@ -1,5 +1,6 @@
 // Ejemplo de uso del módulo de workspaces avanzado
 import QtQuick
+import "../theme"
 
 Rectangle {
     width: 800
@@ -24,5 +25,6 @@ Rectangle {
         anchors.rightMargin: 20
         text: "Workspaces avanzados implementados"
         color: "#ffffff"
+        font.family: Styling.defaultFont
     }
 }

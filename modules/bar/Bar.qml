@@ -25,8 +25,8 @@ PanelWindow {
 
     WlrLayershell.keyboardFocus: GlobalStates.launcherOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    exclusiveZone: 40
-    implicitHeight: 44
+    exclusiveZone: GlobalStates.launcherOpen ? Math.min(444, notchContainer.implicitHeight + 4) : 40
+    implicitHeight: GlobalStates.launcherOpen ? Math.min(444, notchContainer.implicitHeight + 4) : 44
 
     // Default view component - user@host text
     Component {
@@ -40,6 +40,7 @@ PanelWindow {
                 anchors.centerIn: parent
                 text: `${Quickshell.env("USER")}@${Quickshell.env("HOSTNAME")}`
                 color: Colors.foreground
+                font.family: Styling.defaultFont
                 font.pixelSize: 13
                 font.weight: Font.Medium
             }
@@ -118,16 +119,16 @@ PanelWindow {
                 id: clockComponent
             }
         }
+    }
 
-        // Center notch
-        Notch {
-            id: notchContainer
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
+    // Center notch - moved outside the bar rectangle to avoid clipping
+    Notch {
+        id: notchContainer
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
 
-            defaultViewComponent: defaultViewComponent
-            launcherViewComponent: launcherViewComponent
-        }
+        defaultViewComponent: defaultViewComponent
+        launcherViewComponent: launcherViewComponent
     }
 
     // Listen for launcher state changes

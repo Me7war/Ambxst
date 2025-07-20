@@ -154,6 +154,7 @@ Item {
                 Text {
                     id: summaryText
                     visible: !root.onlyNotification
+                    font.family: Styling.defaultFont
                     font.pixelSize: root.fontSize
                     color: "#212121"
                     elide: Text.ElideRight
@@ -166,6 +167,7 @@ Item {
                         NumberAnimation { duration: 200 }
                     }
                     Layout.fillWidth: true
+                    font.family: Styling.defaultFont
                     font.pixelSize: root.fontSize
                     color: "#757575"
                     elide: Text.ElideRight
@@ -236,6 +238,7 @@ Item {
                             }
 
                             contentItem: Text {
+                                font.family: Styling.defaultFont
                                 font.pixelSize: 14
                                 horizontalAlignment: Text.AlignHCenter
                                 color: (notificationObject.urgency == NotificationUrgency.Critical) ? "#d32f2f" : "#424242"
@@ -270,6 +273,7 @@ Item {
 
                             contentItem: Text {
                                 id: copyIcon
+                                font.family: Styling.defaultFont
                                 font.pixelSize: 14
                                 horizontalAlignment: Text.AlignHCenter
                                 color: (notificationObject.urgency == NotificationUrgency.Critical) ? "#d32f2f" : "#424242"

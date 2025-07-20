@@ -55,7 +55,8 @@ Rectangle {
                 spacing: 8
 
                 Text {
-                    text: ""
+                    text: ""
+                    font.family: Styling.defaultFont
                     font.pixelSize: 20
                     color: Colors.primary
                 }
@@ -65,6 +66,7 @@ Rectangle {
                     Layout.fillWidth: true
                     placeholderText: "Search applications..."
                     placeholderTextColor: Colors.outline
+                    font.family: Styling.defaultFont
                     font.pixelSize: 14
                     color: Colors.foreground
                     background: null
@@ -221,6 +223,7 @@ Rectangle {
                                 text: "?"
                                 visible: parent.parent.status === Image.Error
                                 color: Colors.foreground
+                                font.family: Styling.defaultFont
                             }
                         }
                     }
@@ -229,6 +232,7 @@ Rectangle {
                         Layout.fillWidth: true
                         text: modelData.name
                         color: Colors.foreground
+                        font.family: Styling.defaultFont
                         font.pixelSize: 14
                         elide: Text.ElideRight
                     }

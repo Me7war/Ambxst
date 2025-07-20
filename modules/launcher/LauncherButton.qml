@@ -29,6 +29,7 @@ Button {
 
     contentItem: Text {
         text: "󰈸"
+        font.family: Styling.defaultFont
         font.pixelSize: 20
         color: root.pressed ? Colors.background : Colors.primary
         horizontalAlignment: Text.AlignHCenter

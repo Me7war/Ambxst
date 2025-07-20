@@ -18,7 +18,7 @@ StyledContainer {
         text: clockContainer.currentTime
         color: Colors.foreground
         font.pixelSize: 14
-        font.family: "Iosevka Nerd Font Propo"
+        font.family: Styling.defaultFont
         font.bold: true
     }
 

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import "../theme"
 
 Item {
     property alias text: textItem.text
@@ -15,5 +16,6 @@ Item {
     Text {
         id: textItem
         anchors.fill: parent
+        font.family: Styling.defaultFont
     }
 }

@@ -164,6 +164,7 @@ Item {
                             text: (topRow.showAppName ?
                                 notificationGroup?.appName :
                                 notificationGroup?.notifications[0]?.summary) || ""
+                            font.family: Styling.defaultFont
                             font.pixelSize: topRow.showAppName ?
                                 topRow.fontSize :
                                 12
@@ -176,6 +177,7 @@ Item {
                             Layout.rightMargin: 10
                             horizontalAlignment: Text.AlignLeft
                             text: NotificationUtils.getFriendlyNotifTimeString(notificationGroup?.time)
+                            font.family: Styling.defaultFont
                             font.pixelSize: topRow.fontSize
                             color: "#757575"
                         }

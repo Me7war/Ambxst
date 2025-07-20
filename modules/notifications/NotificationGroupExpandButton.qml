@@ -23,6 +23,7 @@ Button {
     
     contentItem: Text {
         text: root.expanded ? "−" : "+"
+        font.family: Styling.defaultFont
         font.pixelSize: root.fontSize
         color: "#757575"
         horizontalAlignment: Text.AlignHCenter
