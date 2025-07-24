@@ -21,38 +21,33 @@ Item {
     property var parentDragIndex: qmlParent?.dragIndex ?? -1
     property var parentDragDistance: qmlParent?.dragDistance ?? 0
     property var dragIndexDiff: Math.abs(parentDragIndex - (index ?? 0))
-    property real xOffset: dragIndexDiff == 0 ? Math.max(0, parentDragDistance) : 
-        parentDragDistance > dragConfirmThreshold ? 0 :
-        dragIndexDiff == 1 ? Math.max(0, parentDragDistance * 0.3) :
-        dragIndexDiff == 2 ? Math.max(0, parentDragDistance * 0.1) : 0
+    property real xOffset: dragIndexDiff == 0 ? Math.max(0, parentDragDistance) : parentDragDistance > dragConfirmThreshold ? 0 : dragIndexDiff == 1 ? Math.max(0, parentDragDistance * 0.3) : dragIndexDiff == 2 ? Math.max(0, parentDragDistance * 0.1) : 0
 
     implicitHeight: background.implicitHeight
 
     function processNotificationBody(body, appName) {
-        let processedBody = body
-        
+        let processedBody = body;
+
         // Clean Chromium-based browsers notifications - remove first line
         if (appName) {
-            const lowerApp = appName.toLowerCase()
-            const chromiumBrowsers = [
-                "brave", "chrome", "chromium", "vivaldi", "opera", "microsoft edge"
-            ]
+            const lowerApp = appName.toLowerCase();
+            const chromiumBrowsers = ["brave", "chrome", "chromium", "vivaldi", "opera", "microsoft edge"];
 
             if (chromiumBrowsers.some(name => lowerApp.includes(name))) {
-                const lines = body.split('\n\n')
+                const lines = body.split('\n\n');
 
                 if (lines.length > 1 && lines[0].startsWith('<a')) {
-                    processedBody = lines.slice(1).join('\n\n')
+                    processedBody = lines.slice(1).join('\n\n');
                 }
             }
         }
-        
-        return processedBody
+
+        return processedBody;
     }
 
     function destroyWithAnimation() {
         if (root.qmlParent && root.qmlParent.resetDrag)
-            root.qmlParent.resetDrag()
+            root.qmlParent.resetDrag();
         background.anchors.leftMargin = background.anchors.leftMargin;
         destroyAnimation.running = true;
     }
@@ -78,16 +73,16 @@ Item {
         anchors.fill: root
         anchors.leftMargin: root.expanded ? -notificationIcon.implicitWidth : 0
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-        
+
         property bool dragging: false
         property real dragDiffX: 0
-        
-        onPressed: (mouse) => {
+
+        onPressed: mouse => {
             if (mouse.button === Qt.MiddleButton) {
                 root.destroyWithAnimation();
             }
         }
-        
+
         function resetDrag() {
             dragging = false;
             dragDiffX = 0;
@@ -100,7 +95,9 @@ Item {
         visible: opacity > 0
 
         Behavior on opacity {
-            NumberAnimation { duration: 200 }
+            NumberAnimation {
+                duration: 200
+            }
         }
 
         image: notificationObject.image
@@ -124,15 +121,15 @@ Item {
             }
         }
 
-        color: (expanded && !onlyNotification) ? 
-            (notificationObject.urgency == NotificationUrgency.Critical) ? 
-                "#ffebee" : "#f8f9fa" :
-            "#ffffff"
+        color: (expanded && !onlyNotification) ? (notificationObject.urgency == NotificationUrgency.Critical) ? Colors.error : Colors.surfaceContainerLow : Colors.background
 
         implicitHeight: expanded ? (contentColumn.implicitHeight + padding * 2) : summaryRow.implicitHeight
-        
+
         Behavior on implicitHeight {
-            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutCubic
+            }
         }
 
         ColumnLayout {
@@ -142,7 +139,9 @@ Item {
             spacing: 3
 
             Behavior on anchors.margins {
-                NumberAnimation { duration: 200 }
+                NumberAnimation {
+                    duration: 200
+                }
             }
 
             RowLayout {
@@ -150,13 +149,13 @@ Item {
                 visible: !root.onlyNotification || !root.expanded
                 Layout.fillWidth: true
                 implicitHeight: summaryText.implicitHeight
-                
+
                 Text {
                     id: summaryText
                     visible: !root.onlyNotification
                     font.family: Styling.defaultFont
                     font.pixelSize: root.fontSize
-                    color: "#212121"
+                    color: Colors.primary
                     elide: Text.ElideRight
                     text: root.notificationObject.summary || ""
                 }
@@ -164,17 +163,19 @@ Item {
                     opacity: !root.expanded ? 1 : 0
                     visible: opacity > 0
                     Behavior on opacity {
-                        NumberAnimation { duration: 200 }
+                        NumberAnimation {
+                            duration: 200
+                        }
                     }
                     Layout.fillWidth: true
                     font.family: Styling.defaultFont
                     font.pixelSize: root.fontSize
-                    color: "#757575"
+                    color: Colors.foreground
                     elide: Text.ElideRight
                     maximumLineCount: 1
                     textFormat: Text.StyledText
                     text: {
-                        return processNotificationBody(notificationObject.body, notificationObject.appName || notificationObject.summary).replace(/\n/g, "<br/>")
+                        return processNotificationBody(notificationObject.body, notificationObject.appName || notificationObject.summary).replace(/\n/g, "<br/>");
                     }
                 }
             }
@@ -187,21 +188,22 @@ Item {
                 Text {
                     id: notificationBodyText
                     Behavior on opacity {
-                        NumberAnimation { duration: 200 }
+                        NumberAnimation {
+                            duration: 200
+                        }
                     }
                     Layout.fillWidth: true
-                    font.pixelSize: root.fontSize
-                    color: "#757575"
+                    font.pixelSize: 14
+                    color: Colors.foreground
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
                     textFormat: Text.RichText
                     text: {
-                        return `<style>img{max-width:${notificationBodyText.width}px;}</style>` + 
-                               `${processNotificationBody(notificationObject.body, notificationObject.appName || notificationObject.summary).replace(/\n/g, "<br/>")}`
+                        return `<style>img{max-width:${notificationBodyText.width}px;}</style>` + `${processNotificationBody(notificationObject.body, notificationObject.appName || notificationObject.summary).replace(/\n/g, "<br/>")}`;
                     }
 
-                    onLinkActivated: (link) => {
-                        Qt.openUrlExternally(link)
+                    onLinkActivated: link => {
+                        Qt.openUrlExternally(link);
                     }
                 }
 
@@ -213,13 +215,19 @@ Item {
                     clip: !onlyNotification
 
                     Behavior on opacity {
-                        NumberAnimation { duration: 200 }
+                        NumberAnimation {
+                            duration: 200
+                        }
                     }
                     Behavior on height {
-                        NumberAnimation { duration: 200 }
+                        NumberAnimation {
+                            duration: 200
+                        }
                     }
                     Behavior on implicitHeight {
-                        NumberAnimation { duration: 200 }
+                        NumberAnimation {
+                            duration: 200
+                        }
                     }
 
                     RowLayout {
@@ -230,11 +238,10 @@ Item {
                             Layout.fillWidth: true
                             buttonText: qsTr("Close")
                             urgency: notificationObject.urgency
-                            implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : 
-                                (contentItem.implicitWidth + leftPadding + rightPadding)
+                            implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : (contentItem.implicitWidth + leftPadding + rightPadding)
 
                             onClicked: {
-                                root.destroyWithAnimation()
+                                root.destroyWithAnimation();
                             }
 
                             contentItem: Text {
@@ -262,13 +269,12 @@ Item {
                         NotificationActionButton {
                             Layout.fillWidth: true
                             urgency: notificationObject.urgency
-                            implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : 
-                                (contentItem.implicitWidth + leftPadding + rightPadding)
+                            implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : (contentItem.implicitWidth + leftPadding + rightPadding)
 
                             onClicked: {
                                 // Copy notification body to clipboard
                                 // Note: Quickshell.clipboardText might not be available, using alternative
-                                console.log("Copy:", notificationObject.body)
+                                console.log("Copy:", notificationObject.body);
                             }
 
                             contentItem: Text {

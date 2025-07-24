@@ -24,14 +24,11 @@ Item {
     property var parentDragIndex: qmlParent?.dragIndex ?? -1
     property var parentDragDistance: qmlParent?.dragDistance ?? 0
     property var dragIndexDiff: Math.abs(parentDragIndex - (index ?? 0))
-    property real xOffset: dragIndexDiff == 0 ? Math.max(0, parentDragDistance) : 
-        parentDragDistance > dragConfirmThreshold ? 0 :
-        dragIndexDiff == 1 ? Math.max(0, parentDragDistance * 0.3) :
-        dragIndexDiff == 2 ? Math.max(0, parentDragDistance * 0.1) : 0
+    property real xOffset: dragIndexDiff == 0 ? Math.max(0, parentDragDistance) : parentDragDistance > dragConfirmThreshold ? 0 : dragIndexDiff == 1 ? Math.max(0, parentDragDistance * 0.3) : dragIndexDiff == 2 ? Math.max(0, parentDragDistance * 0.1) : 0
 
     function destroyWithAnimation() {
         if (root.qmlParent && root.qmlParent.resetDrag)
-            root.qmlParent.resetDrag()
+            root.qmlParent.resetDrag();
         background.anchors.leftMargin = background.anchors.leftMargin;
         destroyAnimation.running = true;
     }
@@ -48,7 +45,7 @@ Item {
             easing.type: Easing.OutCubic
         }
         onFinished: () => {
-            root.notifications.forEach((notif) => {
+            root.notifications.forEach(notif => {
                 Qt.callLater(() => {
                     Notifications.discardNotification(notif.id);
                 });
@@ -65,16 +62,16 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
-        onClicked: (mouse) => {
-            if (mouse.button === Qt.RightButton) 
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton)
                 root.toggleExpanded();
-            else if (mouse.button === Qt.MiddleButton) 
+            else if (mouse.button === Qt.MiddleButton)
                 root.destroyWithAnimation();
         }
-        
+
         property bool dragging: false
         property real dragDiffX: 0
-        
+
         function resetDrag() {
             dragging = false;
             dragDiffX = 0;
@@ -91,13 +88,13 @@ Item {
         radius: background.radius + 2
         visible: popup
     }
-    
+
     Rectangle {
         id: background
         anchors.left: parent.left
         width: parent.width
-        color: "#ffffff"
-        radius: 12
+        color: Colors.background
+        radius: 16
         anchors.leftMargin: root.xOffset
 
         Behavior on anchors.leftMargin {
@@ -107,14 +104,15 @@ Item {
                 easing.type: Easing.OutCubic
             }
         }
-        
+
         clip: true
-        implicitHeight: expanded ? 
-            row.implicitHeight + padding * 2 :
-            Math.min(80, row.implicitHeight + padding * 2)
+        implicitHeight: expanded ? row.implicitHeight + padding * 2 : Math.min(80, row.implicitHeight + padding * 2)
 
         Behavior on implicitHeight {
-            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutCubic
+            }
         }
 
         RowLayout {
@@ -135,12 +133,12 @@ Item {
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: expanded ? (root.multipleNotifications ? 
-                    (notificationGroup?.notifications[root.notificationCount - 1].image != "") ? 35 : 
-                    5 : 0) : 0
-                
+                spacing: expanded ? (root.multipleNotifications ? (notificationGroup?.notifications[root.notificationCount - 1].image != "") ? 35 : 5 : 0) : 0
+
                 Behavior on spacing {
-                    NumberAnimation { duration: 200 }
+                    NumberAnimation {
+                        duration: 200
+                    }
                 }
 
                 Item {
@@ -156,21 +154,15 @@ Item {
                         anchors.right: expandButton.left
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 5
-                        
+
                         Text {
                             id: appName
                             elide: Text.ElideRight
                             Layout.fillWidth: true
-                            text: (topRow.showAppName ?
-                                notificationGroup?.appName :
-                                notificationGroup?.notifications[0]?.summary) || ""
+                            text: (topRow.showAppName ? notificationGroup?.appName : notificationGroup?.notifications[0]?.summary) || ""
                             font.family: Styling.defaultFont
-                            font.pixelSize: topRow.showAppName ?
-                                topRow.fontSize :
-                                12
-                            color: topRow.showAppName ?
-                                "#757575" :
-                                "#212121"
+                            font.pixelSize: topRow.showAppName ? topRow.fontSize : 12
+                            color: topRow.showAppName ? Colors.outline : Colors.outline
                         }
                         Text {
                             id: timeText
@@ -179,7 +171,7 @@ Item {
                             text: NotificationUtils.getFriendlyNotifTimeString(notificationGroup?.time)
                             font.family: Styling.defaultFont
                             font.pixelSize: topRow.fontSize
-                            color: "#757575"
+                            color: Colors.foreground
                         }
                     }
                     NotificationGroupExpandButton {
@@ -189,7 +181,9 @@ Item {
                         count: root.notificationCount
                         expanded: root.expanded
                         fontSize: topRow.fontSize
-                        onClicked: { root.toggleExpanded() }
+                        onClicked: {
+                            root.toggleExpanded();
+                        }
                     }
                 }
 
@@ -199,14 +193,15 @@ Item {
                     Layout.fillWidth: true
                     spacing: expanded ? 5 : 3
                     interactive: false
-                    
+
                     Behavior on spacing {
-                        NumberAnimation { duration: 200 }
+                        NumberAnimation {
+                            duration: 200
+                        }
                     }
-                    
-                    model: expanded ? root.notifications.slice().reverse() : 
-                        root.notifications.slice().reverse().slice(0, 2)
-                    
+
+                    model: expanded ? root.notifications.slice().reverse() : root.notifications.slice().reverse().slice(0, 2)
+
                     delegate: NotificationItem {
                         required property int index
                         required property var modelData

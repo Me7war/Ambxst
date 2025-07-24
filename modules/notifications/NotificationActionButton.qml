@@ -7,24 +7,26 @@ Button {
     id: root
     property string buttonText: ""
     property var urgency: NotificationUrgency.Normal
-    
+
     text: buttonText
-    
+
     background: Rectangle {
-        color: root.pressed ? "#e0e0e0" : (root.hovered ? "#f5f5f5" : "transparent")
-        border.color: (root.urgency == NotificationUrgency.Critical) ? "#d32f2f" : "#757575"
-        border.width: 1
+        color: root.pressed ? Colors.primary : (root.hovered ? Colors.surfaceContainerHighest : Colors.surfaceBright)
+        border.color: (root.urgency == NotificationUrgency.Critical) ? Colors.error : Colors.outline
+        border.width: 0
         radius: 8
-        
+
         Behavior on color {
-            ColorAnimation { duration: 150 }
+            ColorAnimation {
+                duration: 150
+            }
         }
     }
-    
+
     contentItem: Text {
         text: root.text
         font.family: Styling.defaultFont
-        font.pixelSize: 12
+        font.pixelSize: 14
         color: (root.urgency == NotificationUrgency.Critical) ? "#d32f2f" : "#424242"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter

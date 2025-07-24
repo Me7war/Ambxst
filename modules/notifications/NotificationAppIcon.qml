@@ -24,7 +24,7 @@ Rectangle {
 
     implicitWidth: size
     implicitHeight: size
-    radius: 22.5 // Full radius for circular appearance
+    radius: 12 // Full radius for circular appearance
     color: "#f3f3f3" // Light surface color
 
     Loader {
@@ -34,14 +34,14 @@ Rectangle {
         sourceComponent: Text {
             text: NotificationUtils.findSuitableMaterialSymbol(root.summary)
             anchors.fill: parent
-            color: (root.urgency == NotificationUrgency.Critical) ? "#d32f2f" : "#424242"
+            color: (root.urgency == NotificationUrgency.Critical) ? Colors.error : Colors.primary
             font.family: Styling.defaultFont
             font.pixelSize: root.materialIconSize
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
     }
-    
+
     Loader {
         id: appIconLoader
         active: root.image == "" && root.appIcon != ""
@@ -55,7 +55,7 @@ Rectangle {
             smooth: true
         }
     }
-    
+
     Loader {
         id: notifImageLoader
         active: root.image != ""
@@ -63,12 +63,12 @@ Rectangle {
         sourceComponent: Item {
             anchors.fill: parent
             clip: true
-            
+
             Rectangle {
                 anchors.fill: parent
                 radius: root.radius
                 clip: true
-                
+
                 Image {
                     id: notifImage
                     anchors.fill: parent
@@ -77,7 +77,7 @@ Rectangle {
                     smooth: true
                 }
             }
-            
+
             Loader {
                 id: notifImageAppIconLoader
                 active: root.appIcon != ""

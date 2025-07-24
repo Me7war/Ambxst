@@ -27,7 +27,7 @@ PanelWindow {
 
         onStatusChanged: {
             if (status === Image.Error) {
-                console.warn("Wallpaper: Failed to load image from ~/.current.wall")
+                console.warn("Wallpaper: Failed to load image from ~/.current.wall");
             }
         }
     }
