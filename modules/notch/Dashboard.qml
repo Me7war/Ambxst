@@ -11,10 +11,10 @@ Item {
         property int currentTab: 0
     }
 
-    readonly property real nonAnimWidth: view.implicitWidth + viewWrapper.anchors.margins * 2
+    readonly property real nonAnimWidth: 400 + viewWrapper.anchors.margins * 2
 
     implicitWidth: nonAnimWidth
-    implicitHeight: tabs.implicitHeight + tabs.anchors.topMargin + view.implicitHeight + viewWrapper.anchors.margins * 2
+    implicitHeight: tabs.implicitHeight + tabs.anchors.topMargin + 300 + viewWrapper.anchors.margins * 2
 
     // Tab buttons
     Row {
@@ -108,84 +108,54 @@ Item {
         layer.enabled: true
         layer.samples: 4
 
-        Flickable {
+        SwipeView {
             id: view
 
-            readonly property int currentIndex: root.state.currentTab
-            readonly property Item currentItem: row.children[currentIndex]
-
             anchors.fill: parent
+            
+            currentIndex: root.state.currentTab
+            
+            implicitWidth: 400
+            implicitHeight: 300
 
-            flickableDirection: Flickable.HorizontalFlick
-            boundsBehavior: Flickable.StopAtBounds
-
-            implicitWidth: currentItem ? currentItem.implicitWidth : 400
-            implicitHeight: currentItem ? currentItem.implicitHeight : 300
-
-            contentX: currentItem ? currentItem.x : 0
-            contentWidth: row.implicitWidth
-            contentHeight: row.implicitHeight
-
-            onContentXChanged: {
-                if (!moving)
-                    return;
-
-                const x = contentX - (currentItem ? currentItem.x : 0);
-                const threshold = (currentItem ? currentItem.implicitWidth : 400) / 2;
-
-                if (x > threshold)
-                    root.state.currentTab = Math.min(root.state.currentTab + 1, 3);
-                else if (x < -threshold)
-                    root.state.currentTab = Math.max(root.state.currentTab - 1, 0);
+            onCurrentIndexChanged: {
+                root.state.currentTab = currentIndex
             }
 
-            onDragEnded: {
-                const x = contentX - (currentItem ? currentItem.x : 0);
-                const threshold = (currentItem ? currentItem.implicitWidth : 400) / 10;
-
-                if (x > threshold)
-                    root.state.currentTab = Math.min(root.state.currentTab + 1, 3);
-                else if (x < -threshold)
-                    root.state.currentTab = Math.max(root.state.currentTab - 1, 0);
-                else
-                    contentX = Qt.binding(() => currentItem ? currentItem.x : 0);
+            // Overview Tab
+            DashboardPane {
+                sourceComponent: overviewComponent
             }
 
-            RowLayout {
-                id: row
-                spacing: 0
-
-                // Overview Tab
-                DashboardPane {
-                    sourceComponent: overviewComponent
-                }
-
-                // System Tab
-                DashboardPane {
-                    sourceComponent: systemComponent
-                }
-
-                // Quick Settings Tab
-                DashboardPane {
-                    sourceComponent: quickSettingsComponent
-                }
-
-                // Wallpapers Tab
-                DashboardPane {
-                    sourceComponent: wallpapersComponent
-                }
+            // System Tab  
+            DashboardPane {
+                sourceComponent: systemComponent
             }
 
-            Behavior on contentX {
-                NumberAnimation {
-                    duration: 300
-                    easing.type: Easing.OutCubic
-                }
+            // Quick Settings Tab
+            DashboardPane {
+                sourceComponent: quickSettingsComponent
+            }
+
+            // Wallpapers Tab
+            DashboardPane {
+                sourceComponent: wallpapersComponent
             }
         }
     }
 
-    Behavior on implicitWidth {
+    // Animated size properties for smooth transitions
+    property real animatedWidth: implicitWidth
+    property real animatedHeight: implicitHeight
+    
+    width: animatedWidth
+    height: animatedHeight
+    
+    // Update animated properties when implicit properties change
+    onImplicitWidthChanged: animatedWidth = implicitWidth
+    onImplicitHeightChanged: animatedHeight = implicitHeight
+
+    Behavior on animatedWidth {
         NumberAnimation {
             duration: 400
             easing.type: Easing.OutBack
@@ -193,7 +163,7 @@ Item {
         }
     }
 
-    Behavior on implicitHeight {
+    Behavior on animatedHeight {
         NumberAnimation {
             duration: 400
             easing.type: Easing.OutBack
@@ -222,28 +192,31 @@ Item {
         WallpapersTab {}
     }
 
-    component DashboardPane: Loader {
-        Layout.alignment: Qt.AlignTop
-        Layout.preferredWidth: 400
-        Layout.preferredHeight: 300
+    component DashboardPane: Item {
+        implicitWidth: 400
+        implicitHeight: 300
+        
+        property alias sourceComponent: loader.sourceComponent
 
-        // Performance optimization: only load when visible or about to be visible
-        Component.onCompleted: active = Qt.binding(() => {
-            if (!view.visibleArea || !view.contentWidth)
-                return false;
+        Loader {
+            id: loader
+            anchors.fill: parent
+            
+            // Performance optimization: only load when visible or about to be visible
+            Component.onCompleted: active = Qt.binding(() => {
+                const currentIndex = root.state.currentTab
+                const myIndex = Array.prototype.indexOf.call(view.contentChildren, parent)
+                
+                // Load current page and adjacent pages for smooth transitions
+                return Math.abs(currentIndex - myIndex) <= 1
+            })
 
-            const vx = Math.floor(view.visibleArea.xPosition * view.contentWidth);
-            const vex = Math.floor(vx + view.visibleArea.widthRatio * view.contentWidth);
-            const margin = 50; // Pre-load margin for smoother transitions
-
-            return (vx >= x - margin && vx <= x + width + margin) || (vex >= x - margin && vex <= x + width + margin);
-        })
-
-        // Cache loaded items for better performance
-        property bool wasLoaded: false
-        onActiveChanged: {
-            if (active)
-                wasLoaded = true;
+            // Cache loaded items for better performance
+            property bool wasLoaded: false
+            onActiveChanged: {
+                if (active)
+                    wasLoaded = true;
+            }
         }
     }
 
