@@ -1,14 +1,16 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
-import "../workspaces"
+import qs.modules.workspaces
 import qs.modules.theme
 import qs.modules.clock
 import qs.modules.systray
-import "../launcher"
+import qs.modules.launcher
+import qs.config
 
 PanelWindow {
     id: panel
@@ -24,13 +26,34 @@ PanelWindow {
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-    exclusiveZone: 40
+    exclusiveZone: Configuration.bar.showBackground ? 44 : 40
     implicitHeight: 44
 
     Rectangle {
         id: bar
         anchors.fill: parent
-        color: "transparent"
+
+        property color bgcolor: Qt.rgba(Qt.color(Colors.background).r, Qt.color(Colors.background).g, Qt.color(Colors.background).b, 0.5)
+
+        color: Configuration.bar.showBackground ? bgcolor : "transparent"
+
+        layer.enabled: true
+        layer.effect: DropShadow {
+            horizontalOffset: 0
+            verticalOffset: 0
+            radius: 8
+            samples: 16
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+
+        // Fake bottom border
+        Rectangle {
+            height: 0
+            color: Colors.background
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+        }
 
         // Left side of bar
         RowLayout {
