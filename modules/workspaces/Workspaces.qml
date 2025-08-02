@@ -8,10 +8,9 @@ import Quickshell.Io
 import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
 import qs.modules.theme
-import "../services"
+import qs.modules.services
 import qs.modules.globals
 import qs.config
-import "../utils/color_utils.js" as ColorUtils
 
 Item {
     required property var bar
@@ -112,7 +111,7 @@ Item {
                 topRightRadius: radiusRight
                 bottomRightRadius: radiusRight
 
-                color: ColorUtils.transparentize(Colors.adapter.outline, 0.4)
+                color: Colors.adapter.surfaceBright
                 opacity: (workspaceOccupied[index] && !(!activeWindow?.activated && monitor?.activeWorkspace?.id === index + 1)) ? 1 : 0
 
                 Behavior on opacity {
@@ -205,7 +204,7 @@ Item {
                     property var mainAppIconSource: Quickshell.iconPath(AppSearch.guessIcon(biggestWindow?.class), "image-missing")
 
                     Text {
-                        opacity: Configuration.workspaces.showNumbers || ((Configuration.workspaces.alwaysShowNumbers && (!Configuration.workspaces.showAppIcons || !workspaceButtonBackground.biggestWindow || Configuration.workspaces.showNumbers)) || (Configuration.workspaces.showNumbers && !Configuration.workspaces.showAppIcons)) ? 1 : 0
+                        opacity: Configuration.workspaces.alwaysShowNumbers || ((Configuration.workspaces.showNumbers && (!Configuration.workspaces.showAppIcons || !workspaceButtonBackground.biggestWindow || Configuration.workspaces.alwaysShowNumbers)) || (Configuration.workspaces.alwaysShowNumbers && !Configuration.workspaces.showAppIcons)) ? 1 : 0
                         z: 3
 
                         anchors.centerIn: parent
@@ -225,7 +224,7 @@ Item {
                         }
                     }
                     StyledContainer {
-                        opacity: (Configuration.workspaces.alwaysShowNumbers || Configuration.workspaces.showNumbers || (Configuration.workspaces.showAppIcons && workspaceButtonBackground.biggestWindow)) ? 0 : 1
+                        opacity: (Configuration.workspaces.showNumbers || Configuration.workspaces.alwaysShowNumbers || (Configuration.workspaces.showAppIcons && workspaceButtonBackground.biggestWindow)) ? 0 : 1
                         visible: opacity > 0
                         anchors.centerIn: parent
                         width: workspaceButtonWidth * 0.18
@@ -244,17 +243,17 @@ Item {
                         anchors.centerIn: parent
                         width: workspaceButtonWidth
                         height: workspaceButtonWidth
-                        opacity: !Configuration.workspaces.showAppIcons ? 0 : (workspaceButtonBackground.biggestWindow && !Configuration.workspaces.showNumbers && Configuration.workspaces.showAppIcons) ? 1 : workspaceButtonBackground.biggestWindow ? workspaceIconOpacityShrinked : 0
+                        opacity: !Configuration.workspaces.showAppIcons ? 0 : (workspaceButtonBackground.biggestWindow && !Configuration.workspaces.alwaysShowNumbers && Configuration.workspaces.showAppIcons) ? 1 : workspaceButtonBackground.biggestWindow ? workspaceIconOpacityShrinked : 0
                         visible: opacity > 0
                         IconImage {
                             id: mainAppIcon
                             anchors.bottom: parent.bottom
                             anchors.right: parent.right
-                            anchors.bottomMargin: (!Configuration.workspaces.showNumbers && Configuration.workspaces.showAppIcons) ? (workspaceButtonWidth - workspaceIconSize) / 2 : workspaceIconMarginShrinked
-                            anchors.rightMargin: (!Configuration.workspaces.showNumbers && Configuration.workspaces.showAppIcons) ? (workspaceButtonWidth - workspaceIconSize) / 2 : workspaceIconMarginShrinked
+                            anchors.bottomMargin: (!Configuration.workspaces.alwaysShowNumbers && Configuration.workspaces.showAppIcons) ? (workspaceButtonWidth - workspaceIconSize) / 2 : workspaceIconMarginShrinked
+                            anchors.rightMargin: (!Configuration.workspaces.alwaysShowNumbers && Configuration.workspaces.showAppIcons) ? (workspaceButtonWidth - workspaceIconSize) / 2 : workspaceIconMarginShrinked
 
                             source: workspaceButtonBackground.mainAppIconSource
-                            implicitSize: (!Configuration.workspaces.showNumbers && Configuration.workspaces.showAppIcons) ? workspaceIconSize : workspaceIconSizeShrinked
+                            implicitSize: (!Configuration.workspaces.alwaysShowNumbers && Configuration.workspaces.showAppIcons) ? workspaceIconSize : workspaceIconSizeShrinked
 
                             Behavior on opacity {
                                 NumberAnimation {

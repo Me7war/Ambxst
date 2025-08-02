@@ -33,7 +33,6 @@ Singleton {
                 property int shown: 10
                 property bool showAppIcons: true
                 property bool alwaysShowNumbers: false
-                property int showNumberDelay: 300
                 property bool showNumbers: false
             }
         }
