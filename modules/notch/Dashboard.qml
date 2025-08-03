@@ -96,7 +96,7 @@ Item {
             id: viewWrapper
 
             width: parent.width
-            height: 300
+            height: parent.height - tabs.height - 8 // Adjust height to fit below tabs
 
             radius: Configuration.roundness > 0 ? Configuration.roundness + 4 : 0
             color: Colors.adapter.surfaceContainer
@@ -111,9 +111,6 @@ Item {
                 anchors.fill: parent
 
                 currentIndex: root.state.currentTab
-
-                implicitWidth: 400
-                implicitHeight: 300
 
                 onCurrentIndexChanged: {
                     root.state.currentTab = currentIndex;
