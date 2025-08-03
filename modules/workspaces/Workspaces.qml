@@ -23,7 +23,7 @@ Item {
     property list<bool> workspaceOccupied: []
     property int widgetPadding: 4
     property int workspaceButtonWidth: parent.height - widgetPadding * 2
-    property real workspaceIconSize: workspaceButtonWidth * 0.7
+    property real workspaceIconSize: workspaceButtonWidth * 0.6
     property real workspaceIconSizeShrinked: workspaceButtonWidth * 0.5
     property real workspaceIconOpacityShrinked: 1
     property real workspaceIconMarginShrinked: -4
@@ -101,11 +101,11 @@ Item {
                 z: 1
                 implicitWidth: workspaceButtonWidth
                 implicitHeight: workspaceButtonWidth
-                radius: Configuration.roundness - 4
+                radius: Configuration.roundness - widgetPadding
                 property var leftOccupied: (workspaceOccupied[index - 1] && !(!activeWindow?.activated && monitor?.activeWorkspace?.id === index))
                 property var rightOccupied: (workspaceOccupied[index + 1] && !(!activeWindow?.activated && monitor?.activeWorkspace?.id === index + 2))
-                property var radiusLeft: leftOccupied ? 0 : Configuration.roundness - 4
-                property var radiusRight: rightOccupied ? 0 : Configuration.roundness - 4
+                property var radiusLeft: leftOccupied ? 0 : Configuration.roundness - widgetPadding
+                property var radiusRight: rightOccupied ? 0 : Configuration.roundness - widgetPadding
 
                 topLeftRadius: radiusLeft
                 bottomLeftRadius: radiusLeft
@@ -140,9 +140,9 @@ Item {
 
     Rectangle {
         z: 2
-        property real activeWorkspaceMargin: 2
-        implicitHeight: workspaceButtonWidth - activeWorkspaceMargin * 2
-        radius: 12
+        property real activeWorkspaceMargin: 4
+        implicitHeight: parent.workspaceButtonWidth - activeWorkspaceMargin * 2
+        radius: Configuration.roundness - parent.widgetPadding - activeWorkspaceMargin
         color: Colors.adapter.primary
         anchors.verticalCenter: parent.verticalCenter
 
