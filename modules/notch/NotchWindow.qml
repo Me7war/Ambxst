@@ -183,14 +183,14 @@ PanelWindow {
 
             Behavior on shadowBlur {
                 NumberAnimation {
-                    duration: Configuration.animDuration - 50
+                    duration: Configuration.animDuration
                     easing.type: GlobalStates.notchOpen ? Easing.OutBack : Easing.OutQuart
                 }
             }
 
             Behavior on shadowOpacity {
                 NumberAnimation {
-                    duration: Configuration.animDuration - 50
+                    duration: Configuration.animDuration
                     easing.type: GlobalStates.notchOpen ? Easing.OutBack : Easing.OutQuart
                 }
             }

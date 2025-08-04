@@ -1,0 +1,29 @@
+import QtQuick
+import qs.config
+
+// Comportamiento estándar para animaciones de elementos que aparecen en el notch
+Item {
+    id: root
+    
+    // Propiedad para controlar la visibilidad con animaciones
+    property bool visible: false
+    
+    // Aplicar las animaciones estándar del notch
+    scale: visible ? 1.0 : 0.8
+    opacity: visible ? 1.0 : 0.0
+    
+    Behavior on scale {
+        NumberAnimation {
+            duration: Configuration.animDuration
+            easing.type: Easing.OutBack
+            easing.overshoot: 1.2
+        }
+    }
+    
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Configuration.animDuration
+            easing.type: Easing.OutQuart
+        }
+    }
+}
