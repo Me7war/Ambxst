@@ -18,6 +18,7 @@ Item {
     property int columns: Configuration.overview.columns
     property int workspacesShown: rows * columns
     property real workspaceSpacing: Configuration.overview.workspaceSpacing
+    property real workspacePadding: 8
     property color activeBorderColor: Colors.adapter.primary
 
     readonly property var monitor: Hyprland.focusedMonitor
@@ -81,8 +82,8 @@ Item {
                             property color hoveredBorderColor: Colors.adapter.outline
                             property bool hoveredWhileDragging: false
 
-                            implicitWidth: overviewRoot.workspaceImplicitWidth
-                            implicitHeight: overviewRoot.workspaceImplicitHeight
+                            implicitWidth: overviewRoot.workspaceImplicitWidth + workspacePadding
+                            implicitHeight: overviewRoot.workspaceImplicitHeight + workspacePadding
                             color: hoveredWhileDragging ? hoveredWorkspaceColor : defaultWorkspaceColor
                             radius: Configuration.roundness
                             border.width: 2
@@ -154,8 +155,8 @@ Item {
                     property int workspaceColIndex: (windowData?.workspace.id - 1) % overviewRoot.columns
                     property int workspaceRowIndex: Math.floor((windowData?.workspace.id - 1) % overviewRoot.workspacesShown / overviewRoot.columns)
 
-                    xOffset: (overviewRoot.workspaceImplicitWidth + workspaceSpacing) * workspaceColIndex
-                    yOffset: (overviewRoot.workspaceImplicitHeight + workspaceSpacing) * workspaceRowIndex
+                    xOffset: (overviewRoot.workspaceImplicitWidth + workspacePadding + workspaceSpacing) * workspaceColIndex + workspacePadding / 2
+                    yOffset: (overviewRoot.workspaceImplicitHeight + workspacePadding + workspaceSpacing) * workspaceRowIndex + workspacePadding / 2
 
                     onDragStarted: overviewRoot.draggingFromWorkspace = windowData?.workspace.id || -1
                     onDragFinished: targetWorkspace => {
@@ -180,10 +181,10 @@ Item {
                 property int activeWorkspaceRowIndex: Math.floor((activeWorkspaceInGroup - 1) / overviewRoot.columns)
                 property int activeWorkspaceColIndex: (activeWorkspaceInGroup - 1) % overviewRoot.columns
 
-                x: (overviewRoot.workspaceImplicitWidth + workspaceSpacing) * activeWorkspaceColIndex
-                y: (overviewRoot.workspaceImplicitHeight + workspaceSpacing) * activeWorkspaceRowIndex
-                width: overviewRoot.workspaceImplicitWidth
-                height: overviewRoot.workspaceImplicitHeight
+                x: (overviewRoot.workspaceImplicitWidth + workspacePadding + workspaceSpacing) * activeWorkspaceColIndex
+                y: (overviewRoot.workspaceImplicitHeight + workspacePadding + workspaceSpacing) * activeWorkspaceRowIndex
+                width: overviewRoot.workspaceImplicitWidth + workspacePadding
+                height: overviewRoot.workspaceImplicitHeight + workspacePadding
                 color: "transparent"
                 radius: Configuration.roundness
                 border.width: 2
