@@ -30,7 +30,7 @@ PanelWindow {
 
     exclusiveZone: Config.bar.showBackground ? 44 : 40
     exclusionMode: ExclusionMode.Ignore
-    implicitHeight: 44 + Config.roundness + 8
+    implicitHeight: 44 + Config.roundness + 64
     mask: Region {
         width: panel.width
         height: 44
@@ -48,9 +48,9 @@ PanelWindow {
             id: barBg
             anchors.fill: parent
             property color bgColor: Qt.rgba(
-              Qt.color(Colors.adapter.surfaceContainerLowest).r,
-              Qt.color(Colors.adapter.surfaceContainerLowest).g,
-              Qt.color(Colors.adapter.surfaceContainerLowest).b,
+              Colors.adapter.surfaceContainerLowest.r,
+              Colors.adapter.surfaceContainerLowest.g,
+              Colors.adapter.surfaceContainerLowest.b,
               Config.bar.bgOpacity
             )
             color: Config.bar.showBackground ? bgColor : "transparent"
@@ -78,9 +78,9 @@ PanelWindow {
             id: barBgShadow
             anchors.fill: barBg
             property color bgColor: Qt.rgba(
-              Qt.color(Colors.adapter.surfaceContainerLowest).r,
-              Qt.color(Colors.adapter.surfaceContainerLowest).g,
-              Qt.color(Colors.adapter.surfaceContainerLowest).b,
+              Colors.adapter.surfaceContainerLowest.r,
+              Colors.adapter.surfaceContainerLowest.g,
+              Colors.adapter.surfaceContainerLowest.b,
               Config.bar.bgOpacity
             )
             color: Config.bar.showBackground ? bgColor : "transparent"

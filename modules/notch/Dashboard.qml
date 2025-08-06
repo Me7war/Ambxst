@@ -44,7 +44,7 @@ NotchAnimationBehavior {
                     implicitWidth: (tabs.width - tabs.spacing * 3) / 4
 
                     background: Rectangle {
-                        color: root.state.currentTab === index ? Qt.rgba(Qt.color(Colors.surfaceContainer).r, Qt.color(Colors.surfaceContainer).g, Qt.color(Colors.surfaceContainer).b, Math.max(0.1, Config.opacity)) : "transparent"
+                        color: root.state.currentTab === index ? Qt.rgba(Colors.surfaceContainer.r, Colors.surfaceContainer.g, Colors.surfaceContainer.b, Config.opacity) : "transparent"
                         radius: Config.roundness > 0 ? Config.roundness + 4 : 0
 
                         Behavior on color {

@@ -5,3 +5,4 @@ quickshell-docs
 .qmlls.ini
 modules/theme/colors.json
 modules/wallpaper/wallpaper_config.json
+config/config.json
