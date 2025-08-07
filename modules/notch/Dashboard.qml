@@ -4,6 +4,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import qs.modules.theme
 import qs.modules.globals
+import qs.modules.services
 import qs.config
 
 NotchAnimationBehavior {
@@ -135,6 +136,14 @@ NotchAnimationBehavior {
 
                 onCurrentIndexChanged: {
                     root.state.currentTab = currentIndex;
+                    // Auto-focus search input when switching to wallpapers tab
+                    if (currentIndex === 3) {
+                        Qt.callLater(() => {
+                            if (wallpapersPane.item && wallpapersPane.item.focusSearch) {
+                                wallpapersPane.item.focusSearch();
+                            }
+                        });
+                    }
                 }
 
                 // Overview Tab
@@ -154,6 +163,7 @@ NotchAnimationBehavior {
 
                 // Wallpapers Tab
                 DashboardPane {
+                    id: wallpapersPane
                     sourceComponent: wallpapersComponent
                 }
             }
@@ -213,6 +223,7 @@ NotchAnimationBehavior {
         implicitHeight: 300
 
         property alias sourceComponent: loader.sourceComponent
+        property alias item: loader.item
 
         Loader {
             id: loader
@@ -273,6 +284,16 @@ NotchAnimationBehavior {
         property string searchText: ""
         readonly property int gridColumns: 3
 
+        function focusSearch() {
+            wallpaperSearchInput.focusInput()
+        }
+
+        Component.onCompleted: {
+            Qt.callLater(() => {
+                focusSearch()
+            })
+        }
+
         property var filteredWallpapers: {
             if (!GlobalStates.wallpaperManager)
                 return [];
@@ -298,6 +319,7 @@ NotchAnimationBehavior {
 
                 // Barra de búsqueda
                 SearchInput {
+                    id: wallpaperSearchInput
                     width: parent.width
                     height: 36
                     text: searchText
@@ -307,6 +329,10 @@ NotchAnimationBehavior {
 
                     onSearchTextChanged: text => {
                         searchText = text
+                    }
+
+                    onEscapePressed: {
+                        Visibilities.setActiveModule("")
                     }
                 }
 
