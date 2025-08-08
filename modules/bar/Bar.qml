@@ -47,10 +47,10 @@ PanelWindow {
         id: bar
         anchors.left: parent.left
         anchors.right: parent.right
-        // La barra siempre se ancla al borde que corresponde; no desplazamos su Y internamente fuera del mask.
-        anchors.top: panel.position === "top" ? parent.top : undefined
-        anchors.bottom: panel.position === "bottom" ? parent.bottom : undefined
-        implicitHeight: 44
+        // Control vertical manual para evitar efectos colaterales de anchors dinámicos.
+        property int barHeight: 44
+        height: barHeight
+        y: panel.position === "top" ? 0 : parent.height - barHeight
         color: "transparent"
 
         Rectangle {
@@ -63,9 +63,8 @@ PanelWindow {
             RoundCorner {
                 id: cornerLeft
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                anchors.left: parent.left
-                anchors.top: panel.position === "top" ? parent.bottom : undefined
-                anchors.bottom: panel.position === "bottom" ? parent.top : undefined
+                x: 0
+                y: panel.position === "top" ? parent.height : -size
                 corner: panel.position === "top" ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.BottomLeft
                 color: parent.color
             }
@@ -73,9 +72,8 @@ PanelWindow {
             RoundCorner {
                 id: cornerRight
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                anchors.right: parent.right
-                anchors.top: panel.position === "top" ? parent.bottom : undefined
-                anchors.bottom: panel.position === "bottom" ? parent.top : undefined
+                x: parent.width - size
+                y: panel.position === "top" ? parent.height : -size
                 corner: panel.position === "top" ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.BottomRight
                 color: parent.color
             }
@@ -105,9 +103,8 @@ PanelWindow {
             RoundCorner {
                 id: shadowCornerLeft
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                anchors.left: parent.left
-                anchors.top: panel.position === "top" ? parent.bottom : undefined
-                anchors.bottom: panel.position === "bottom" ? parent.top : undefined
+                x: 0
+                y: panel.position === "top" ? parent.height : -size
                 corner: panel.position === "top" ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.BottomLeft
                 color: parent.color
             }
@@ -115,9 +112,8 @@ PanelWindow {
             RoundCorner {
                 id: shadowCornerRight
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                anchors.right: parent.right
-                anchors.top: panel.position === "top" ? parent.bottom : undefined
-                anchors.bottom: panel.position === "bottom" ? parent.top : undefined
+                x: parent.width - size
+                y: panel.position === "top" ? parent.height : -size
                 corner: panel.position === "top" ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.BottomRight
                 color: parent.color
             }
