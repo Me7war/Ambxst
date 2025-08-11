@@ -19,14 +19,6 @@ Rectangle {
     readonly property int gridRows: 3
     readonly property int gridColumns: 5
     property int selectedIndex: GlobalStates.wallpaperSelectedIndex
-    property bool navigationInProgress: false
-
-    // Timer para limitar la velocidad de navegación con las teclas.
-    Timer {
-        id: navigationTimer
-        interval: Config.animDuration / 2
-        onTriggered: navigationInProgress = false
-    }
 
     // Función para enfocar el campo de búsqueda.
     function focusSearch() {
@@ -95,10 +87,7 @@ Rectangle {
                 }
 
                 onDownPressed: {
-                    if (filteredWallpapers.length > 0 && !navigationInProgress) {
-                        navigationInProgress = true;
-                        navigationTimer.restart();
-
+                    if (filteredWallpapers.length > 0) {
                         if (selectedIndex < filteredWallpapers.length - 1) {
                             let newIndex = selectedIndex + gridColumns;
                             if (newIndex >= filteredWallpapers.length) {
@@ -114,12 +103,8 @@ Rectangle {
                         }
                     }
                 }
-
                 onUpPressed: {
-                    if (filteredWallpapers.length > 0 && selectedIndex > 0 && !navigationInProgress) {
-                        navigationInProgress = true;
-                        navigationTimer.restart();
-
+                    if (filteredWallpapers.length > 0 && selectedIndex > 0) {
                         let newIndex = selectedIndex - gridColumns;
                         if (newIndex < 0) {
                             newIndex = 0;
@@ -127,16 +112,12 @@ Rectangle {
                         GlobalStates.wallpaperSelectedIndex = newIndex;
                         selectedIndex = newIndex;
                         wallpaperGrid.currentIndex = newIndex;
-                    } else if (selectedIndex === 0 && searchText.length === 0 && !navigationInProgress) {
-                        navigationInProgress = true;
-                        navigationTimer.restart();
-
+                    } else if (selectedIndex === 0 && searchText.length === 0) {
                         GlobalStates.wallpaperSelectedIndex = -1;
                         selectedIndex = -1;
                         wallpaperGrid.currentIndex = -1;
                     }
                 }
-
                 onAccepted: {
                     if (selectedIndex >= 0 && selectedIndex < filteredWallpapers.length) {
                         let selectedWallpaper = filteredWallpapers[selectedIndex];
@@ -147,10 +128,7 @@ Rectangle {
                 }
 
                 Keys.onPressed: event => {
-                    if (event.key === Qt.Key_Left && filteredWallpapers.length > 0 && !navigationInProgress) {
-                        navigationInProgress = true;
-                        navigationTimer.restart();
-
+                    if (event.key === Qt.Key_Left && filteredWallpapers.length > 0) {
                         if (selectedIndex > 0) {
                             GlobalStates.wallpaperSelectedIndex = selectedIndex - 1;
                             selectedIndex = selectedIndex - 1;
@@ -161,10 +139,7 @@ Rectangle {
                             wallpaperGrid.currentIndex = 0;
                         }
                         event.accepted = true;
-                    } else if (event.key === Qt.Key_Right && filteredWallpapers.length > 0 && !navigationInProgress) {
-                        navigationInProgress = true;
-                        navigationTimer.restart();
-
+                    } else if (event.key === Qt.Key_Right && filteredWallpapers.length > 0) {
                         if (selectedIndex < filteredWallpapers.length - 1) {
                             GlobalStates.wallpaperSelectedIndex = selectedIndex + 1;
                             selectedIndex = selectedIndex + 1;
@@ -175,18 +150,12 @@ Rectangle {
                             wallpaperGrid.currentIndex = 0;
                         }
                         event.accepted = true;
-                    } else if (event.key === Qt.Key_Home && filteredWallpapers.length > 0 && !navigationInProgress) {
-                        navigationInProgress = true;
-                        navigationTimer.restart();
-
+                    } else if (event.key === Qt.Key_Home && filteredWallpapers.length > 0) {
                         GlobalStates.wallpaperSelectedIndex = 0;
                         selectedIndex = 0;
                         wallpaperGrid.currentIndex = 0;
                         event.accepted = true;
-                    } else if (event.key === Qt.Key_End && filteredWallpapers.length > 0 && !navigationInProgress) {
-                        navigationInProgress = true;
-                        navigationTimer.restart();
-
+                    } else if (event.key === Qt.Key_End && filteredWallpapers.length > 0) {
                         GlobalStates.wallpaperSelectedIndex = filteredWallpapers.length - 1;
                         selectedIndex = filteredWallpapers.length - 1;
                         wallpaperGrid.currentIndex = selectedIndex;
@@ -242,22 +211,19 @@ Rectangle {
                     model: filteredWallpapers
                     currentIndex: selectedIndex
 
-                    // Sincronizar currentIndex con selectedIndex y centrar la vista.
+                    // Sincronizar currentIndex con selectedIndex
                     onCurrentIndexChanged: {
                         if (currentIndex !== selectedIndex) {
                             GlobalStates.wallpaperSelectedIndex = currentIndex;
                             selectedIndex = currentIndex;
                         }
-                        if (currentIndex >= 0) {
-                            positionViewAtIndex(currentIndex, GridView.Center);
-                        }
                     }
 
                     // Elemento de realce para el wallpaper seleccionado.
                     highlight: Rectangle {
-                        color: Colors.adapter.primary
-                        opacity: 0.2
-                        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                        color: "transparent"
+                        border.color: Colors.adapter.primary
+                        border.width: 2
                         visible: selectedIndex >= 0
                         z: 5
 
@@ -314,8 +280,8 @@ Rectangle {
                         Rectangle {
                             anchors.fill: parent
                             color: "transparent"
-                            border.color: Colors.adapter.primary
-                            border.width: parent.isSelected ? 2 : 0
+                            // border.color: Colors.adapter.primary
+                            // border.width: parent.isSelected ? 2 : 0
                             radius: 4
                             z: 15
 
