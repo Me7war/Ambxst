@@ -255,13 +255,11 @@ Item {
                         notificationObject: modelData
                         expanded: root.expanded
                         onlyNotification: (root.notificationCount === 1)
-                        useGroupAnimation: (root.notificationCount === 1)  // Nueva propiedad
                         opacity: (!root.expanded && index == 1 && root.notificationCount > 2) ? 0.5 : 1
                         visible: root.expanded || (index < 2)
                         anchors.left: parent?.left
                         anchors.right: parent?.right
                         
-                        // Conectar la señal de destrucción al grupo cuando es notificación única
                         onDestroyRequested: {
                             if (root.notificationCount === 1) {
                                 root.destroyWithAnimation();
