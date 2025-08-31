@@ -163,6 +163,8 @@ PanelWindow {
                 if (wallPath) {
                     console.log("Wallpaper directory changed to:", wallPath);
                     scanWallpapers.running = true;
+                    // Regenerar thumbnails para el nuevo directorio
+                    thumbnailGeneratorScript.running = true;
                 }
             }
         }
@@ -285,6 +287,8 @@ PanelWindow {
         onFileChanged: {
             console.log("Wallpaper directory changed, rescanning...");
             scanWallpapers.running = true;
+            // Regenerar thumbnails si hay nuevos videos
+            thumbnailGeneratorScript.running = true;
         }
 
         // Remove onLoadFailed to prevent premature fallback activation
