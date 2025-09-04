@@ -9,6 +9,7 @@ Singleton {
 
     property var screens: ({})
     property var panels: ({})
+    property var bars: ({})  // Registry for bar containers
     property string currentActiveModule: ""
     property string lastFocusedScreen: ""
 
@@ -34,6 +35,18 @@ Singleton {
 
     function unregisterPanel(screenName) {
         delete panels[screenName];
+    }
+
+    function registerBar(screenName, barContainer) {
+        bars[screenName] = barContainer;
+    }
+
+    function unregisterBar(screenName) {
+        delete bars[screenName];
+    }
+
+    function getBarForScreen(screenName) {
+        return bars[screenName] || null;
     }
 
     function setActiveModule(moduleName, skipFocusRestore) {

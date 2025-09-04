@@ -35,6 +35,7 @@ PanelWindow {
     color: "transparent"
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.layer: WlrLayer.Top
 
     exclusiveZone: Config.bar.showBackground ? 44 : 40
     exclusionMode: ExclusionMode.Ignore
@@ -45,6 +46,16 @@ PanelWindow {
     // La máscara sigue a la barra principal para mantener correcta interacción en ambas posiciones.
     mask: Region {
         item: bar
+    }
+
+    Component.onCompleted: {
+        Visibilities.registerBar(screen.name, bar);
+        Visibilities.registerPanel(screen.name, panel);
+    }
+
+    Component.onDestruction: {
+        Visibilities.unregisterBar(screen.name);
+        Visibilities.unregisterPanel(screen.name);
     }
 
     Rectangle {

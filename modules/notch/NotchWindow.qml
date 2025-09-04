@@ -34,7 +34,15 @@ PanelWindow {
 
     HyprlandFocusGrab {
         id: focusGrab
-        windows: [notchPanel]
+        windows: {
+            let windowList = [notchPanel];
+            // Agregar la barra de esta pantalla al focus grab cuando el notch esté abierto
+            let barPanel = Visibilities.panels[screen.name];
+            if (barPanel && (screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.overview || screenVisibilities.powermenu)) {
+                windowList.push(barPanel);
+            }
+            return windowList;
+        }
         active: screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.overview || screenVisibilities.powermenu
 
         onCleared: {
