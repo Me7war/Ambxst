@@ -130,6 +130,8 @@ NotchAnimationBehavior {
         PaneRect {
             id: viewWrapper
 
+            color: "transparent"
+
             width: parent.width - root.tabWidth - 8 // Resto del ancho disponible
             height: parent.height
 
@@ -169,7 +171,7 @@ NotchAnimationBehavior {
                     }
                 }
 
-                // Transiciones personalizadas para swipe vertical
+                // Transiciones personalizadas para swipe vertical con scale y opacity
                 pushEnter: Transition {
                     PropertyAnimation {
                         property: "y"
@@ -180,10 +182,18 @@ NotchAnimationBehavior {
                     }
                     PropertyAnimation {
                         property: "opacity"
-                        from: 0.7
+                        from: 0
                         to: 1
                         duration: Config.animDuration
-                        easing.type: Easing.OutCubic
+                        easing.type: Easing.OutQuart
+                    }
+                    PropertyAnimation {
+                        property: "scale"
+                        from: 0.8
+                        to: 1.0
+                        duration: Config.animDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
                     }
                 }
 
@@ -198,9 +208,17 @@ NotchAnimationBehavior {
                     PropertyAnimation {
                         property: "opacity"
                         from: 1
-                        to: 0.7
+                        to: 0
                         duration: Config.animDuration
-                        easing.type: Easing.OutCubic
+                        easing.type: Easing.OutQuart
+                    }
+                    PropertyAnimation {
+                        property: "scale"
+                        from: 1.0
+                        to: 0.8
+                        duration: Config.animDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
                     }
                 }
 
@@ -214,10 +232,18 @@ NotchAnimationBehavior {
                     }
                     PropertyAnimation {
                         property: "opacity"
-                        from: 0.7
+                        from: 0
                         to: 1
                         duration: Config.animDuration
-                        easing.type: Easing.OutCubic
+                        easing.type: Easing.OutQuart
+                    }
+                    PropertyAnimation {
+                        property: "scale"
+                        from: 0.8
+                        to: 1.0
+                        duration: Config.animDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
                     }
                 }
 
@@ -232,9 +258,17 @@ NotchAnimationBehavior {
                     PropertyAnimation {
                         property: "opacity"
                         from: 1
-                        to: 0.7
+                        to: 0
                         duration: Config.animDuration
-                        easing.type: Easing.OutCubic
+                        easing.type: Easing.OutQuart
+                    }
+                    PropertyAnimation {
+                        property: "scale"
+                        from: 1.0
+                        to: 0.8
+                        duration: Config.animDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
                     }
                 }
 

@@ -11,7 +11,7 @@ import qs.config
 // Componente principal para el selector de fondos de pantalla.
 Rectangle {
     // Configuración de estilo y layout del componente.
-    color: Colors.background
+    color: "transparent"
     radius: Config.roundness > 0 ? Config.roundness : 0
 
     // Propiedades personalizadas para la funcionalidad del componente.
