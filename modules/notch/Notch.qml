@@ -65,7 +65,7 @@ Item {
         radius: 0
 
         property int defaultRadius: Config.roundness > 0 ? (screenNotchOpen ? Config.roundness + 20 : Config.roundness + 4) : 0
-        property int islandRadius: screenNotchOpen ? Config.roundness + 20 : Config.roundness
+        property int islandRadius: Config.roundness > 0 ? (screenNotchOpen ? Config.roundness + 20 : Config.roundness) : 0
 
         topLeftRadius: Config.notchTheme === "default" ? 0 : (Config.notchTheme === "island" ? islandRadius : 0)
         topRightRadius: Config.notchTheme === "default" ? 0 : (Config.notchTheme === "island" ? islandRadius : 0)

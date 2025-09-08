@@ -71,7 +71,7 @@ PanelWindow {
         Rectangle {
             id: barBg
             anchors.fill: parent
-            property color bgColor: Qt.rgba(Colors.adapter.surfaceContainerLowest.r, Colors.adapter.surfaceContainerLowest.g, Colors.adapter.surfaceContainerLowest.b, Config.bar.bgOpacity)
+            property color bgColor: Qt.rgba(Colors.surface.r, Colors.surface.g, Colors.surface.b, Config.bar.bgOpacity)
             color: Config.bar.showBackground ? bgColor : "transparent"
 
             // Esquinas visibles hacia fuera de la barra. Para bottom se invierten a BottomLeft/BottomRight y se posicionan arriba de la barra.
