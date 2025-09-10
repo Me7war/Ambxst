@@ -529,25 +529,233 @@ Rectangle {
 
                 property bool isInDeleteMode: root.deleteMode && modelData.name === root.sessionToDelete
 
+                // Gestos táctiles y mouse
                 MouseArea {
                     id: mouseArea
                     anchors.fill: parent
                     hoverEnabled: true
                     enabled: !isInDeleteMode
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                    // Variables para gestos táctiles
+                    property real startX: 0
+                    property real startY: 0
+                    property bool isDragging: false
+                    property bool longPressTriggered: false
 
                     onEntered: {
-                        root.selectedIndex = index;
-                        resultsList.currentIndex = index;
-                    }
-                    onClicked: {
-                        if (modelData.isCreateSpecificButton) {
-                            root.createTmuxSession(modelData.sessionNameToCreate);
-                        } else if (modelData.isCreateButton) {
-                            root.createTmuxSession();
-                        } else {
-                            root.attachToSession(modelData.name);
+                        // Solo cambiar la selección si no estamos en modo delete o rename
+                        if (!root.deleteMode && !root.renameMode) {
+                            root.selectedIndex = index;
+                            resultsList.currentIndex = index;
                         }
                     }
+
+                    onPressed: mouse => {
+                        startX = mouse.x;
+                        startY = mouse.y;
+                        isDragging = false;
+                        longPressTriggered = false;
+                        longPressTimer.start();
+                    }
+
+                    onPositionChanged: mouse => {
+                        if (pressed) {
+                            let deltaX = mouse.x - startX;
+                            let deltaY = mouse.y - startY;
+                            let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                            // Si se mueve más de 10 píxeles, considerar como arrastre
+                            if (distance > 10) {
+                                isDragging = true;
+                                longPressTimer.stop();
+
+                                // Detectar swipe hacia la izquierda para quit (solo sesiones reales)
+                                if (deltaX < -50 && Math.abs(deltaY) < 30 && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                    if (!longPressTriggered) {
+                                        root.enterDeleteMode(modelData.name);
+                                        longPressTriggered = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    onReleased: mouse => {
+                        longPressTimer.stop();
+
+                        if (!isDragging && !longPressTriggered) {
+                            // Click normal
+                            if (mouse.button === Qt.LeftButton) {
+                                if (modelData.isCreateSpecificButton) {
+                                    root.createTmuxSession(modelData.sessionNameToCreate);
+                                } else if (modelData.isCreateButton) {
+                                    root.createTmuxSession();
+                                } else {
+                                    root.attachToSession(modelData.name);
+                                }
+                            } else if (mouse.button === Qt.RightButton) {
+                                // Click derecho - mostrar menú contextual (solo para sesiones reales)
+                                if (!modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                    contextMenu.popup();
+                                }
+                            }
+                        }
+
+                        isDragging = false;
+                        longPressTriggered = false;
+                    }
+
+                    // Timer para long press
+                    Timer {
+                        id: longPressTimer
+                        interval: 800 // 800ms para activar long press
+                        repeat: false
+                        onTriggered: {
+                            // Long press activado - entrar en modo rename (solo sesiones reales)
+                            if (!mouseArea.isDragging && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                root.enterRenameMode(modelData.name);
+                                mouseArea.longPressTriggered = true;
+                            }
+                        }
+                    }
+                }
+
+                // Menú contextual
+                Rectangle {
+                    id: contextMenu
+                    width: 120
+                    height: menuColumn.implicitHeight + 16
+                    color: Colors.adapter.surface
+                    radius: Config.roundness > 8 ? Config.roundness - 8 : 0
+                    border.width: 1
+                    border.color: Colors.adapter.outline
+                    visible: false
+                    z: 1000
+
+                    // Posicionar el menú cerca del cursor
+                    property real targetX: 0
+                    property real targetY: 0
+
+                    function popup() {
+                        // Posicionar el menú en el centro del item
+                        x = parent.width / 2 - width / 2;
+                        y = parent.height + 8;
+                        visible = true;
+                        menuFadeIn.start();
+                    }
+
+                    function hide() {
+                        visible = false;
+                    }
+
+                    // Animación de aparición
+                    PropertyAnimation {
+                        id: menuFadeIn
+                        target: contextMenu
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Config.animDuration / 2
+                        easing.type: Easing.OutQuart
+                    }
+
+                    Column {
+                        id: menuColumn
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 4
+
+                        // Opción Rename
+                        Rectangle {
+                            width: parent.width
+                            height: 32
+                            color: renameMouseArea.containsMouse ? Colors.adapter.surfaceVariant : "transparent"
+                            radius: 4
+
+                            Row {
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.leftMargin: 8
+                                spacing: 8
+
+                                Text {
+                                    text: Icons.terminal
+                                    color: Colors.adapter.overSurface
+                                    font.family: Icons.font
+                                    font.pixelSize: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Text {
+                                    text: "Rename"
+                                    color: Colors.adapter.overSurface
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Config.theme.fontSize
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: renameMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    contextMenu.hide();
+                                    root.enterRenameMode(modelData.name);
+                                }
+                            }
+                        }
+
+                        // Opción Quit
+                        Rectangle {
+                            width: parent.width
+                            height: 32
+                            color: quitMouseArea.containsMouse ? Colors.adapter.errorContainer : "transparent"
+                            radius: 4
+
+                            Row {
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.leftMargin: 8
+                                spacing: 8
+
+                                Text {
+                                    text: Icons.alert
+                                    color: quitMouseArea.containsMouse ? Colors.adapter.error : Colors.adapter.overSurface
+                                    font.family: Icons.font
+                                    font.pixelSize: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Text {
+                                    text: "Quit"
+                                    color: quitMouseArea.containsMouse ? Colors.adapter.error : Colors.adapter.overSurface
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Config.theme.fontSize
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: quitMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    contextMenu.hide();
+                                    root.enterDeleteMode(modelData.name);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Overlay para cerrar el menú al hacer click fuera
+                MouseArea {
+                    anchors.fill: parent
+                    visible: contextMenu.visible
+                    z: 999
+                    onClicked: contextMenu.hide()
                 }
 
                 // Contenido principal que permanece fijo
@@ -792,7 +1000,6 @@ Rectangle {
                                 onClicked: root.cancelDeleteMode()
                                 onEntered: {
                                     root.deleteButtonIndex = 0;
-                                    parent.color = Colors.adapter.surfaceVariant;
                                 }
                                 onExited: parent.color = "transparent"
                             }
@@ -830,7 +1037,6 @@ Rectangle {
                                 onClicked: root.confirmDeleteSession()
                                 onEntered: {
                                     root.deleteButtonIndex = 1;
-                                    parent.color = Qt.darker(Colors.adapter.error, 1.1);
                                 }
                                 onExited: parent.color = "transparent"
                             }
