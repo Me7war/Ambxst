@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Widgets
 import qs.modules.theme
 import qs.modules.components
 import qs.modules.globals
@@ -555,16 +556,38 @@ Rectangle {
                         }
                     }
 
+                    onClicked: mouse => {
+                        if (mouse.button === Qt.LeftButton) {
+                            if (modelData.isCreateSpecificButton) {
+                                root.createTmuxSession(modelData.sessionNameToCreate);
+                            } else if (modelData.isCreateButton) {
+                                root.createTmuxSession();
+                            } else {
+                                root.attachToSession(modelData.name);
+                            }
+                        } else if (mouse.button === Qt.RightButton) {
+                            // Click derecho - mostrar menú contextual (solo para sesiones reales)
+                            if (!modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                console.log("DEBUG: Right click detected, showing context menu");
+                                contextMenu.popup(mouse.x, mouse.y);
+                            }
+                        }
+                    }
+
                     onPressed: mouse => {
                         startX = mouse.x;
                         startY = mouse.y;
                         isDragging = false;
                         longPressTriggered = false;
-                        longPressTimer.start();
+                        
+                        // Solo iniciar el timer para long press si no es click derecho
+                        if (mouse.button !== Qt.RightButton) {
+                            longPressTimer.start();
+                        }
                     }
 
                     onPositionChanged: mouse => {
-                        if (pressed) {
+                        if (pressed && mouse.button !== Qt.RightButton) {
                             let deltaX = mouse.x - startX;
                             let deltaY = mouse.y - startY;
                             let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -587,25 +610,6 @@ Rectangle {
 
                     onReleased: mouse => {
                         longPressTimer.stop();
-
-                        if (!isDragging && !longPressTriggered) {
-                            // Click normal
-                            if (mouse.button === Qt.LeftButton) {
-                                if (modelData.isCreateSpecificButton) {
-                                    root.createTmuxSession(modelData.sessionNameToCreate);
-                                } else if (modelData.isCreateButton) {
-                                    root.createTmuxSession();
-                                } else {
-                                    root.attachToSession(modelData.name);
-                                }
-                            } else if (mouse.button === Qt.RightButton) {
-                                // Click derecho - mostrar menú contextual (solo para sesiones reales)
-                                if (!modelData.isCreateButton && !modelData.isCreateSpecificButton) {
-                                    contextMenu.popup();
-                                }
-                            }
-                        }
-
                         isDragging = false;
                         longPressTriggered = false;
                     }
@@ -625,131 +629,23 @@ Rectangle {
                     }
                 }
 
-                // Menú contextual
-                Rectangle {
+                // Menú contextual usando Menu estándar
+                Menu {
                     id: contextMenu
-                    width: 120
-                    height: menuColumn.implicitHeight + 16
-                    color: Colors.adapter.surface
-                    radius: Config.roundness > 8 ? Config.roundness - 8 : 0
-                    border.width: 1
-                    border.color: Colors.adapter.outline
-                    visible: false
-                    z: 1000
-
-                    // Posicionar el menú cerca del cursor
-                    property real targetX: 0
-                    property real targetY: 0
-
-                    function popup() {
-                        // Posicionar el menú en el centro del item
-                        x = parent.width / 2 - width / 2;
-                        y = parent.height + 8;
-                        visible = true;
-                        menuFadeIn.start();
-                    }
-
-                    function hide() {
-                        visible = false;
-                    }
-
-                    // Animación de aparición
-                    PropertyAnimation {
-                        id: menuFadeIn
-                        target: contextMenu
-                        property: "opacity"
-                        from: 0
-                        to: 1
-                        duration: Config.animDuration / 2
-                        easing.type: Easing.OutQuart
-                    }
-
-                    Column {
-                        id: menuColumn
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 4
-
-                        // Opción Rename
-                        Rectangle {
-                            width: parent.width
-                            height: 32
-                            color: renameMouseArea.containsMouse ? Colors.adapter.surfaceVariant : "transparent"
-                            radius: 4
-
-                            Row {
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: 8
-                                spacing: 8
-
-                                Text {
-                                    text: Icons.terminal
-                                    color: Colors.adapter.overSurface
-                                    font.family: Icons.font
-                                    font.pixelSize: 14
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-
-                                Text {
-                                    text: "Rename"
-                                    color: Colors.adapter.overSurface
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-                            }
-
-                            MouseArea {
-                                id: renameMouseArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: {
-                                    contextMenu.hide();
-                                    root.enterRenameMode(modelData.name);
-                                }
-                            }
+                    
+                    MenuItem {
+                        text: "Rename"
+                        onTriggered: {
+                            console.log("DEBUG: Rename clicked from Menu");
+                            root.enterRenameMode(modelData.name);
                         }
-
-                        // Opción Quit
-                        Rectangle {
-                            width: parent.width
-                            height: 32
-                            color: quitMouseArea.containsMouse ? Colors.adapter.errorContainer : "transparent"
-                            radius: 4
-
-                            Row {
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: 8
-                                spacing: 8
-
-                                Text {
-                                    text: Icons.alert
-                                    color: quitMouseArea.containsMouse ? Colors.adapter.error : Colors.adapter.overSurface
-                                    font.family: Icons.font
-                                    font.pixelSize: 14
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-
-                                Text {
-                                    text: "Quit"
-                                    color: quitMouseArea.containsMouse ? Colors.adapter.error : Colors.adapter.overSurface
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-                            }
-
-                            MouseArea {
-                                id: quitMouseArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: {
-                                    contextMenu.hide();
-                                    root.enterDeleteMode(modelData.name);
-                                }
-                            }
+                    }
+                    
+                    MenuItem {
+                        text: "Quit"
+                        onTriggered: {
+                            console.log("DEBUG: Quit clicked from Menu");
+                            root.enterDeleteMode(modelData.name);
                         }
                     }
                 }
@@ -908,13 +804,7 @@ Rectangle {
                     }
                 }
 
-                // Overlay para cerrar el menú al hacer click fuera
-                MouseArea {
-                    anchors.fill: parent
-                    visible: contextMenu.visible
-                    z: 999
-                    onClicked: contextMenu.hide()
-                }
+
 
                 // Contenido principal que permanece fijo
                 RowLayout {
