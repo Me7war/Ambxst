@@ -629,213 +629,32 @@ Rectangle {
                     }
                 }
 
-                // Menú contextual estilizado
-                Menu {
+                // Menú contextual usando el componente reutilizable
+                ContextMenu {
                     id: contextMenu
-
-                    // Dimensiones del menú
-                    width: 140
-                    // height: contentItem.implicitHeight + 16
-                    spacing: 4
-
-                    // Padding del menú
-                    padding: 8
                     
-                    // Propiedades para el highlight
-                    property int hoveredIndex: -1
-
-                    // Estilo del menú principal
-                    background: Item {
-                        implicitWidth: 140
-                        // implicitHeight: 80
-
-                        // Fondo principal
-                        Rectangle {
-                            anchors.fill: parent
-                            color: Colors.background
-                            radius: Config.roundness
-                            border.width: 2
-                            border.color: Colors.surfaceBright
-                        }
-                        
-                        // Highlight que sigue al hover
-                        Rectangle {
-                            id: menuHighlight
-                            width: parent.width - 16 // Accounting for padding
-                            height: 36
-                            color: contextMenu.hoveredIndex === 0 ? Colors.adapter.secondary : Colors.adapter.errorContainer
-                            radius: Config.roundness > 6 ? Config.roundness - 6 : 0
-                            visible: contextMenu.hoveredIndex !== -1
-                            opacity: visible ? 1.0 : 0
-                            
-                            x: 8 // Padding offset
-                            y: {
-                                if (contextMenu.hoveredIndex === -1) return 8;
-                                // Simplified calculation: just padding + (index * height)
-                                return 8 + (contextMenu.hoveredIndex * 36);
+                    items: [
+                        {
+                            text: "Rename",
+                            icon: Icons.edit,
+                            highlightColor: Colors.adapter.secondary,
+                            textColor: Colors.adapter.overSecondary,
+                            onTriggered: function() {
+                                console.log("DEBUG: Rename clicked from ContextMenu");
+                                root.enterRenameMode(modelData.name);
                             }
-                            
-                            Behavior on y {
-                                NumberAnimation {
-                                    duration: Config.animDuration / 3
-                                    easing.type: Easing.OutQuart
-                                }
-                            }
-                            
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: Config.animDuration / 4
-                                    easing.type: Easing.OutQuart
-                                }
-                            }
-                            
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Config.animDuration / 4
-                                    easing.type: Easing.OutQuart
-                                }
+                        },
+                        {
+                            text: "Quit",
+                            icon: Icons.alert,
+                            highlightColor: Colors.adapter.errorContainer,
+                            textColor: Colors.adapter.error,
+                            onTriggered: function() {
+                                console.log("DEBUG: Quit clicked from ContextMenu");
+                                root.enterDeleteMode(modelData.name);
                             }
                         }
-                    }
-
-                    MenuItem {
-                        text: "Rename"
-                        width: parent.width
-                        height: 36
-                        anchors.margins: 4
-
-                        // Estilo personalizado para el item
-                        background: Rectangle {
-                            anchors.fill: parent
-                            // anchors.margins: 4
-                            color: "transparent" // Transparent since highlight handles the color
-                            radius: Config.roundness > 6 ? Config.roundness - 6 : 0
-                        }
-                        
-                        onHoveredChanged: {
-                            if (hovered) {
-                                contextMenu.hoveredIndex = 0;
-                            } else {
-                                // Solo resetear si no hay otro elemento con hover
-                                Qt.callLater(() => {
-                                    if (contextMenu.hoveredIndex === 0) {
-                                        contextMenu.hoveredIndex = -1;
-                                    }
-                                });
-                            }
-                        }
-
-                        contentItem: Row {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 8
-
-                            Text {
-                                text: Icons.edit
-                                color: contextMenu.hoveredIndex === 0 ? Colors.adapter.overSecondary : Colors.adapter.overBackground
-                                font.family: Icons.font
-                                font.pixelSize: 14
-                                anchors.verticalCenter: parent.verticalCenter
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
-                                    }
-                                }
-                            }
-
-                            Text {
-                                text: "Rename"
-                                color: contextMenu.hoveredIndex === 0 ? Colors.adapter.overSecondary : Colors.adapter.overBackground
-                                font.family: Config.theme.font
-                                font.weight: Font.Bold
-                                font.pixelSize: Config.theme.fontSize
-                                anchors.verticalCenter: parent.verticalCenter
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
-                                    }
-                                }
-                            }
-                        }
-
-                        onTriggered: {
-                            console.log("DEBUG: Rename clicked from Menu");
-                            root.enterRenameMode(modelData.name);
-                        }
-                    }
-
-                    MenuItem {
-                        text: "Quit"
-                        width: parent.width
-                        height: 36
-
-                        // Estilo personalizado para el item
-                        background: Rectangle {
-                            anchors.fill: parent
-                            // anchors.margins: 4
-                            color: "transparent" // Transparent since highlight handles the color
-                            radius: Config.roundness > 6 ? Config.roundness - 6 : 0
-                        }
-                        
-                        onHoveredChanged: {
-                            if (hovered) {
-                                contextMenu.hoveredIndex = 1;
-                            } else {
-                                // Solo resetear si no hay otro elemento con hover
-                                Qt.callLater(() => {
-                                    if (contextMenu.hoveredIndex === 1) {
-                                        contextMenu.hoveredIndex = -1;
-                                    }
-                                });
-                            }
-                        }
-
-                        contentItem: Row {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 8
-
-                            Text {
-                                text: Icons.alert
-                                color: contextMenu.hoveredIndex === 1 ? Colors.adapter.error : Colors.adapter.overBackground
-                                font.family: Icons.font
-                                font.weight: Font.Bold
-                                font.pixelSize: 14
-                                anchors.verticalCenter: parent.verticalCenter
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
-                                    }
-                                }
-                            }
-
-                            Text {
-                                text: "Quit"
-                                color: contextMenu.hoveredIndex === 1 ? Colors.adapter.error : Colors.adapter.overBackground
-                                font.family: Config.theme.font
-                                font.pixelSize: Config.theme.fontSize
-                                anchors.verticalCenter: parent.verticalCenter
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
-                                    }
-                                }
-                            }
-                        }
-
-                        onTriggered: {
-                            console.log("DEBUG: Quit clicked from Menu");
-                            root.enterDeleteMode(modelData.name);
-                        }
-                    }
+                    ]
                 }
 
                 // Botones de acción para rename que aparecen desde la derecha
