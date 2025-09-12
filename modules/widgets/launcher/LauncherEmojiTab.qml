@@ -94,7 +94,7 @@ Rectangle {
         if (searchText.length > 0 && filteredEmojis.length > 0 && !isRecentFocused) {
             selectedIndex = 0;
             emojiList.currentIndex = 0;
-        } else if (searchText.length === 0) {
+        } else if (searchText.length === 0 && !hasNavigatedFromSearch) {
             selectedIndex = -1;
             selectedRecentIndex = -1;
         }
@@ -379,7 +379,11 @@ Rectangle {
                 }
 
                 onEscapePressed: {
-                    root.itemSelected();
+                    if (root.searchText.length === 0) {
+                        root.itemSelected();
+                    } else {
+                        root.clearSearch();
+                    }
                 }
 
                 onDownPressed: {
@@ -527,7 +531,7 @@ Rectangle {
             Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 48
-                visible: recentEmojis.length > 0
+                visible: recentEmojis.length > 0 && searchText.length === 0
 
                 ListView {
                     id: recentList
