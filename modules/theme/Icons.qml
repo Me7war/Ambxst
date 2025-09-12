@@ -30,8 +30,7 @@ QtObject {
     readonly property string terminal: ""
     readonly property string terminalWindow: ""
     readonly property string clipboard: ""
-    readonly property string image: ""
-    readonly property string clip: ""
+    readonly property string emoji: ""
     // Misc
     readonly property string accept: ""
     readonly property string cancel: ""
@@ -39,5 +38,7 @@ QtObject {
     readonly property string alert: ""
     readonly property string edit: ""
     readonly property string trash: ""
+    readonly property string clip: ""
     readonly property string copy: ""
+    readonly property string image: ""
 }
