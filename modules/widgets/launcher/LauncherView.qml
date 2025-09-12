@@ -10,7 +10,7 @@ import qs.config
 Item {
     id: root
 
-    readonly property var tabModel: [Icons.apps, Icons.terminal, Icons.clipboard]
+    readonly property var tabModel: [Icons.apps, Icons.terminal, Icons.clipboard, Icons.emoji]
     readonly property int tabCount: tabModel.length
     readonly property int tabSpacing: 8
     readonly property int tabWidth: 48
@@ -172,7 +172,7 @@ Item {
                 anchors.fill: parent
 
                 // Array de componentes para cargar dinámicamente
-                property var components: [appsComponent, tmuxComponent, clipboardComponent]
+                property var components: [appsComponent, tmuxComponent, clipboardComponent, emojiComponent]
 
                 // Cargar directamente el componente correcto según GlobalStates
                 initialItem: components[GlobalStates.launcherCurrentTab]
@@ -336,6 +336,16 @@ Item {
     Component {
         id: clipboardComponent
         LauncherClipboardTab {
+            onItemSelected: {
+                GlobalStates.clearLauncherState();
+                Visibilities.setActiveModule("");
+            }
+        }
+    }
+
+    Component {
+        id: emojiComponent
+        LauncherEmojiTab {
             onItemSelected: {
                 GlobalStates.clearLauncherState();
                 Visibilities.setActiveModule("");

@@ -1,0 +1,508 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Io
+import qs.modules.theme
+import qs.modules.components
+import qs.modules.globals
+import qs.modules.services
+import qs.config
+
+Rectangle {
+    id: root
+    focus: true
+
+    property string searchText: ""
+    property bool showResults: searchText.length > 0
+    property int selectedIndex: -1
+    property int selectedRecentIndex: -1
+    property bool isRecentFocused: false
+    property var emojiData: []
+    property var recentEmojis: []
+    property var filteredEmojis: []
+
+    signal itemSelected
+
+    onSelectedIndexChanged: {
+        if (selectedIndex === -1 && emojiList.count > 0) {
+            emojiList.positionViewAtIndex(0, ListView.Beginning);
+        }
+    }
+
+    onSearchTextChanged: {
+        updateFilteredEmojis();
+    }
+
+    function clearSearch() {
+        searchText = "";
+        selectedIndex = -1;
+        selectedRecentIndex = -1;
+        isRecentFocused = false;
+        searchInput.focusInput();
+        updateFilteredEmojis();
+    }
+
+    function focusSearchInput() {
+        searchInput.focusInput();
+    }
+
+    function updateFilteredEmojis() {
+        var filtered = [];
+        var searchLower = searchText.toLowerCase();
+
+        for (var i = 0; i < emojiData.length; i++) {
+            var emoji = emojiData[i];
+            var emojiText = emoji.emoji;
+            var searchTerms = emoji.search;
+
+            // Check if search text matches emoji or any search term
+            var matches = searchText.length === 0;
+            if (!matches) {
+                if (emojiText.includes(searchText) || searchTerms.toLowerCase().includes(searchLower)) {
+                    matches = true;
+                }
+            }
+
+            if (matches) {
+                filtered.push(emoji);
+            }
+        }
+
+        filteredEmojis = filtered;
+
+        if (searchText.length > 0 && filteredEmojis.length > 0 && !isRecentFocused) {
+            selectedIndex = 0;
+            emojiList.currentIndex = 0;
+        } else if (searchText.length === 0) {
+            selectedIndex = -1;
+            selectedRecentIndex = -1;
+        }
+    }
+
+    function loadEmojiData() {
+        // Load emoji data from fuzzel-emoji.sh
+        emojiProcess.command = ["bash", "-c", "sed '1,/^### DATA ###$/d' /home/adriano/Repos/Axenide/Ambyst/scripts/fuzzel-emoji.sh"];
+        emojiProcess.running = true;
+    }
+
+    function loadRecentEmojis() {
+        // Load recent emojis from JSON
+        recentProcess.command = ["bash", "-c", "cat /home/adriano/Repos/Axenide/Ambyst/emojis.json 2>/dev/null || echo '[]'"];
+        recentProcess.running = true;
+    }
+
+    function saveRecentEmojis() {
+        // Save recent emojis to JSON
+        var jsonData = JSON.stringify(recentEmojis, null, 2);
+        saveProcess.command = ["bash", "-c", "echo '" + jsonData.replace(/'/g, "'\\''") + "' > /home/adriano/Repos/Axenide/Ambyst/emojis.json"];
+        saveProcess.running = true;
+    }
+
+    function addToRecent(emoji) {
+        // Remove if already exists
+        recentEmojis = recentEmojis.filter(function(item) {
+            return item.emoji !== emoji.emoji;
+        });
+
+        // Add to beginning with usage count
+        emoji.usage = (emoji.usage || 0) + 1;
+        emoji.lastUsed = Date.now();
+        recentEmojis.unshift(emoji);
+
+        // Keep only last 50
+        if (recentEmojis.length > 50) {
+            recentEmojis = recentEmojis.slice(0, 50);
+        }
+
+        // Sort by usage desc, then last used desc
+        recentEmojis.sort(function(a, b) {
+            if (a.usage !== b.usage) {
+                return b.usage - a.usage;
+            }
+            return b.lastUsed - a.lastUsed;
+        });
+
+        saveRecentEmojis();
+    }
+
+    function copyEmoji(emoji) {
+        copyProcess.command = ["bash", "-c", "echo -n '" + emoji.emoji.replace(/'/g, "'\\''") + "' | wl-copy"];
+        copyProcess.running = true;
+        addToRecent(emoji);
+        root.itemSelected();
+    }
+
+    function onDownPressed() {
+        if (!isRecentFocused) {
+            if (emojiList.count > 0) {
+                if (selectedIndex === -1) {
+                    selectedIndex = 0;
+                    emojiList.currentIndex = 0;
+                } else if (selectedIndex < emojiList.count - 1) {
+                    selectedIndex++;
+                    emojiList.currentIndex = selectedIndex;
+                }
+            }
+        }
+    }
+
+    function onUpPressed() {
+        if (isRecentFocused) {
+            // If in recent, go back to search
+            isRecentFocused = false;
+            selectedRecentIndex = -1;
+            recentList.currentIndex = -1;
+        } else if (selectedIndex > 0) {
+            selectedIndex--;
+            emojiList.currentIndex = selectedIndex;
+        } else if (selectedIndex === 0 && recentEmojis.length > 0 && searchText.length === 0) {
+            // Go to recent section
+            isRecentFocused = true;
+            selectedIndex = -1;
+            emojiList.currentIndex = -1;
+            if (selectedRecentIndex === -1) {
+                selectedRecentIndex = 0;
+            }
+            recentList.currentIndex = selectedRecentIndex;
+        } else if (selectedIndex === 0) {
+            // Go back to search
+            selectedIndex = -1;
+            emojiList.currentIndex = -1;
+        }
+    }
+
+    function onLeftPressed() {
+        if (isRecentFocused && selectedRecentIndex > 0) {
+            selectedRecentIndex--;
+            recentList.currentIndex = selectedRecentIndex;
+        }
+    }
+
+    function onRightPressed() {
+        if (isRecentFocused && selectedRecentIndex < recentEmojis.length - 1) {
+            selectedRecentIndex++;
+            recentList.currentIndex = selectedRecentIndex;
+        }
+    }
+
+    implicitWidth: 400
+    implicitHeight: mainLayout.implicitHeight
+    color: "transparent"
+
+    Behavior on height {
+        NumberAnimation {
+            duration: Config.animDuration
+            easing.type: Easing.OutQuart
+        }
+    }
+
+    // Load emoji data
+    Process {
+        id: emojiProcess
+        running: false
+
+        stdout: StdioCollector {
+            waitForEnd: true
+
+            onStreamFinished: {
+                var lines = text.trim().split('\n');
+                var data = [];
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim();
+                    if (line.length > 0) {
+                        var parts = line.split(' ');
+                        if (parts.length >= 2) {
+                            var emoji = parts[0];
+                            var search = parts.slice(1).join(' ');
+                            data.push({
+                                emoji: emoji,
+                                search: search
+                            });
+                        }
+                    }
+                }
+                emojiData = data;
+                updateFilteredEmojis();
+            }
+        }
+
+        onExited: function (code) {
+            if (code !== 0) {
+                console.log("Emoji loading failed with code:", code);
+            }
+        }
+    }
+
+    // Load recent emojis
+    Process {
+        id: recentProcess
+        running: false
+
+        stdout: StdioCollector {
+            waitForEnd: true
+
+            onStreamFinished: {
+                try {
+                    recentEmojis = JSON.parse(text.trim());
+                } catch (e) {
+                    recentEmojis = [];
+                }
+            }
+        }
+
+        onExited: function (code) {
+            if (code !== 0) {
+                console.log("Recent emojis loading failed with code:", code);
+            }
+        }
+    }
+
+    // Save recent emojis
+    Process {
+        id: saveProcess
+        running: false
+    }
+
+    // Copy emoji
+    Process {
+        id: copyProcess
+        running: false
+    }
+
+    ColumnLayout {
+        id: mainLayout
+        anchors.fill: parent
+        spacing: 8
+
+        // Search input
+        SearchInput {
+            id: searchInput
+            Layout.fillWidth: true
+            text: root.searchText
+            placeholderText: "Search emojis..."
+
+            onSearchTextChanged: text => {
+                root.searchText = text;
+            }
+
+            onAccepted: {
+                if (isRecentFocused && selectedRecentIndex >= 0 && selectedRecentIndex < recentEmojis.length) {
+                    var selectedEmoji = recentEmojis[selectedRecentIndex];
+                    if (selectedEmoji) {
+                        root.copyEmoji(selectedEmoji);
+                    }
+                } else if (!isRecentFocused && selectedIndex >= 0 && selectedIndex < filteredEmojis.length) {
+                    var selectedEmoji = filteredEmojis[selectedIndex];
+                    if (selectedEmoji) {
+                        root.copyEmoji(selectedEmoji);
+                    }
+                }
+            }
+
+            onEscapePressed: {
+                root.itemSelected();
+            }
+
+            onDownPressed: {
+                root.onDownPressed();
+            }
+
+            onUpPressed: {
+                root.onUpPressed();
+            }
+
+            onLeftPressed: {
+                root.onLeftPressed();
+            }
+
+            onRightPressed: {
+                root.onRightPressed();
+            }
+        }
+
+        // Recent emojis horizontal list
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 48
+            visible: recentEmojis.length > 0
+
+            ListView {
+                id: recentList
+                anchors.fill: parent
+                orientation: ListView.Horizontal
+                spacing: 8
+                clip: true
+
+                model: recentEmojis
+                currentIndex: root.selectedRecentIndex
+
+                onCurrentIndexChanged: {
+                    if (currentIndex !== root.selectedRecentIndex && root.isRecentFocused) {
+                        root.selectedRecentIndex = currentIndex;
+                    }
+                }
+
+                delegate: Rectangle {
+                    required property var modelData
+                    required property int index
+
+                    width: 48
+                    height: 48
+                    color: {
+                        if (root.isRecentFocused && root.selectedRecentIndex === index) {
+                            return Colors.adapter.primary;
+                        } else {
+                            return Colors.adapter.surface;
+                        }
+                    }
+                    radius: Config.roundness > 0 ? Config.roundness - 4 : 0
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutQuart
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+
+                        onEntered: {
+                            if (!root.isRecentFocused) {
+                                root.isRecentFocused = true;
+                                root.selectedIndex = -1;
+                                emojiList.currentIndex = -1;
+                            }
+                            root.selectedRecentIndex = index;
+                            recentList.currentIndex = index;
+                        }
+
+                        onClicked: {
+                            root.copyEmoji(modelData);
+                        }
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: modelData.emoji
+                        font.pixelSize: 24
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                highlight: Rectangle {
+                    color: "transparent"
+                    border.color: Colors.adapter.primary
+                    border.width: 2
+                    radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                    visible: root.isRecentFocused
+                }
+
+                highlightMoveDuration: Config.animDuration / 2
+                highlightMoveVelocity: -1
+            }
+        }
+
+        // Emoji list
+        ListView {
+            id: emojiList
+            Layout.fillWidth: true
+            Layout.preferredHeight: (recentEmojis.length > 0 ? 4 : 5) * 48
+            clip: true
+
+            model: root.filteredEmojis
+            currentIndex: root.selectedIndex
+
+            onCurrentIndexChanged: {
+                if (currentIndex !== root.selectedIndex && !root.isRecentFocused) {
+                    root.selectedIndex = currentIndex;
+                }
+            }
+
+            delegate: Rectangle {
+                required property var modelData
+                required property int index
+
+                width: emojiList.width
+                height: 48
+                color: "transparent"
+                radius: 16
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+
+                    onEntered: {
+                        if (root.isRecentFocused) {
+                            root.isRecentFocused = false;
+                            root.selectedRecentIndex = -1;
+                            recentList.currentIndex = -1;
+                        }
+                        root.selectedIndex = index;
+                        emojiList.currentIndex = index;
+                    }
+
+                    onClicked: {
+                        root.copyEmoji(modelData);
+                    }
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 12
+
+                    Text {
+                        Layout.preferredWidth: 32
+                        Layout.preferredHeight: 32
+                        text: modelData.emoji
+                        font.pixelSize: 24
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: modelData.search
+                        color: root.selectedIndex === index && !root.isRecentFocused ? Colors.adapter.overPrimary : Colors.adapter.overBackground
+                        font.family: Config.theme.font
+                        font.pixelSize: Config.theme.fontSize
+                        elide: Text.ElideRight
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Config.animDuration / 2
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+                    }
+                }
+            }
+
+            highlight: Rectangle {
+                color: Colors.adapter.primary
+                radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                visible: root.selectedIndex >= 0 && !root.isRecentFocused
+            }
+
+            highlightMoveDuration: Config.animDuration / 2
+            highlightMoveVelocity: -1
+        }
+    }
+
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_Escape) {
+            root.itemSelected();
+            event.accepted = true;
+        }
+    }
+
+    Component.onCompleted: {
+        loadEmojiData();
+        loadRecentEmojis();
+        focusSearchInput();
+    }
+}

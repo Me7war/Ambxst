@@ -218,7 +218,7 @@ Item {
 
         onPressed: {
             console.log("Dashboard assistant shortcut pressed");
-            
+
             // Toggle si ya está en dashboard con assistant tab, sino abrir/navegar
             if (Visibilities.currentActiveModule === "dashboard" && GlobalStates.dashboardCurrentTab === 4) {
                 Visibilities.setActiveModule("");
@@ -229,6 +229,30 @@ Item {
                 // Actualizar la pestaña ANTES de abrir el módulo
                 GlobalStates.dashboardCurrentTab = 4;
                 Visibilities.setActiveModule("dashboard");
+            }
+        }
+    }
+
+    GlobalShortcut {
+        id: launcherEmojiShortcut
+        appid: "ambyst"
+        name: "launcher-emoji"
+        description: "Open launcher emoji tab"
+
+        onPressed: {
+            console.log("Launcher emoji shortcut pressed");
+
+            // Toggle si ya está en launcher con emoji tab, sino abrir/navegar
+            if (Visibilities.currentActiveModule === "launcher" && GlobalStates.launcherCurrentTab === 3) {
+                GlobalStates.clearLauncherState();
+                Visibilities.setActiveModule("");
+            } else if (Visibilities.currentActiveModule === "launcher") {
+                // Solo navegar a la pestaña sin cerrar/abrir
+                GlobalStates.launcherCurrentTab = 3;
+            } else {
+                // Actualizar la pestaña ANTES de abrir el módulo
+                GlobalStates.launcherCurrentTab = 3;
+                Visibilities.setActiveModule("launcher");
             }
         }
     }
