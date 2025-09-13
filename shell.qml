@@ -91,4 +91,9 @@ ShellRoot {
     GlobalShortcuts {
         id: globalShortcuts
     }
+
+    // Hyprland configuration service
+    HyprlandConfig {
+        id: hyprlandConfig
+    }
 }

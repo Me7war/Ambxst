@@ -54,6 +54,13 @@ Singleton {
             property JsonObject notch: JsonObject {
                 property string theme: "default"
             }
+
+            property JsonObject hyprland: JsonObject {
+                property string activeBorderColor: "primary"
+                property string inactiveBorderColor: "background"
+                property int borderSize: 2
+                property int rounding: 10
+            }
         }
     }
 
@@ -80,4 +87,7 @@ Singleton {
     // Notch configuration
     property QtObject notch: loader.adapter.notch
     property string notchTheme: currentTheme === "sticker" ? "island" : notch.theme
+
+    // Hyprland configuration
+    property QtObject hyprland: loader.adapter.hyprland
 }
