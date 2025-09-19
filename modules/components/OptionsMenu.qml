@@ -50,6 +50,7 @@ Menu {
     
     // Propiedades internas
     property int hoveredIndex: -1
+    property int previousHoveredIndex: -1
     
     // Detectar si algún item tiene iconos para ajustar el layout
     property bool hasIcons: {
@@ -113,10 +114,22 @@ Menu {
             x: 8 // Padding offset
             y: {
                 if (root.hoveredIndex === -1) return 8;
-                return 8 + (root.hoveredIndex * root.itemHeight);
+                
+                // Calcular la posición Y considerando las alturas reales de los elementos anteriores
+                let yPosition = 8; // padding inicial
+                for (let i = 0; i < root.hoveredIndex; i++) {
+                    let item = root.items[i];
+                    if (item && item.isSeparator) {
+                        yPosition += 10; // altura del separador con márgenes (2px + 4px + 4px)
+                    } else {
+                        yPosition += root.itemHeight; // altura del item normal
+                    }
+                }
+                return yPosition;
             }
             
             Behavior on y {
+                enabled: root.previousHoveredIndex !== -1 && root.hoveredIndex !== -1
                 NumberAnimation {
                     duration: Config.animDuration / 3
                     easing.type: Easing.OutQuart
@@ -150,12 +163,14 @@ Menu {
             
             text: itemData.text || ""
             width: root.menuWidth
-            height: isSeparatorItem ? 2 : root.itemHeight
+            height: isSeparatorItem ? 10 : root.itemHeight // 2px separador + 4px margen arriba + 4px margen abajo
             enabled: !isSeparatorItem
             
             // Fondo - diferente para separadores
             background: Rectangle {
                 anchors.fill: parent
+                anchors.topMargin: isSeparatorItem ? 4 : 0
+                anchors.bottomMargin: isSeparatorItem ? 4 : 0
                 color: isSeparatorItem ? Colors.surface : "transparent"
                 radius: isSeparatorItem ? 0 : (root.menuRadius > 6 ? root.menuRadius - 6 : 0)
             }
@@ -165,10 +180,12 @@ Menu {
                 if (isSeparatorItem) return; // No hover en separadores
                 
                 if (hovered) {
+                    root.previousHoveredIndex = root.hoveredIndex;
                     root.hoveredIndex = itemIndex;
                 } else {
                     Qt.callLater(() => {
                         if (root.hoveredIndex === itemIndex) {
+                            root.previousHoveredIndex = root.hoveredIndex;
                             root.hoveredIndex = -1;
                         }
                     });
