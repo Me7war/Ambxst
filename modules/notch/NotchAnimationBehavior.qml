@@ -4,15 +4,15 @@ import qs.config
 // Comportamiento estándar para animaciones de elementos que aparecen en el notch
 Item {
     id: root
-    
+
     // Propiedad para controlar la visibilidad con animaciones
     property bool isVisible: false
-    
+
     // Aplicar las animaciones estándar del notch
     scale: isVisible ? 1.0 : 0.8
     opacity: isVisible ? 1.0 : 0.0
     visible: opacity > 0
-    
+
     Behavior on scale {
         NumberAnimation {
             duration: Config.animDuration
@@ -20,7 +20,7 @@ Item {
             easing.overshoot: 1.2
         }
     }
-    
+
     Behavior on opacity {
         NumberAnimation {
             duration: Config.animDuration
