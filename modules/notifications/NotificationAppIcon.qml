@@ -6,7 +6,6 @@ import Quickshell.Widgets
 import Quickshell.Services.Notifications
 import qs.modules.theme
 import qs.config
-import "./notification_utils.js" as NotificationUtils
 
 ClippingRectangle {
     id: root
@@ -16,36 +15,17 @@ ClippingRectangle {
     property var image: ""
     property real scale: 1
     property real size: 48 * scale
-    property real materialIconScale: 0.57
-    // property real materialIconScale: scale
-    // property real appIconScale: 0.7
     property real appIconScale: scale
     property real smallAppIconScale: 0.4
-    // property real smallAppIconScale: scale
-    property real materialIconSize: size * materialIconScale
     property real appIconSize: size * appIconScale
     property real smallAppIconSize: size * smallAppIconScale
 
     implicitWidth: size
     implicitHeight: size
     radius: Config.roundness > 8 ? Config.roundness - 8 : 0
-    color: "transparent" // Light surface color
+    color: "transparent"
 
-    Loader {
-        id: materialSymbolLoader
-        active: root.appIcon == ""
-        anchors.fill: parent
-        sourceComponent: Text {
-            text: "🔔" // Icono de notificación simple como fallback
-            anchors.fill: parent
-            color: (root.urgency == NotificationUrgency.Critical) ? Colors.adapter.error : Colors.adapter.primary
-            font.family: Config.theme.font
-            font.pixelSize: root.materialIconSize
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
-    }
-
+    // Solo mostrar appIcon si existe
     Loader {
         id: appIconLoader
         active: root.image == "" && root.appIcon != ""
@@ -60,6 +40,7 @@ ClippingRectangle {
         }
     }
 
+    // Mostrar imagen de notificación si existe
     Loader {
         id: notifImageLoader
         active: root.image != ""
@@ -82,6 +63,7 @@ ClippingRectangle {
                 }
             }
 
+            // App icon pequeño superpuesto si hay imagen
             Loader {
                 id: notifImageAppIconLoader
                 active: root.appIcon != ""

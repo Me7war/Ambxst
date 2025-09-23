@@ -200,8 +200,9 @@ Item {
                         id: timestampText
                         text: currentNotification ? NotificationUtils.getFriendlyNotifTimeString(currentNotification.time) : ""
                         font.family: Config.theme.font
-                        font.pixelSize: Config.theme.fontSize - 1
-                        color: Colors.adapter.overBackground
+                        font.pixelSize: Config.theme.fontSize
+                        font.weight: Font.Bold
+                        color: Colors.adapter.secondary
                         verticalAlignment: Text.AlignVCenter
                         visible: text !== ""
                         anchors.verticalCenter: parent.verticalCenter
