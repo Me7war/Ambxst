@@ -171,80 +171,6 @@ Item {
             height: implicitHeight
             spacing: 8
 
-            // Indicadores de navegación (solo visible con múltiples notificaciones)
-            Item {
-                id: pageIndicators
-                Layout.preferredWidth: (Notifications.popupList.length > 1) ? 8 : 0
-                Layout.preferredHeight: 32 // Altura fija para 3 puntos + spacing
-                Layout.alignment: Qt.AlignVCenter
-                visible: Notifications.popupList.length > 1
-                clip: true
-
-                Column {
-                    id: dotsColumn
-                    width: parent.width
-                    spacing: 4
-
-                    // Posición Y animada para el efecto de scroll
-                    y: {
-                        if (Notifications.popupList.length <= 3)
-                            return 0;
-
-                        const totalNotifications = Notifications.popupList.length;
-                        const dotHeight = 8 + 4; // altura del punto + spacing
-                        const maxY = -(totalNotifications - 3) * dotHeight;
-                        const currentIndex = root.currentIndex;
-
-                        // Calcular posición basada en el índice actual
-                        let targetY = 0;
-                        if (currentIndex >= 1 && currentIndex < totalNotifications - 1) {
-                            // Centrar en el punto actual (mantener en posición media)
-                            targetY = -(currentIndex - 1) * dotHeight;
-                        } else if (currentIndex >= totalNotifications - 1) {
-                            // Al final, mostrar los últimos 3
-                            targetY = maxY;
-                        }
-
-                        return Math.max(maxY, Math.min(0, targetY));
-                    }
-
-                    Behavior on y {
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-
-                    Repeater {
-                        model: Notifications.popupList.length
-
-                        Rectangle {
-                            width: 8
-                            height: 8
-                            radius: 4
-                            color: index === root.currentIndex ? Colors.adapter.primary : Colors.surfaceBright
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Config.animDuration
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-
-                            // Animación de escala para el punto activo
-                            scale: index === root.currentIndex ? 1.0 : 0.5
-
-                            Behavior on scale {
-                                NumberAnimation {
-                                    duration: Config.animDuration
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             // Área principal de notificaciones (StackView)
             Item {
                 id: notificationArea
@@ -653,6 +579,80 @@ Item {
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Indicadores de navegación (solo visible con múltiples notificaciones)
+            Item {
+                id: pageIndicators
+                Layout.preferredWidth: (Notifications.popupList.length > 1) ? 8 : 0
+                Layout.preferredHeight: 32 // Altura fija para 3 puntos + spacing
+                Layout.alignment: Qt.AlignVCenter
+                visible: Notifications.popupList.length > 1
+                clip: true
+
+                Column {
+                    id: dotsColumn
+                    width: parent.width
+                    spacing: 4
+
+                    // Posición Y animada para el efecto de scroll
+                    y: {
+                        if (Notifications.popupList.length <= 3)
+                            return 0;
+
+                        const totalNotifications = Notifications.popupList.length;
+                        const dotHeight = 8 + 4; // altura del punto + spacing
+                        const maxY = -(totalNotifications - 3) * dotHeight;
+                        const currentIndex = root.currentIndex;
+
+                        // Calcular posición basada en el índice actual
+                        let targetY = 0;
+                        if (currentIndex >= 1 && currentIndex < totalNotifications - 1) {
+                            // Centrar en el punto actual (mantener en posición media)
+                            targetY = -(currentIndex - 1) * dotHeight;
+                        } else if (currentIndex >= totalNotifications - 1) {
+                            // Al final, mostrar los últimos 3
+                            targetY = maxY;
+                        }
+
+                        return Math.max(maxY, Math.min(0, targetY));
+                    }
+
+                    Behavior on y {
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+                    Repeater {
+                        model: Notifications.popupList.length
+
+                        Rectangle {
+                            width: 8
+                            height: 8
+                            radius: 4
+                            color: index === root.currentIndex ? Colors.adapter.primary : Colors.surfaceBright
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+                            // Animación de escala para el punto activo
+                            scale: index === root.currentIndex ? 1.0 : 0.5
+
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutCubic
                                 }
                             }
                         }
