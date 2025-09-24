@@ -84,15 +84,19 @@ Item {
         }
     }
 
-    // Manejo del hover - pausa/reanuda timers de timeout de notificación
+    // Manejo del hover - pausa/reanuda timers de timeout de todas las notificaciones
     onHoveredChanged: {
         if (hovered) {
-            if (currentNotification) {
-                Notifications.pauseGroupTimers(currentNotification.appName);
+            // Pausar timers de todas las notificaciones activas
+            for (let i = 0; i < Notifications.popupList.length; i++) {
+                const notification = Notifications.popupList[i];
+                Notifications.pauseGroupTimers(notification.appName);
             }
         } else {
-            if (currentNotification) {
-                Notifications.resumeGroupTimers(currentNotification.appName);
+            // Reanudar timers de todas las notificaciones activas
+            for (let i = 0; i < Notifications.popupList.length; i++) {
+                const notification = Notifications.popupList[i];
+                Notifications.resumeGroupTimers(notification.appName);
             }
         }
     }
