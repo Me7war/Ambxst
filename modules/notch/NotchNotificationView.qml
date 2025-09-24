@@ -18,7 +18,6 @@ Item {
     implicitHeight: mainColumn.implicitHeight
 
     property var currentNotification: {
-        const currentIndex = notificationListView ? notificationListView.currentIndex : 0;
         return (Notifications.popupList.length > currentIndex && currentIndex >= 0) ? 
                Notifications.popupList[currentIndex] : 
                (Notifications.popupList.length > 0 ? Notifications.popupList[0] : null);
@@ -26,6 +25,9 @@ Item {
     property bool notchHovered: false
     property bool hovered: notchHovered || mouseArea.containsMouse || anyButtonHovered
     property bool anyButtonHovered: false
+    
+    // Índice actual para navegación
+    property int currentIndex: 0
 
     // Timer para actualizar el timestamp cada minuto
     Timer {
@@ -52,15 +54,36 @@ Item {
         
         // Navegación con rueda del ratón cuando hay múltiples notificaciones
         onWheel: {
-            if (Notifications.popupList.length > 1 && notificationListView) {
+            if (Notifications.popupList.length > 1) {
                 if (wheel.angleDelta.y > 0) {
                     // Scroll hacia arriba - ir a la notificación anterior
-                    notificationListView.decrementCurrentIndex();
+                    navigateToPrevious();
                 } else {
                     // Scroll hacia abajo - ir a la siguiente notificación
-                    notificationListView.incrementCurrentIndex();
+                    navigateToNext();
                 }
             }
+        }
+    }
+    
+    // Funciones de navegación
+    function navigateToNext() {
+        if (Notifications.popupList.length > 1) {
+            const nextIndex = (currentIndex + 1) % Notifications.popupList.length;
+            notificationStack.navigateToNotification(nextIndex);
+        }
+    }
+    
+    function navigateToPrevious() {
+        if (Notifications.popupList.length > 1) {
+            const prevIndex = currentIndex > 0 ? currentIndex - 1 : Notifications.popupList.length - 1;
+            notificationStack.navigateToNotification(prevIndex);
+        }
+    }
+    
+    function updateNotificationStack() {
+        if (Notifications.popupList.length > 0 && notificationStack) {
+            notificationStack.navigateToNotification(currentIndex);
         }
     }
 
@@ -181,14 +204,13 @@ Item {
                     // Posición del scroll basada en la notificación actual
                     y: {
                         if (Notifications.popupList.length <= 1) return 0;
-                        const currentIndex = currentNotification ? Notifications.popupList.findIndex(n => n.id === currentNotification.id) : 0;
                         const maxY = parent.height - height;
-                        return (currentIndex / Math.max(1, Notifications.popupList.length - 1)) * maxY;
+                        return (root.currentIndex / Math.max(1, Notifications.popupList.length - 1)) * maxY;
                     }
 
                     Behavior on y {
                         NumberAnimation {
-                            duration: Config.animDuration
+                            duration: Config.animDuration / 2
                             easing.type: Easing.OutCubic
                         }
                     }
@@ -201,50 +223,147 @@ Item {
                 }
             }
 
-            // Área principal de notificaciones (ListView)
+            // Área principal de notificaciones (StackView)
             Item {
                 id: notificationArea
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 
-                ListView {
-                    id: notificationListView
+                StackView {
+                    id: notificationStack
                     anchors.fill: parent
-                    model: Notifications.popupList
-                    orientation: ListView.Horizontal
-                    snapMode: ListView.SnapOneItem
-                    highlightRangeMode: ListView.StrictlyEnforceRange
-                    interactive: Notifications.popupList.length > 1
                     clip: true
                     
-                    // Ir a la notificación actual cuando cambie
-                    currentIndex: {
-                        if (!currentNotification || Notifications.popupList.length === 0) return 0;
-                        return Notifications.popupList.findIndex(n => n.id === currentNotification.id);
+                    // Crear componente inicial
+                    Component.onCompleted: {
+                        if (Notifications.popupList.length > 0) {
+                            push(notificationComponent, {"notification": Notifications.popupList[0]});
+                        }
                     }
                     
-                    // Actualizar la notificación actual cuando cambie el índice
-                    onCurrentIndexChanged: {
-                        if (currentIndex >= 0 && currentIndex < Notifications.popupList.length) {
-                            const newNotification = Notifications.popupList[currentIndex];
-                            if (newNotification && newNotification.id !== (currentNotification?.id)) {
-                                // Pausar timers de la notificación anterior
-                                if (currentNotification) {
-                                    Notifications.resumeGroupTimers(currentNotification.appName);
-                                }
-                                // Pausar timers de la nueva notificación si estamos en hover
-                                if (hovered) {
-                                    Notifications.pauseGroupTimers(newNotification.appName);
-                                }
+                    // Función para navegar a una notificación específica
+                    function navigateToNotification(index) {
+                        if (index >= 0 && index < Notifications.popupList.length) {
+                            const newNotification = Notifications.popupList[index];
+                            const currentItem = notificationStack.currentItem;
+                            
+                            if (!currentItem || !currentItem.notification || 
+                                currentItem.notification.id !== newNotification.id) {
+                                
+                                // Determinar dirección de la transición
+                                let direction = index > root.currentIndex ? StackView.PushTransition : StackView.PopTransition;
+                                
+                                // Usar replace para evitar acumulación en el stack
+                                replace(notificationComponent, {"notification": newNotification}, direction);
+                                
+                                root.currentIndex = index;
                             }
                         }
                     }
+                    
+                    // Actualizar cuando cambie la lista de notificaciones
+                    Connections {
+                        target: Notifications
+                        function onPopupListChanged() {
+                            if (Notifications.popupList.length === 0) {
+                                notificationStack.clear();
+                                root.currentIndex = 0;
+                                return;
+                            }
+                            
+                            // Si no hay items en el stack, añadir el primero
+                            if (notificationStack.depth === 0) {
+                                notificationStack.push(notificationComponent, {"notification": Notifications.popupList[0]});
+                                root.currentIndex = 0;
+                            }
+                            
+                            // Ajustar el índice si es necesario
+                            if (root.currentIndex >= Notifications.popupList.length) {
+                                root.currentIndex = Math.max(0, Notifications.popupList.length - 1);
+                                notificationStack.navigateToNotification(root.currentIndex);
+                            }
+                        }
+                    }
+                    
+                    // Transiciones verticales - igual que el launcher
+                    pushEnter: Transition {
+                        PropertyAnimation {
+                            property: "y"
+                            from: notificationStack.height
+                            to: 0
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
+                        }
+                        PropertyAnimation {
+                            property: "opacity"
+                            from: 0
+                            to: 1
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutQuart
+                        }
+                    }
 
-                    delegate: Item {
-                        width: notificationListView.width
-                        height: notificationListView.height
+                    pushExit: Transition {
+                        PropertyAnimation {
+                            property: "y"
+                            from: 0
+                            to: -notificationStack.height
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
+                        }
+                        PropertyAnimation {
+                            property: "opacity"
+                            from: 1
+                            to: 0
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutQuart
+                        }
+                    }
+
+                    popEnter: Transition {
+                        PropertyAnimation {
+                            property: "y"
+                            from: -notificationStack.height
+                            to: 0
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
+                        }
+                        PropertyAnimation {
+                            property: "opacity"
+                            from: 0
+                            to: 1
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutQuart
+                        }
+                    }
+
+                    popExit: Transition {
+                        PropertyAnimation {
+                            property: "y"
+                            from: 0
+                            to: notificationStack.height
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
+                        }
+                        PropertyAnimation {
+                            property: "opacity"
+                            from: 1
+                            to: 0
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutQuart
+                        }
+                    }
+                }
+                
+                // Componente de notificación reutilizable
+                Component {
+                    id: notificationComponent
+                    
+                    Item {
+                        width: notificationStack.width
+                        height: notificationStack.height
                         
-                        property var notification: modelData
+                        property var notification
                         
                         Column {
                             anchors.fill: parent
