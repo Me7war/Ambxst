@@ -150,8 +150,8 @@ Item {
 
         Behavior on implicitHeight {
             NumberAnimation {
-                duration: 300
-                easing.type: Easing.OutCubic
+                duration: Config.animDuration
+                easing.type: Easing.OutBack
             }
         }
 
@@ -167,11 +167,14 @@ Item {
                     Layout.fillWidth: true
                     spacing: 8
 
-                Behavior on spacing {
-                    NumberAnimation {
-                        duration: 200
+                    Behavior on spacing {
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutCubic
+                        }
                     }
-                }
+
+
 
                 Item {
                     id: topRow
@@ -231,9 +234,12 @@ Item {
 
                     Behavior on spacing {
                         NumberAnimation {
-                            duration: 200
+                            duration: Config.animDuration
+                            easing.type: Easing.OutCubic
                         }
                     }
+
+
 
                     model: expanded ? root.validNotifications.slice().reverse() : root.validNotifications.slice().reverse().slice(0, 2)
 
