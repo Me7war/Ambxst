@@ -284,7 +284,8 @@ Item {
                         font.family: Config.theme.font
                         font.pixelSize: root.fontSize
                         color: Colors.adapter.overBackground
-                        wrapMode: Text.NoWrap
+                        wrapMode: Text.Wrap
+                        maximumLineCount: expanded ? 3 : 1
                         elide: Text.ElideRight
                         visible: text.length > 0
                     }
