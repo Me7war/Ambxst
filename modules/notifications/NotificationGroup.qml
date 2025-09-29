@@ -163,23 +163,21 @@ Item {
             anchors.margins: root.padding
             spacing: root.padding / 2
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: root.notificationCount === 1 ? 0 : 8
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: root.notificationCount === 1 ? 0 : 8
 
-                    Behavior on spacing {
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutCubic
-                        }
+                Behavior on spacing {
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutCubic
                     }
-
-
+                }
 
                 Item {
                     id: topRow
                     Layout.fillWidth: true
-                     property real fontSize: Config.theme.fontSize
+                    property real fontSize: Config.theme.fontSize
                     property bool showAppName: root.multipleNotifications
                     implicitHeight: root.multipleNotifications ? Math.max(topTextRow.implicitHeight, expandButton.implicitHeight) : 0
                     visible: root.multipleNotifications
@@ -196,20 +194,20 @@ Item {
                             id: appName
                             elide: Text.ElideRight
                             Layout.fillWidth: true
-                             text: (topRow.showAppName ? notificationGroup?.appName : (root.validNotifications.length > 0 ? root.validNotifications[0]?.summary ?? "" : "")) || ""
-                             font.family: Config.theme.font
-                             font.pixelSize: Config.theme.fontSize
-                             font.weight: Font.Bold
-                             color: topRow.showAppName ? Colors.adapter.outline : Colors.adapter.primary
+                            text: (topRow.showAppName ? notificationGroup?.appName : (root.validNotifications.length > 0 ? root.validNotifications[0]?.summary ?? "" : "")) || ""
+                            font.family: Config.theme.font
+                            font.pixelSize: Config.theme.fontSize
+                            font.weight: Font.Bold
+                            color: topRow.showAppName ? Colors.adapter.outline : Colors.adapter.primary
                         }
                         Text {
                             id: timeText
                             Layout.rightMargin: 10
                             horizontalAlignment: Text.AlignLeft
-                             text: NotificationUtils.getFriendlyNotifTimeString(notificationGroup?.time)
-                             font.family: Config.theme.font
-                             font.pixelSize: Config.theme.fontSize
-                             color: Colors.adapter.overBackground
+                            text: NotificationUtils.getFriendlyNotifTimeString(notificationGroup?.time)
+                            font.family: Config.theme.font
+                            font.pixelSize: Config.theme.fontSize
+                            color: Colors.adapter.overBackground
                         }
                     }
                     NotificationGroupExpandButton {
@@ -230,7 +228,7 @@ Item {
                     id: notificationsColumn
                     implicitHeight: contentHeight
                     Layout.fillWidth: true
-                    spacing: 4
+                    spacing: root.expanded ? 4 : 0
                     interactive: false
 
                     Behavior on spacing {
@@ -239,8 +237,6 @@ Item {
                             easing.type: Easing.OutCubic
                         }
                     }
-
-
 
                     model: expanded ? root.validNotifications.slice().reverse() : root.validNotifications.slice().reverse().slice(0, 2)
 
