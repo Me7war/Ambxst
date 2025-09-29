@@ -105,140 +105,148 @@ Item {
                 spacing: 8
                 visible: onlyNotification
 
-                // App icon
-                NotificationAppIcon {
-                    id: appIcon
-                    Layout.preferredWidth: onlyNotification ? 48 : 32
-                    Layout.preferredHeight: onlyNotification ? 48 : 32
-                    Layout.alignment: Qt.AlignTop
-                    size: onlyNotification ? 48 : 32
-                    radius: Config.roundness > 0 ? Config.roundness + 4 : 0
-                    visible: notificationObject && (notificationObject.appIcon !== "" || notificationObject.image !== "")
-                    appIcon: notificationObject ? notificationObject.appIcon : ""
-                    image: notificationObject ? notificationObject.image : ""
-                    summary: notificationObject ? notificationObject.summary : ""
-                    urgency: notificationObject ? notificationObject.urgency : NotificationUrgency.Normal
-                }
-
-                // Textos de la notificación
-                Column {
-                    id: textColumn
+                // Contenido principal
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    spacing: onlyNotification ? 4 : 0
+                    spacing: 8
 
-                    // Fila del summary, app name y timestamp
-                     RowLayout {
-                         width: parent.width
-                         spacing: 4
+                    // App icon
+                    NotificationAppIcon {
+                        id: appIcon
+                        Layout.preferredWidth: onlyNotification ? 48 : 32
+                        Layout.preferredHeight: onlyNotification ? 48 : 32
+                        Layout.alignment: Qt.AlignTop
+                        size: onlyNotification ? 48 : 32
+                        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                        visible: notificationObject && (notificationObject.appIcon !== "" || notificationObject.image !== "")
+                        appIcon: notificationObject ? notificationObject.appIcon : ""
+                        image: notificationObject ? notificationObject.image : ""
+                        summary: notificationObject ? notificationObject.summary : ""
+                        urgency: notificationObject ? notificationObject.urgency : NotificationUrgency.Normal
+                    }
 
-                         // Contenedor izquierdo para summary y app name
-                         Row {
-                             Layout.fillWidth: true
-                             Layout.minimumWidth: 0
-                             spacing: 4
+                    // Textos de la notificación
+                    Column {
+                        id: textColumn
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        spacing: onlyNotification ? 4 : 0
 
-                             Text {
-                                 id: summaryText
-                                 width: Math.min(implicitWidth, parent.width - (appNameText.visible ? appNameText.width + parent.spacing : 0))
-                                 text: notificationObject ? notificationObject.summary : ""
-                                 font.family: Config.theme.font
-                                 font.pixelSize: Config.theme.fontSize
-                                 font.weight: Font.Bold
-                                 color: Colors.adapter.primary
-                                 elide: Text.ElideRight
-                                 maximumLineCount: 1
-                                 wrapMode: Text.NoWrap
-                                 verticalAlignment: Text.AlignVCenter
-                             }
+                        // Fila del summary, app name y timestamp
+                        RowLayout {
+                            width: parent.width
+                            spacing: 4
 
-                             Text {
-                                 id: appNameText
-                                 width: Math.min(implicitWidth, Math.max(60, parent.width * 0.3))
-                                 text: notificationObject ? "• " + notificationObject.appName : ""
-                                 font.family: Config.theme.font
-                                 font.pixelSize: Config.theme.fontSize
-                                 font.weight: Font.Bold
-                                 color: Colors.adapter.outline
-                                 elide: Text.ElideRight
-                                 maximumLineCount: 1
-                                 wrapMode: Text.NoWrap
-                                 verticalAlignment: Text.AlignVCenter
-                                 visible: text !== ""
-                             }
-                         }
+                            // Contenedor izquierdo para summary y app name
+                            Row {
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 0
+                                spacing: 4
 
-                         // Timestamp a la derecha
-                         Text {
-                             id: timestampText
-                             text: notificationObject ? NotificationUtils.getFriendlyNotifTimeString(notificationObject.time) : ""
-                             font.family: Config.theme.font
-                             font.pixelSize: Config.theme.fontSize
-                             font.weight: Font.Bold
-                             color: Colors.adapter.outline
-                             verticalAlignment: Text.AlignVCenter
-                             visible: text !== ""
-                             Layout.alignment: Qt.AlignVCenter
-                         }
+                                Text {
+                                    id: summaryText
+                                    width: Math.min(implicitWidth, parent.width - (appNameText.visible ? appNameText.width + parent.spacing : 0))
+                                    text: notificationObject ? notificationObject.summary : ""
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Config.theme.fontSize
+                                    font.weight: Font.Bold
+                                    color: Colors.adapter.primary
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 1
+                                    wrapMode: Text.NoWrap
+                                    verticalAlignment: Text.AlignVCenter
+                                }
 
-                         // Botón de descartar
-                         Button {
-                             id: dismissButton
-                             Layout.preferredWidth: 24
-                             Layout.preferredHeight: 24
-                             Layout.alignment: Qt.AlignVCenter
-                             hoverEnabled: true
-                             visible: onlyNotification
+                                Text {
+                                    id: appNameText
+                                    width: Math.min(implicitWidth, Math.max(60, parent.width * 0.3))
+                                    text: notificationObject ? "• " + notificationObject.appName : ""
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Config.theme.fontSize
+                                    font.weight: Font.Bold
+                                    color: Colors.adapter.outline
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 1
+                                    wrapMode: Text.NoWrap
+                                    verticalAlignment: Text.AlignVCenter
+                                    visible: text !== ""
+                                }
+                            }
 
-                             background: Rectangle {
-                                 color: parent.pressed ? Colors.adapter.error : (parent.hovered ? Colors.surfaceBright : Colors.surface)
-                                 radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                            // Timestamp a la derecha
+                            Text {
+                                id: timestampText
+                                text: notificationObject ? NotificationUtils.getFriendlyNotifTimeString(notificationObject.time) : ""
+                                font.family: Config.theme.font
+                                font.pixelSize: Config.theme.fontSize
+                                font.weight: Font.Bold
+                                color: Colors.adapter.outline
+                                verticalAlignment: Text.AlignVCenter
+                                visible: text !== ""
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+                        }
 
-                                 Behavior on color {
-                                     ColorAnimation {
-                                         duration: Config.animDuration
-                                     }
-                                 }
-                             }
-
-                             contentItem: Text {
-                                 text: Icons.cancel
-                                 font.family: Icons.font
-                                 font.pixelSize: 14
-                                 color: parent.pressed ? Colors.adapter.overError : (parent.hovered ? Colors.adapter.overBackground : Colors.adapter.error)
-                                 horizontalAlignment: Text.AlignHCenter
-                                 verticalAlignment: Text.AlignVCenter
-
-                                 Behavior on color {
-                                     ColorAnimation {
-                                         duration: Config.animDuration
-                                     }
-                                 }
-                             }
-
-                             onClicked: {
-                                 if (notificationObject) {
-                                     Notifications.discardNotification(notificationObject.id);
-                                 }
-                             }
-                         }
-                     }
-
-                    Text {
-                        width: parent.width
-                        text: notificationObject ? processNotificationBody(notificationObject.body, notificationObject.appName) : ""
-                        font.family: Config.theme.font
-                        font.pixelSize: Config.theme.fontSize
-                        font.weight: Font.Bold
-                        color: Colors.adapter.overBackground
-                        wrapMode: onlyNotification ? Text.Wrap : Text.NoWrap
-                        maximumLineCount: onlyNotification ? 3 : 1
-                        elide: Text.ElideRight
-                        visible: onlyNotification || text !== ""
+                        Text {
+                            width: parent.width
+                            text: notificationObject ? processNotificationBody(notificationObject.body, notificationObject.appName) : ""
+                            font.family: Config.theme.font
+                            font.pixelSize: Config.theme.fontSize
+                            font.weight: Font.Bold
+                            color: Colors.adapter.overBackground
+                            wrapMode: onlyNotification ? Text.Wrap : Text.NoWrap
+                            maximumLineCount: onlyNotification ? 3 : 1
+                            elide: Text.ElideRight
+                            visible: onlyNotification || text !== ""
+                        }
                     }
                 }
 
+                // Botón de descartar
+                Item {
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    Layout.alignment: Qt.AlignTop
 
+                    Button {
+                        id: dismissButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        visible: onlyNotification
+
+                        background: Rectangle {
+                            color: parent.pressed ? Colors.adapter.error : (parent.hovered ? Colors.surfaceBright : Colors.surface)
+                            radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                }
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: Icons.cancel
+                            font.family: Icons.font
+                            font.pixelSize: 16
+                            color: parent.pressed ? Colors.adapter.overError : (parent.hovered ? Colors.adapter.overBackground : Colors.adapter.error)
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                }
+                            }
+                        }
+
+                        onClicked: {
+                            if (notificationObject) {
+                                Notifications.discardNotification(notificationObject.id);
+                            }
+                        }
+                    }
+                }
             }
 
             // Grouped notification layout (original)
@@ -247,134 +255,142 @@ Item {
                 spacing: 8
                 visible: !onlyNotification
 
-                     NotificationAppIcon {
-                         id: groupedAppIcon
-                         Layout.preferredWidth: expanded ? 48 : 24
-                         Layout.preferredHeight: expanded ? 48 : 24
-                         Layout.alignment: Qt.AlignTop
-                         size: expanded ? 48 : 24
-                         radius: Config.roundness > 0 ? Config.roundness + 4 : 0
-                         visible: notificationObject && (notificationObject.appIcon !== "" || notificationObject.image !== "")
-                         appIcon: notificationObject ? notificationObject.appIcon : ""
-                         image: notificationObject ? notificationObject.image : ""
-                         summary: notificationObject ? notificationObject.summary : ""
-                         urgency: notificationObject ? notificationObject.urgency : NotificationUrgency.Normal
-                     }
-
-                Item {
+                // Contenido principal
+                RowLayout {
                     Layout.fillWidth: true
-                    implicitHeight: expanded ? columnLayout.implicitHeight : rowLayout.implicitHeight
+                    spacing: 8
 
-                     RowLayout {
-                         id: columnLayout
-                         width: parent.width
-                         spacing: 8
-                         visible: expanded
+                    NotificationAppIcon {
+                        id: groupedAppIcon
+                        Layout.preferredWidth: expanded ? 48 : 24
+                        Layout.preferredHeight: expanded ? 48 : 24
+                        Layout.alignment: Qt.AlignTop
+                        size: expanded ? 48 : 24
+                        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                        visible: notificationObject && (notificationObject.appIcon !== "" || notificationObject.image !== "")
+                        appIcon: notificationObject ? notificationObject.appIcon : ""
+                        image: notificationObject ? notificationObject.image : ""
+                        summary: notificationObject ? notificationObject.summary : ""
+                        urgency: notificationObject ? notificationObject.urgency : NotificationUrgency.Normal
+                    }
 
-                         Column {
-                             Layout.fillWidth: true
-                             spacing: 4
+                    Item {
+                        Layout.fillWidth: true
+                        implicitHeight: expanded ? columnLayout.implicitHeight : rowLayout.implicitHeight
 
-                             RowLayout {
-                                 width: parent.width
-                                 spacing: 4
+                        RowLayout {
+                            id: columnLayout
+                            width: parent.width
+                            spacing: 8
+                            visible: expanded
 
-                                 Text {
-                                     Layout.fillWidth: true
-                                     text: notificationObject.summary || ""
-                                     font.family: Config.theme.font
-                                     font.pixelSize: Config.theme.fontSize
-                                     font.weight: Font.Bold
-                                     color: Colors.adapter.primary
-                                     elide: Text.ElideRight
-                                 }
+                            Column {
+                                Layout.fillWidth: true
+                                spacing: 4
 
-                                 Button {
-                                     Layout.preferredWidth: 24
-                                     Layout.preferredHeight: 24
-                                     hoverEnabled: true
+                                Text {
+                                    width: parent.width
+                                    text: notificationObject.summary || ""
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Config.theme.fontSize
+                                    font.weight: Font.Bold
+                                    color: Colors.adapter.primary
+                                    elide: Text.ElideRight
+                                }
 
-                                     background: Rectangle {
-                                         color: parent.pressed ? Colors.adapter.error : (parent.hovered ? Colors.surfaceBright : Colors.surface)
-                                         radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                                Text {
+                                    width: parent.width
+                                    text: processNotificationBody(notificationObject.body || "")
+                                    font.family: Config.theme.font
+                                    font.pixelSize: root.fontSize
+                                    color: Colors.adapter.overBackground
+                                    wrapMode: Text.Wrap
+                                    maximumLineCount: 3
+                                    elide: Text.ElideRight
+                                    visible: text.length > 0
+                                }
+                            }
+                        }
 
-                                         Behavior on color {
-                                             ColorAnimation {
-                                                 duration: Config.animDuration
-                                             }
-                                         }
-                                     }
+                        RowLayout {
+                            id: rowLayout
+                            width: parent.width
+                            spacing: 4
+                            visible: !expanded
 
-                                     contentItem: Text {
-                                         text: Icons.cancel
-                                         font.family: Icons.font
-                                         font.pixelSize: Config.theme.fontSize
-                                         color: parent.pressed ? Colors.adapter.overError : (parent.hovered ? Colors.adapter.overBackground : Colors.adapter.error)
-                                         horizontalAlignment: Text.AlignHCenter
-                                         verticalAlignment: Text.AlignVCenter
+                            Text {
+                                text: notificationObject.summary || ""
+                                font.family: Config.theme.font
+                                font.pixelSize: Config.theme.fontSize
+                                font.weight: Font.Bold
+                                color: Colors.adapter.primary
+                                elide: Text.ElideRight
+                            }
 
-                                         Behavior on color {
-                                             ColorAnimation {
-                                                 duration: Config.animDuration
-                                             }
-                                         }
-                                     }
+                            Text {
+                                text: "•"
+                                font.family: Config.theme.font
+                                font.pixelSize: Config.theme.fontSize
+                                font.weight: Font.Bold
+                                color: Colors.adapter.outline
+                                visible: notificationObject.body && notificationObject.body.length > 0
+                            }
 
-                                     onClicked: {
-                                         if (notificationObject) {
-                                             Notifications.discardNotification(notificationObject.id);
-                                         }
-                                     }
-                                 }
-                             }
+                            Text {
+                                text: processNotificationBody(notificationObject.body || "").replace(/\n/g, ' ')
+                                font.family: Config.theme.font
+                                font.pixelSize: root.fontSize
+                                color: Colors.adapter.overBackground
+                                wrapMode: Text.NoWrap
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                                visible: text.length > 0
+                            }
+                        }
+                    }
+                }
 
-                             Text {
-                                 width: parent.width
-                                 text: processNotificationBody(notificationObject.body || "")
-                                 font.family: Config.theme.font
-                                 font.pixelSize: root.fontSize
-                                 color: Colors.adapter.overBackground
-                                 wrapMode: Text.Wrap
-                                 maximumLineCount: 3
-                                 elide: Text.ElideRight
-                                 visible: text.length > 0
-                             }
-                         }
-                     }
+                // Botón de descartar
+                Item {
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    Layout.alignment: Qt.AlignTop
 
-                    RowLayout {
-                        id: rowLayout
-                        width: parent.width
-                        spacing: 4
-                        visible: !expanded
+                    Button {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        visible: expanded
 
-                         Text {
-                             text: notificationObject.summary || ""
-                             font.family: Config.theme.font
-                             font.pixelSize: Config.theme.fontSize
-                             font.weight: Font.Bold
-                             color: Colors.adapter.primary
-                             elide: Text.ElideRight
-                         }
+                        background: Rectangle {
+                            color: parent.pressed ? Colors.adapter.error : (parent.hovered ? Colors.surfaceBright : Colors.surface)
+                            radius: Config.roundness > 0 ? Config.roundness + 4 : 0
 
-                         Text {
-                             text: "•"
-                             font.family: Config.theme.font
-                             font.pixelSize: Config.theme.fontSize
-                             font.weight: Font.Bold
-                             color: Colors.adapter.outline
-                             visible: notificationObject.body && notificationObject.body.length > 0
-                         }
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                }
+                            }
+                        }
 
-                        Text {
-                            text: processNotificationBody(notificationObject.body || "").replace(/\n/g, ' ')
-                            font.family: Config.theme.font
-                            font.pixelSize: root.fontSize
-                            color: Colors.adapter.overBackground
-                            wrapMode: Text.NoWrap
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
-                            visible: text.length > 0
+                        contentItem: Text {
+                            text: Icons.cancel
+                            font.family: Icons.font
+                            font.pixelSize: 16
+                            color: parent.pressed ? Colors.adapter.overError : (parent.hovered ? Colors.adapter.overBackground : Colors.adapter.error)
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                }
+                            }
+                        }
+
+                        onClicked: {
+                            if (notificationObject) {
+                                Notifications.discardNotification(notificationObject.id);
+                            }
                         }
                     }
                 }
