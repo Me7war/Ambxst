@@ -379,20 +379,21 @@ Item {
                                 Layout.fillWidth: true
                                 visible: text.length > 0
                             }
-                        }
-                    }
-                }
+                         }
+                     }
+                 }
 
-                // Botón de descartar
-                Item {
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
-                    Layout.alignment: Qt.AlignTop
+                 // Botón de descartar
+                 Item {
+                     Layout.preferredWidth: expanded ? 32 : 0
+                     Layout.minimumWidth: 0
+                     Layout.preferredHeight: 32
+                     Layout.alignment: Qt.AlignTop
 
-                    Button {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        visible: expanded
+                     Button {
+                         anchors.fill: parent
+                         hoverEnabled: true
+                         visible: expanded
 
                         background: Rectangle {
                             color: parent.pressed ? Colors.error : (parent.hovered ? Colors.surfaceBright : Colors.surface)
