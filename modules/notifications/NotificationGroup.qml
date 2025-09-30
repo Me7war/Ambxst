@@ -20,17 +20,20 @@ Item {
     property var validNotifications: notifications.filter(n => n != null && n.summary != null)
 
     property var groupedNotifications: {
+        // Ordenar notificaciones por tiempo descendente (más recientes primero)
+        const sortedNotifications = root.validNotifications.slice().sort((a, b) => b.time - a.time);
         const groups = {};
-        root.validNotifications.forEach(notif => {
+        sortedNotifications.forEach(notif => {
             const summary = notif.summary || "";
             if (!groups[summary]) {
                 groups[summary] = [];
             }
             groups[summary].push(notif);
         });
+        // Limitar cada grupo a máximo 5 notificaciones
         return Object.values(groups).map(notifications => ({
                     summary: notifications[0].summary,
-                    notifications: notifications
+                    notifications: notifications.slice(0, 5)
                 }));
     }
 
