@@ -229,24 +229,10 @@ Rectangle {
                         }
                     }
 
-                    Loader {
-                        active: Config.tintIcons
+                    Tinted {
+                        sourceItem: appIcon
                         Layout.preferredWidth: 32
                         Layout.preferredHeight: 32
-                        sourceComponent: Item {
-                            Desaturate {
-                                id: desaturate
-                                visible: false
-                                anchors.fill: parent
-                                source: appIcon
-                                desaturation: 0.3
-                            }
-                            ColorOverlay {
-                                anchors.fill: parent
-                                source: desaturate
-                                color: Qt.rgba(Colors.primary.r, Colors.primary.g, Colors.primary.b, 0.2)
-                            }
-                        }
                     }
 
                     Text {

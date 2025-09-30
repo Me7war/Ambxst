@@ -53,22 +53,8 @@ MouseArea {
         visible: !Config.tintIcons
     }
 
-    Loader {
-        active: Config.tintIcons
+    Tinted {
+        sourceItem: trayIcon
         anchors.fill: trayIcon
-        sourceComponent: Item {
-            Desaturate {
-                id: desaturate
-                visible: false
-                anchors.fill: parent
-                source: trayIcon
-                desaturation: 0.3
-            }
-            ColorOverlay {
-                anchors.fill: parent
-                source: desaturate
-                color: Qt.rgba(Colors.primary.r, Colors.primary.g, Colors.primary.b, 0.2)
-            }
-        }
     }
 }
