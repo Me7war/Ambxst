@@ -2,7 +2,6 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import Qt.labs.platform 1.0
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
@@ -133,7 +132,7 @@ Singleton {
 
     FileView {
         id: notifFileView
-        path: StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/quickshell/Ambyst/notifications.json"
+        path: Quickshell.cacheDir + "/notifications.json"
         onLoaded: loadNotifications()
     }
 

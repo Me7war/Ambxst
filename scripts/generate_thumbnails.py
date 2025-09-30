@@ -23,8 +23,9 @@ GIF_EXTENSIONS = {'.gif'}
 THUMBNAIL_SIZE = "140x140"
 
 class ThumbnailGenerator:
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str, cache_base_path: str):
         self.config_path = Path(config_path)
+        self.cache_base_path = Path(cache_base_path)
         self.wall_path: Optional[Path] = None
         self.video_cache_dir: Optional[Path] = None
         self.image_cache_dir: Optional[Path] = None
@@ -33,31 +34,38 @@ class ThumbnailGenerator:
         self.total_files = 0
         self.processed_count = 0
         self.lock = threading.Lock()
-        
+        self.wall_path: Optional[Path] = None
+        self.video_cache_dir: Optional[Path] = None
+        self.image_cache_dir: Optional[Path] = None
+        self.gif_cache_dir: Optional[Path] = None
+        self.files_to_process = {'videos': [], 'images': [], 'gifs': []}
+        self.total_files = 0
+        self.processed_count = 0
+        self.lock = threading.Lock()
+
     def load_config(self) -> bool:
         """Load wallpaper configuration."""
         try:
             if not self.config_path.exists():
                 print(f"ERROR: Config file not found: {self.config_path}")
                 return False
-                
+
             with open(self.config_path, 'r') as f:
                 config = json.load(f)
-                
+
             wall_path = config.get('wallPath', '')
             if not wall_path:
                 print("ERROR: wallPath not found in config")
                 return False
-                
+
             self.wall_path = Path(wall_path).expanduser()
             if not self.wall_path.exists():
                 print(f"ERROR: Wallpaper directory not found: {self.wall_path}")
                 return False
-                
-            # Setup cache directories
-            home = Path.home()
-            cache_base = home / '.cache' / 'quickshell'
-            
+
+            # Setup cache directories using provided cache base
+            cache_base = self.cache_base_path
+
             self.video_cache_dir = cache_base / 'video_thumbnails'
             self.image_cache_dir = cache_base / 'image_thumbnails'
             self.gif_cache_dir = cache_base / 'gif_thumbnails'
@@ -387,13 +395,14 @@ class ThumbnailGenerator:
 
 def main():
     """Entry point."""
-    if len(sys.argv) != 2:
-        print("Usage: python3 generate_thumbnails.py <config_path>")
-        print("Example: python3 generate_thumbnails.py wallpaper_config.json")
+    if len(sys.argv) != 3:
+        print("Usage: python3 generate_thumbnails.py <config_path> <cache_base_path>")
+        print("Example: python3 generate_thumbnails.py wallpaper_config.json ~/.cache/quickshell")
         return 1
-    
+
     config_path = sys.argv[1]
-    generator = ThumbnailGenerator(config_path)
+    cache_base_path = sys.argv[2]
+    generator = ThumbnailGenerator(config_path, cache_base_path)
     return generator.run()
 
 if __name__ == '__main__':

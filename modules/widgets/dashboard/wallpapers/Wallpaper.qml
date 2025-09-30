@@ -61,7 +61,7 @@ PanelWindow {
         // Include original extension in thumbnail name to avoid collisions
         // Format: originalname.ext.jpg (e.g., fire-skull.png.jpg)
         var thumbnailName = fileName + ".jpg";
-        return Quickshell.env("HOME") + "/.cache/quickshell/" + cacheDir + "/" + thumbnailName;
+        return Quickshell.cacheDir + "/" + cacheDir + "/" + thumbnailName;
     }
 
     function getDisplaySource(filePath) {
@@ -311,7 +311,7 @@ PanelWindow {
     Process {
         id: thumbnailGeneratorScript
         running: false
-        command: ["python3", Quickshell.env("PWD") + "/scripts/generate_thumbnails.py", Quickshell.env("PWD") + "/wallpaper_config.json"]
+        command: ["python3", Quickshell.env("PWD") + "/scripts/generate_thumbnails.py", Quickshell.env("PWD") + "/wallpaper_config.json", Quickshell.cacheDir]
 
         stdout: StdioCollector {
             onStreamFinished: {
