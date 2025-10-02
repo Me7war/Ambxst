@@ -35,7 +35,7 @@ Rectangle {
 
         // Right panel - Notification history
         ClippingRectangle {
-            Layout.preferredWidth: 300
+            Layout.preferredWidth: 290
             Layout.fillHeight: true
             color: Colors.surface
             radius: Config.roundness > 4 ? Config.roundness + 4 : 0

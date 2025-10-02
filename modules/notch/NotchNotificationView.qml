@@ -15,7 +15,7 @@ import "../notifications/notification_utils.js" as NotificationUtils
 Item {
     id: root
 
-    implicitWidth: hovered ? 420 : 290
+    implicitWidth: hovered ? 420 : 320
     implicitHeight: hovered ? mainColumn.implicitHeight - 16 : mainColumn.implicitHeight
 
     property var currentNotification: {
