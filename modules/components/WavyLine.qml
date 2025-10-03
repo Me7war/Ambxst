@@ -1,11 +1,12 @@
 import QtQuick
 import qs.config
+import qs.modules.theme
 
 Canvas {
     id: root
     property real amplitudeMultiplier: 0.5
     property real frequency: 6
-    property color color: "#685496"
+    property color color: Colors.primaryFixed
     property real lineWidth: 4
     property real fullLength: width
 

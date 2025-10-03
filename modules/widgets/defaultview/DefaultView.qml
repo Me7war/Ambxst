@@ -15,7 +15,7 @@ Item {
     readonly property real mainRowContentWidth: 200 + userInfo.width + separator1.width + separator2.width + notifIndicator.width + (mainRow.spacing * 4) + 32
 
     implicitWidth: Math.round(hasActiveNotifications ? Math.max(notificationHoverHandler.hovered ? 420 + 32 : 320 + 32, mainRowContentWidth) : (root.notchHovered ? 420 + 32 : mainRowContentWidth))
-    implicitHeight: hasActiveNotifications ? (mainRow.height + (notificationHoverHandler.hovered ? notificationView.implicitHeight + 32 : notificationView.implicitHeight + 16)) : mainRow.height
+    implicitHeight: hasActiveNotifications ? (mainRow.height + (notificationHoverHandler.hovered ? notificationView.implicitHeight + (Config.notchTheme === "island" ? 56 : 32) : notificationView.implicitHeight + (Config.notchTheme === "island" ? 40 : 16))) : mainRow.height
 
     Behavior on implicitHeight {
         NumberAnimation {
@@ -549,11 +549,25 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.leftMargin: 20
-                anchors.rightMargin: 20
+                anchors.leftMargin: Config.notchTheme === "island" && hasActiveNotifications ? 8 : 20
+                anchors.rightMargin: Config.notchTheme === "island" && hasActiveNotifications ? 8 : 20
                 anchors.bottomMargin: 8
                 opacity: hasActiveNotifications ? 1 : 0
                 notchHovered: notificationHoverHandler.hovered
+
+                Behavior on anchors.leftMargin {
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutQuart
+                    }
+                }
+
+                Behavior on anchors.rightMargin {
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutQuart
+                    }
+                }
 
                 Behavior on opacity {
                     NumberAnimation {
