@@ -1,0 +1,91 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
+
+import QtQml.Models
+import QtQuick
+import Quickshell
+import Quickshell.Services.Mpris
+
+Singleton {
+    id: root
+    property MprisPlayer trackedPlayer: null
+    property MprisPlayer activePlayer: trackedPlayer ?? Mpris.players.values[0] ?? null
+
+    Instantiator {
+        model: Mpris.players
+
+        Connections {
+            required property MprisPlayer modelData
+            target: modelData
+
+            Component.onCompleted: {
+                if (root.trackedPlayer == null || modelData.isPlaying) {
+                    root.trackedPlayer = modelData
+                }
+            }
+
+            Component.onDestruction: {
+                if (root.trackedPlayer == null || !root.trackedPlayer.isPlaying) {
+                    for (const player of Mpris.players.values) {
+                        if (player.playbackState.isPlaying) {
+                            root.trackedPlayer = player
+                            break
+                        }
+                    }
+
+                    if (trackedPlayer == null && Mpris.players.values.length != 0) {
+                        trackedPlayer = Mpris.players.values[0]
+                    }
+                }
+            }
+
+            function onPlaybackStateChanged() {
+                if (root.trackedPlayer !== modelData) root.trackedPlayer = modelData
+            }
+        }
+    }
+
+    property bool isPlaying: this.activePlayer && this.activePlayer.isPlaying
+    property bool canTogglePlaying: this.activePlayer?.canTogglePlaying ?? false
+    function togglePlaying() {
+        if (this.canTogglePlaying) this.activePlayer.togglePlaying()
+    }
+
+    property bool canGoPrevious: this.activePlayer?.canGoPrevious ?? false
+    function previous() {
+        if (this.canGoPrevious) {
+            this.activePlayer.previous()
+        }
+    }
+
+    property bool canGoNext: this.activePlayer?.canGoNext ?? false
+    function next() {
+        if (this.canGoNext) {
+            this.activePlayer.next()
+        }
+    }
+
+    property bool canChangeVolume: this.activePlayer && this.activePlayer.volumeSupported && this.activePlayer.canControl
+
+    property bool loopSupported: this.activePlayer && this.activePlayer.loopSupported && this.activePlayer.canControl
+    property var loopState: this.activePlayer?.loopState ?? MprisLoopState.None
+    function setLoopState(loopState) {
+        if (this.loopSupported) {
+            this.activePlayer.loopState = loopState
+        }
+    }
+
+    property bool shuffleSupported: this.activePlayer && this.activePlayer.shuffleSupported && this.activePlayer.canControl
+    property bool hasShuffle: this.activePlayer?.shuffle ?? false
+    function setShuffle(shuffle) {
+        if (this.shuffleSupported) {
+            this.activePlayer.shuffle = shuffle
+        }
+    }
+
+    function setActivePlayer(player) {
+        const targetPlayer = player ?? Mpris.players[0]
+
+        this.trackedPlayer = targetPlayer
+    }
+}
