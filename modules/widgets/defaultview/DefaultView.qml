@@ -9,7 +9,7 @@ import qs.config
 Item {
     id: root
 
-    implicitWidth: Math.round(hasActiveNotifications ? (notificationHoverHandler.hovered ? 420 + 48 : 320 + 48) : 200 + userInfo.width + separator1.width + separator2.width + notifIndicator.width + (mainRow.spacing * 4) + 32)
+    implicitWidth: Math.round(hasActiveNotifications ? (notificationHoverHandler.hovered ? 420 + 48 : 320 + 48) : 250 + userInfo.width + separator1.width + separator2.width + notifIndicator.width + (mainRow.spacing * 4) + 32)
     implicitHeight: mainRow.height + (hasActiveNotifications ? (notificationHoverHandler.hovered ? notificationView.implicitHeight + 32 : notificationView.implicitHeight + 16) : 0)
 
     Behavior on implicitHeight {
@@ -86,6 +86,10 @@ Item {
                     onTriggered: compactPlayer.player?.positionChanged()
                 }
 
+                HoverHandler {
+                    id: playerHover
+                }
+
                 Rectangle {
                     anchors.fill: parent
                     radius: Math.max(0, Config.roundness - 4)
@@ -106,6 +110,16 @@ Item {
                             font.pixelSize: 16
                             font.family: Icons.font
                             opacity: compactPlayer.player?.canGoPrevious ?? false ? 1.0 : 0.3
+                            visible: opacity > 0
+                            width: playerHover.hovered ? implicitWidth : 0
+                            clip: true
+
+                            Behavior on width {
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
 
                             Behavior on color {
                                 ColorAnimation {
@@ -164,6 +178,16 @@ Item {
                             font.pixelSize: 16
                             font.family: Icons.font
                             opacity: compactPlayer.player?.canGoNext ?? false ? 1.0 : 0.3
+                            visible: opacity > 0
+                            width: playerHover.hovered ? implicitWidth : 0
+                            clip: true
+
+                            Behavior on width {
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
 
                             Behavior on color {
                                 ColorAnimation {
