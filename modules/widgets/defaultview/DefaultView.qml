@@ -89,9 +89,10 @@ Item {
                 Rectangle {
                     anchors.fill: parent
                     radius: Math.max(0, Config.roundness - 4)
-                    color: Colors.surfaceBright
+                    color: Colors.surface
 
                     Row {
+                        id: controlButtons
                         anchors.left: parent.left
                         anchors.leftMargin: 8
                         anchors.verticalCenter: parent.verticalCenter
@@ -101,10 +102,22 @@ Item {
                             id: previousBtn
                             anchors.verticalCenter: parent.verticalCenter
                             text: Icons.previous
-                            color: Colors.overBackground
+                            color: previousHover.hovered ? Colors.primary : Colors.overBackground
                             font.pixelSize: 16
                             font.family: Icons.font
                             opacity: compactPlayer.player?.canGoPrevious ?? false ? 1.0 : 0.3
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
+
+                            HoverHandler {
+                                id: previousHover
+                                enabled: compactPlayer.player?.canGoPrevious ?? false
+                            }
 
                             MouseArea {
                                 anchors.fill: parent
@@ -118,10 +131,22 @@ Item {
                             id: playPauseBtn
                             anchors.verticalCenter: parent.verticalCenter
                             text: compactPlayer.isPlaying ? Icons.pause : Icons.play
-                            color: Colors.overBackground
+                            color: playPauseHover.hovered ? Colors.primary : Colors.overBackground
                             font.pixelSize: 16
                             font.family: Icons.font
                             opacity: compactPlayer.player?.canPause ?? false ? 1.0 : 0.3
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
+
+                            HoverHandler {
+                                id: playPauseHover
+                                enabled: compactPlayer.player !== null
+                            }
 
                             MouseArea {
                                 anchors.fill: parent
@@ -135,10 +160,22 @@ Item {
                             id: nextBtn
                             anchors.verticalCenter: parent.verticalCenter
                             text: Icons.next
-                            color: Colors.overBackground
+                            color: nextHover.hovered ? Colors.primary : Colors.overBackground
                             font.pixelSize: 16
                             font.family: Icons.font
                             opacity: compactPlayer.player?.canGoNext ?? false ? 1.0 : 0.3
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
+
+                            HoverHandler {
+                                id: nextHover
+                                enabled: compactPlayer.player?.canGoNext ?? false
+                            }
 
                             MouseArea {
                                 anchors.fill: parent
@@ -151,16 +188,20 @@ Item {
 
                     Item {
                         id: positionControl
-                        anchors.left: parent.left
+                        anchors.left: controlButtons.right
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: 100
+                        anchors.leftMargin: 8
                         anchors.rightMargin: 8
                         height: 4
 
+                        property bool isDragging: false
+
+                        property real progressRatio: compactPlayer.length > 0 ? compactPlayer.position / compactPlayer.length : 0
+
                         Rectangle {
                             anchors.right: parent.right
-                            width: (1 - (compactPlayer.length > 0 ? compactPlayer.position / compactPlayer.length : 0)) * parent.width
+                            width: (1 - positionControl.progressRatio) * parent.width - 4
                             height: parent.height
                             radius: height / 2
                             color: Colors.surfaceContainerHigh
@@ -174,9 +215,9 @@ Item {
                                 id: wavyFill
                                 frequency: 6
                                 color: Colors.primary
-                                amplitudeMultiplier: 0.5
-                                height: positionControl.height * 6
-                                width: positionControl.width * (compactPlayer.length > 0 ? compactPlayer.position / compactPlayer.length : 0)
+                                amplitudeMultiplier: 0.8
+                                height: positionControl.height * 8
+                                width: Math.max(0, positionControl.width * positionControl.progressRatio - 4)
                                 lineWidth: positionControl.height
                                 fullLength: positionControl.width
 
@@ -191,10 +232,34 @@ Item {
                             active: !compactPlayer.isPlaying
                             sourceComponent: Rectangle {
                                 anchors.left: parent.left
-                                width: positionControl.width * (compactPlayer.length > 0 ? compactPlayer.position / compactPlayer.length : 0)
+                                width: Math.max(0, positionControl.width * positionControl.progressRatio - 4)
                                 height: positionControl.height
                                 radius: height / 2
                                 color: Colors.primary
+                            }
+                        }
+
+                        Rectangle {
+                            id: dragHandle
+                            anchors.verticalCenter: parent.verticalCenter
+                            x: Math.max(0, Math.min(positionControl.width - width, positionControl.width * positionControl.progressRatio - width / 2))
+                            width: positionControl.isDragging ? 4 : 4
+                            height: positionControl.isDragging ? 20 : 16
+                            radius: width / 2
+                            color: Colors.overBackground
+
+                            Behavior on width {
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
+
+                            Behavior on height {
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
                             }
                         }
 
@@ -202,24 +267,16 @@ Item {
                             anchors.fill: parent
                             cursorShape: compactPlayer.player?.canSeek ?? false ? Qt.PointingHandCursor : Qt.ArrowCursor
                             enabled: compactPlayer.player?.canSeek ?? false
-                            onClicked: (mouse) => {
+                            onClicked: mouse => {
                                 if (compactPlayer.player && compactPlayer.player.canSeek) {
-                                    compactPlayer.player.position = (mouse.x / width) * compactPlayer.length
+                                    compactPlayer.player.position = (mouse.x / width) * compactPlayer.length;
                                 }
                             }
-                        }
-
-                        MouseArea {
-                            id: dragArea
-                            anchors.fill: parent
-                            enabled: compactPlayer.player?.canSeek ?? false
-                            property bool isDragging: false
-
-                            onPressed: isDragging = true
-                            onReleased: isDragging = false
+                            onPressed: positionControl.isDragging = true
+                            onReleased: positionControl.isDragging = false
                             onPositionChanged: {
-                                if (isDragging && compactPlayer.player && compactPlayer.player.canSeek) {
-                                    compactPlayer.player.position = Math.min(Math.max(0, (mouseX / width) * compactPlayer.length), compactPlayer.length)
+                                if (positionControl.isDragging && compactPlayer.player && compactPlayer.player.canSeek) {
+                                    compactPlayer.player.position = Math.min(Math.max(0, (mouseX / width) * compactPlayer.length), compactPlayer.length);
                                 }
                             }
                         }
