@@ -9,6 +9,12 @@ QtObject {
 
     property Process hyprctlProcess: Process {}
 
+    property Timer applyTimer: Timer {
+        interval: 100
+        repeat: false
+        onTriggered: applyHyprlandConfigInternal()
+    }
+
     function getColorValue(colorName) {
         return Colors[colorName] || Colors.primary;
     }
@@ -28,36 +34,40 @@ QtObject {
     }
 
     function applyHyprlandConfig() {
-         // Verificar que los adapters estén cargados antes de aplicar configuración
-         if (!Config.loader.loaded || !Colors.loaded) {
-             console.log("HyprlandConfig: Esperando que se carguen los adapters...");
-             return;
-         }
+        applyTimer.restart();
+    }
 
-         const activeColor = getColorValue(Config.theme.currentTheme === "sticker" ? "overBackground" : Config.hyprlandBorderColor);
-         const inactiveColor = getColorValue(Config.hyprland.inactiveBorderColor);
+    function applyHyprlandConfigInternal() {
+        // Verificar que los adapters estén cargados antes de aplicar configuración
+        if (!Config.loader.loaded || !Colors.loaded) {
+            console.log("HyprlandConfig: Esperando que se carguen los adapters...");
+            return;
+        }
 
-         // Para el color inactivo, usar con opacidad completa como especificaste
-         const inactiveColorWithFullOpacity = Qt.rgba(inactiveColor.r, inactiveColor.g, inactiveColor.b, 1.0);
+        const activeColor = getColorValue(Config.theme.currentTheme === "sticker" ? "overBackground" : Config.hyprlandBorderColor);
+        const inactiveColor = getColorValue(Config.hyprland.inactiveBorderColor);
 
-         const activeColorFormatted = formatColorForHyprland(activeColor);
-         const inactiveColorFormatted = formatColorForHyprland(inactiveColorWithFullOpacity);
+        // Para el color inactivo, usar con opacidad completa como especificaste
+        const inactiveColorWithFullOpacity = Qt.rgba(inactiveColor.r, inactiveColor.g, inactiveColor.b, 1.0);
 
-         // Colores para sombras
-         const shadowColor = getColorValue(Config.hyprlandShadowColor);
-         const shadowColorInactive = getColorValue(Config.hyprland.shadowColorInactive);
-         const shadowColorWithOpacity = Qt.rgba(shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a * Config.hyprlandShadowOpacity);
-         const shadowColorInactiveWithOpacity = Qt.rgba(shadowColorInactive.r, shadowColorInactive.g, shadowColorInactive.b, shadowColorInactive.a * Config.hyprlandShadowOpacity);
-         const shadowColorFormatted = formatColorForHyprland(shadowColorWithOpacity);
-         const shadowColorInactiveFormatted = formatColorForHyprland(shadowColorInactiveWithOpacity);
+        const activeColorFormatted = formatColorForHyprland(activeColor);
+        const inactiveColorFormatted = formatColorForHyprland(inactiveColorWithFullOpacity);
 
-         // Usar batch para aplicar todos los comandos de una vez
-         const batchCommand = `keyword general:col.active_border ${activeColorFormatted} ; keyword general:col.inactive_border ${inactiveColorFormatted} ; keyword general:border_size ${Config.hyprlandBorderSize} ; keyword decoration:rounding ${Config.hyprlandRounding} ; keyword general:gaps_in ${Config.hyprland.gapsIn} ; keyword general:gaps_out ${Config.hyprland.gapsOut} ; keyword decoration:shadow:enabled ${Config.hyprland.shadowEnabled ? 1 : 0} ; keyword decoration:shadow:range ${Config.hyprland.shadowRange} ; keyword decoration:shadow:render_power ${Config.hyprland.shadowRenderPower} ; keyword decoration:shadow:sharp ${Config.hyprland.shadowSharp ? 1 : 0} ; keyword decoration:shadow:ignore_window ${Config.hyprland.shadowIgnoreWindow ? 1 : 0} ; keyword decoration:shadow:color ${shadowColorFormatted} ; keyword decoration:shadow:color_inactive ${shadowColorInactiveFormatted} ; keyword decoration:shadow:offset ${Config.hyprland.shadowOffset} ; keyword decoration:shadow:scale ${Config.hyprland.shadowScale} ; keyword decoration:blur:enabled ${Config.hyprland.blurEnabled ? 1 : 0} ; keyword decoration:blur:size ${Config.hyprland.blurSize} ; keyword decoration:blur:passes ${Config.hyprland.blurPasses} ; keyword decoration:blur:ignore_opacity ${Config.hyprland.blurIgnoreOpacity ? 1 : 0} ; keyword decoration:blur:new_optimizations ${Config.hyprland.blurNewOptimizations ? 1 : 0} ; keyword decoration:blur:xray ${Config.hyprland.blurXray ? 1 : 0} ; keyword decoration:blur:noise ${Config.hyprland.blurNoise} ; keyword decoration:blur:contrast ${Config.hyprland.blurContrast} ; keyword decoration:blur:brightness ${Config.hyprland.blurBrightness} ; keyword decoration:blur:vibrancy ${Config.hyprland.blurVibrancy} ; keyword decoration:blur:vibrancy_darkness ${Config.hyprland.blurVibrancyDarkness} ; keyword decoration:blur:special ${Config.hyprland.blurSpecial ? 1 : 0} ; keyword decoration:blur:popups ${Config.hyprland.blurPopups ? 1 : 0} ; keyword decoration:blur:popups_ignorealpha ${Config.hyprland.blurPopupsIgnorealpha} ; keyword decoration:blur:input_methods ${Config.hyprland.blurInputMethods ? 1 : 0} ; keyword decoration:blur:input_methods_ignorealpha ${Config.hyprland.blurInputMethodsIgnorealpha}`;
+        // Colores para sombras
+        const shadowColor = getColorValue(Config.hyprlandShadowColor);
+        const shadowColorInactive = getColorValue(Config.hyprland.shadowColorInactive);
+        const shadowColorWithOpacity = Qt.rgba(shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a * Config.hyprlandShadowOpacity);
+        const shadowColorInactiveWithOpacity = Qt.rgba(shadowColorInactive.r, shadowColorInactive.g, shadowColorInactive.b, shadowColorInactive.a * Config.hyprlandShadowOpacity);
+        const shadowColorFormatted = formatColorForHyprland(shadowColorWithOpacity);
+        const shadowColorInactiveFormatted = formatColorForHyprland(shadowColorInactiveWithOpacity);
 
-         console.log("HyprlandConfig: Aplicando configuración:", batchCommand);
-         hyprctlProcess.command = ["hyprctl", "--batch", batchCommand];
-         hyprctlProcess.running = true;
-     }
+        // Usar batch para aplicar todos los comandos de una vez
+        const batchCommand = `keyword general:col.active_border ${activeColorFormatted} ; keyword general:col.inactive_border ${inactiveColorFormatted} ; keyword general:border_size ${Config.hyprlandBorderSize} ; keyword decoration:rounding ${Config.hyprlandRounding} ; keyword general:gaps_in ${Config.hyprland.gapsIn} ; keyword general:gaps_out ${Config.hyprland.gapsOut} ; keyword decoration:shadow:enabled ${Config.hyprland.shadowEnabled ? 1 : 0} ; keyword decoration:shadow:range ${Config.hyprland.shadowRange} ; keyword decoration:shadow:render_power ${Config.hyprland.shadowRenderPower} ; keyword decoration:shadow:sharp ${Config.hyprland.shadowSharp ? 1 : 0} ; keyword decoration:shadow:ignore_window ${Config.hyprland.shadowIgnoreWindow ? 1 : 0} ; keyword decoration:shadow:color ${shadowColorFormatted} ; keyword decoration:shadow:color_inactive ${shadowColorInactiveFormatted} ; keyword decoration:shadow:offset ${Config.hyprland.shadowOffset} ; keyword decoration:shadow:scale ${Config.hyprland.shadowScale} ; keyword decoration:blur:enabled ${Config.hyprland.blurEnabled ? 1 : 0} ; keyword decoration:blur:size ${Config.hyprland.blurSize} ; keyword decoration:blur:passes ${Config.hyprland.blurPasses} ; keyword decoration:blur:ignore_opacity ${Config.hyprland.blurIgnoreOpacity ? 1 : 0} ; keyword decoration:blur:new_optimizations ${Config.hyprland.blurNewOptimizations ? 1 : 0} ; keyword decoration:blur:xray ${Config.hyprland.blurXray ? 1 : 0} ; keyword decoration:blur:noise ${Config.hyprland.blurNoise} ; keyword decoration:blur:contrast ${Config.hyprland.blurContrast} ; keyword decoration:blur:brightness ${Config.hyprland.blurBrightness} ; keyword decoration:blur:vibrancy ${Config.hyprland.blurVibrancy} ; keyword decoration:blur:vibrancy_darkness ${Config.hyprland.blurVibrancyDarkness} ; keyword decoration:blur:special ${Config.hyprland.blurSpecial ? 1 : 0} ; keyword decoration:blur:popups ${Config.hyprland.blurPopups ? 1 : 0} ; keyword decoration:blur:popups_ignorealpha ${Config.hyprland.blurPopupsIgnorealpha} ; keyword decoration:blur:input_methods ${Config.hyprland.blurInputMethods ? 1 : 0} ; keyword decoration:blur:input_methods_ignorealpha ${Config.hyprland.blurInputMethodsIgnorealpha}`;
+
+        console.log("HyprlandConfig: Applying hyprctl batch command.");
+        hyprctlProcess.command = ["hyprctl", "--batch", batchCommand];
+        hyprctlProcess.running = true;
+    }
 
     property Connections configConnections: Connections {
         target: Config.loader
