@@ -11,13 +11,32 @@ BgRect {
     property string currentTime: ""
     property string weatherText: ""
     property bool weatherVisible: false
+    property string currentDayAbbrev: ""
 
-    Layout.preferredWidth: (weatherVisible ? weatherDisplay.implicitWidth : 0) + timeDisplay.implicitWidth + (weatherVisible ? 42 : 24)
+    Layout.preferredWidth: dayDisplay.implicitWidth + sep1.implicitWidth + (weatherVisible ? weatherDisplay.implicitWidth + sep2.implicitWidth : 0) + timeDisplay.implicitWidth + (weatherVisible ? 56 : 40)
     Layout.preferredHeight: 36
 
     RowLayout {
         anchors.centerIn: parent
         spacing: 8
+
+        Text {
+            id: dayDisplay
+            text: clockContainer.currentDayAbbrev
+            color: Colors.overBackground
+            font.pixelSize: Config.theme.fontSize
+            font.family: Config.theme.font
+            font.bold: true
+        }
+
+        Text {
+            id: sep1
+            text: "•"
+            color: Colors.outline
+            font.pixelSize: Config.theme.fontSize
+            font.family: Config.theme.font
+            font.bold: true
+        }
 
         Text {
             id: weatherDisplay
@@ -30,6 +49,7 @@ BgRect {
         }
 
         Text {
+            id: sep2
             text: "•"
             color: Colors.outline
             font.pixelSize: Config.theme.fontSize
@@ -95,6 +115,7 @@ BgRect {
         onTriggered: {
             var now = new Date();
             clockContainer.currentTime = Qt.formatDateTime(now, "hh:mm:ss");
+            clockContainer.currentDayAbbrev = Qt.formatDateTime(now, "ddd").slice(0, 3);
         }
     }
 
@@ -119,5 +140,7 @@ BgRect {
 
     Component.onCompleted: {
         updateWeather();
+        var now = new Date();
+        clockContainer.currentDayAbbrev = Qt.formatDateTime(now, "ddd").slice(0, 3);
     }
 }
