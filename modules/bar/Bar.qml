@@ -134,9 +134,14 @@ PanelWindow {
                 id: cornerLeft
                 visible: Config.theme.enableCorners
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                x: 0
-                y: panel.position === "top" ? parent.height : -size
-                corner: panel.position === "top" ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.BottomLeft
+                x: panel.position === "left" ? parent.width : (panel.position === "right" ? -size : 0)
+                y: panel.position === "top" ? parent.height : (panel.position === "bottom" ? -size : 0)
+                corner: {
+                    if (panel.position === "top") return RoundCorner.CornerEnum.TopLeft
+                    if (panel.position === "bottom") return RoundCorner.CornerEnum.BottomLeft
+                    if (panel.position === "left") return RoundCorner.CornerEnum.TopLeft
+                    if (panel.position === "right") return RoundCorner.CornerEnum.TopRight
+                }
                 color: parent.color
             }
 
@@ -144,9 +149,14 @@ PanelWindow {
                 id: cornerRight
                 visible: Config.theme.enableCorners
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                x: parent.width - size
-                y: panel.position === "top" ? parent.height : -size
-                corner: panel.position === "top" ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.BottomRight
+                x: panel.position === "left" ? parent.width : (panel.position === "right" ? -size : parent.width - size)
+                y: panel.position === "top" ? parent.height : (panel.position === "bottom" ? -size : parent.height - size)
+                corner: {
+                    if (panel.position === "top") return RoundCorner.CornerEnum.TopRight
+                    if (panel.position === "bottom") return RoundCorner.CornerEnum.BottomRight
+                    if (panel.position === "left") return RoundCorner.CornerEnum.BottomLeft
+                    if (panel.position === "right") return RoundCorner.CornerEnum.BottomRight
+                }
                 color: parent.color
             }
         }
@@ -176,9 +186,14 @@ PanelWindow {
                 id: shadowCornerLeft
                 visible: Config.theme.enableCorners
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                x: 0
-                y: panel.position === "top" ? parent.height : -size
-                corner: panel.position === "top" ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.BottomLeft
+                x: panel.position === "left" ? parent.width : (panel.position === "right" ? -size : 0)
+                y: panel.position === "top" ? parent.height : (panel.position === "bottom" ? -size : 0)
+                corner: {
+                    if (panel.position === "top") return RoundCorner.CornerEnum.TopLeft
+                    if (panel.position === "bottom") return RoundCorner.CornerEnum.BottomLeft
+                    if (panel.position === "left") return RoundCorner.CornerEnum.TopLeft
+                    if (panel.position === "right") return RoundCorner.CornerEnum.TopRight
+                }
                 color: parent.color
             }
 
@@ -186,9 +201,14 @@ PanelWindow {
                 id: shadowCornerRight
                 visible: Config.theme.enableCorners
                 size: Config.roundness > 0 ? Config.roundness + 4 : 0
-                x: parent.width - size
-                y: panel.position === "top" ? parent.height : -size
-                corner: panel.position === "top" ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.BottomRight
+                x: panel.position === "left" ? parent.width : (panel.position === "right" ? -size : parent.width - size)
+                y: panel.position === "top" ? parent.height : (panel.position === "bottom" ? -size : parent.height - size)
+                corner: {
+                    if (panel.position === "top") return RoundCorner.CornerEnum.TopRight
+                    if (panel.position === "bottom") return RoundCorner.CornerEnum.BottomRight
+                    if (panel.position === "left") return RoundCorner.CornerEnum.BottomLeft
+                    if (panel.position === "right") return RoundCorner.CornerEnum.BottomRight
+                }
                 color: parent.color
             }
         }
