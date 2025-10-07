@@ -37,8 +37,7 @@ Rectangle {
                     width: parent.width
                     spacing: 8
 
-                    PaneRect {
-                        id: player
+                    FullPlayer {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 150
                     }
