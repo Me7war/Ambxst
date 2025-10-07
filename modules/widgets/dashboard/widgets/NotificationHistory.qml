@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell.Widgets
 import qs.modules.theme
@@ -12,14 +11,20 @@ ClippingRectangle {
     radius: Config.roundness > 0 ? Config.roundness + 4 : 0
     clip: true
 
-    ScrollView {
+    Flickable {
         anchors.fill: parent
         anchors.margins: 4
+        contentWidth: width
+        contentHeight: notificationList.contentHeight
+        clip: true
 
         ListView {
             id: notificationList
+            width: parent.width
+            height: contentHeight
             spacing: 4
             model: Notifications.appNameList
+            interactive: false
 
             delegate: NotificationGroup {
                 required property int index
