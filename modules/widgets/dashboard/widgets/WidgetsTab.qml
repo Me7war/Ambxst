@@ -39,7 +39,7 @@ Rectangle {
 
                     FullPlayer {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 150
+                        // Layout.preferredHeight: 90
                     }
 
                     PaneRect {
