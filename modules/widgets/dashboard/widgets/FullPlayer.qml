@@ -11,11 +11,24 @@ import qs.config
 PaneRect {
     id: player
 
-    height: layout.implicitHeight + layout.anchors.margins
+    height: layout.implicitHeight + layout.anchors.margins * 2
 
     property bool isPlaying: MprisController.activePlayer?.playbackState === MprisPlaybackState.Playing
     property real position: MprisController.activePlayer?.position ?? 0.0
     property real length: MprisController.activePlayer?.length ?? 1.0
+
+    function formatTime(seconds) {
+        const totalSeconds = Math.floor(seconds);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const secs = totalSeconds % 60;
+
+        if (hours > 0) {
+            return hours + ":" + (minutes < 10 ? "0" : "") + minutes + ":" + (secs < 10 ? "0" : "") + secs;
+        } else {
+            return minutes + ":" + (secs < 10 ? "0" : "") + secs;
+        }
+    }
 
     Timer {
         running: player.isPlaying
@@ -61,7 +74,7 @@ PaneRect {
             id: layout
             anchors.fill: parent
             anchors.margins: 16
-            spacing: 16
+            spacing: 8
 
             RowLayout {
                 Layout.fillWidth: true
@@ -94,6 +107,30 @@ PaneRect {
                         opacity: 0.7
                         elide: Text.ElideRight
                         visible: text !== ""
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 4
+
+                        Text {
+                            text: player.formatTime(player.position)
+                            textFormat: Text.PlainText
+                            color: Colors.whiteSource
+                            font.pixelSize: Config.theme.fontSize
+                            font.family: Config.theme.font
+                            visible: MprisController.activePlayer !== null
+                        }
+
+                        Text {
+                            text: "/ " + player.formatTime(player.length)
+                            textFormat: Text.PlainText
+                            color: Colors.whiteSource
+                            font.pixelSize: Config.theme.fontSize
+                            font.family: Config.theme.font
+                            opacity: 0.5
+                            visible: MprisController.activePlayer !== null
+                        }
                     }
                 }
 
@@ -237,7 +274,7 @@ PaneRect {
                         color: Colors.primaryFixed
                         visible: !player.isPlaying && MprisController.activePlayer
                         opacity: visible ? 1.0 : 0.0
-                        
+
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: Config.animDuration
