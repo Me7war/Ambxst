@@ -84,6 +84,7 @@ function getCalendarLayout(dateObject, highlight) {
     }
     var calendar = [...Array(6)].map(() => Array(7));
     var i = 0, j = 0;
+    var currentWeekRow = -1;
     while (i < 6 && j < 7) {
         calendar[i][j] = {
             "day": toFill,
@@ -92,6 +93,9 @@ function getCalendarLayout(dateObject, highlight) {
                     -1
             ))
         };
+        if (toFill == day && monthDiff == 0 && highlight) {
+            currentWeekRow = i;
+        }
         // Increment
         toFill++;
         if (toFill > dim) { // Next month?
@@ -110,5 +114,5 @@ function getCalendarLayout(dateObject, highlight) {
         }
 
     }
-    return calendar;
+    return { calendar: calendar, currentWeekRow: currentWeekRow };
 }

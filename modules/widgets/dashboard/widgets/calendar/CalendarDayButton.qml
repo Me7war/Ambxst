@@ -10,17 +10,20 @@ Rectangle {
     required property string day
     required property int isToday
     property bool bold: false
+    property bool isCurrentDayOfWeek: false
 
     Layout.fillWidth: true
     Layout.fillHeight: false
     Layout.preferredWidth: 32
     Layout.preferredHeight: 32
 
-    color: Colors.background
+    color: "transparent"
     radius: Config.roundness > 0 ? Config.roundness - 2 : 0
 
     Rectangle {
-        anchors.fill: parent
+        anchors.centerIn: parent
+        width: Math.min(parent.width, parent.height)
+        height: width
         color: (isToday === 1) ? Colors.primary : "transparent"
         radius: parent.radius
 
@@ -32,10 +35,16 @@ Rectangle {
             font.weight: Font.Bold
             font.pixelSize: Config.theme.fontSize
             font.family: Config.defaultFont
-            color: (isToday === 1) ? Colors.overPrimary : (isToday === 0) ? Colors.overSurface : Colors.surfaceBright
-
-            layer.enabled: true
-            layer.effect: BgShadow {}
+            color: {
+                if (isToday === 1)
+                    return Colors.overPrimary;
+                if (bold) {
+                    return isCurrentDayOfWeek ? Colors.overBackground : Colors.outline;
+                }
+                if (isToday === 0)
+                    return Colors.overSurface;
+                return Colors.surfaceBright;
+            }
 
             Behavior on color {
                 ColorAnimation {

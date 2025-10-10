@@ -10,7 +10,14 @@ PaneRect {
 
     property int monthShift: 0
     property var viewingDate: CalendarLayout.getDateInXMonthsTime(monthShift)
-    property var calendarLayout: CalendarLayout.getCalendarLayout(viewingDate, monthShift === 0)
+    property var calendarLayoutData: CalendarLayout.getCalendarLayout(viewingDate, monthShift === 0)
+    property var calendarLayout: calendarLayoutData.calendar
+    property int currentWeekRow: calendarLayoutData.currentWeekRow
+    property int currentDayOfWeek: {
+        if (monthShift !== 0) return -1;
+        var now = new Date();
+        return (now.getDay() + 6) % 7;
+    }
     property var weekDays: [
         {
             day: 'Mo',
@@ -42,16 +49,7 @@ PaneRect {
         }
     ]
 
-    MouseArea {
-        anchors.fill: parent
-        onWheel: event => {
-            if (event.angleDelta.y > 0) {
-                monthShift--;
-            } else if (event.angleDelta.y < 0) {
-                monthShift++;
-            }
-        }
-    }
+
 
     ColumnLayout {
         id: calendarColumn
@@ -164,26 +162,34 @@ PaneRect {
                             day: root.weekDays[index].day
                             isToday: root.weekDays[index].today
                             bold: true
+                            isCurrentDayOfWeek: index === root.currentDayOfWeek
                         }
                     }
                 }
 
                 Repeater {
                     model: 6
-                    delegate: RowLayout {
+                    delegate: Rectangle {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignHCenter
-                        Layout.topMargin: -8
+                        Layout.preferredHeight: 32
+                        color: (rowIndex === root.currentWeekRow) ? Colors.surface : "transparent"
+                        radius: Config.roundness > 0 ? Config.roundness - 4 : 0
 
                         required property int index
                         property int rowIndex: index
 
-                        Repeater {
-                            model: 7
-                            delegate: CalendarDayButton {
-                                required property int index
-                                day: calendarLayout[rowIndex][index].day
-                                isToday: calendarLayout[rowIndex][index].today
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: 0
+
+                            Repeater {
+                                model: 7
+                                delegate: CalendarDayButton {
+                                    required property int index
+                                    day: calendarLayout[rowIndex][index].day
+                                    isToday: calendarLayout[rowIndex][index].today
+                                }
                             }
                         }
                     }
