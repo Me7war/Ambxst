@@ -29,7 +29,7 @@ Canvas {
 
     Timer {
         id: animationTimer
-        interval: 42 // ~24 FPS
+        interval: 50 // ~20 FPS for better performance
         running: false
         repeat: true
         onTriggered: {
@@ -45,13 +45,15 @@ Canvas {
             return;
 
         var ctx = getContext("2d");
-
         ctx.save();
         ctx.clearRect(0, 0, width, height);
 
+        // Cache invariants for this paint call
         var amplitude = root.lineWidth * root.amplitudeMultiplier;
         var frequency = root.frequency;
         var centerY = height / 2;
+        var numSegments = Math.max(200, Math.min(500, width / 4)); // Adaptive segments for quality/performance
+        var step = (width - root.lineWidth) / numSegments;
 
         ctx.strokeStyle = root.color;
         ctx.lineWidth = root.lineWidth;
@@ -59,9 +61,10 @@ Canvas {
         ctx.lineJoin = "round";
         ctx.beginPath();
 
-        for (var x = ctx.lineWidth / 2; x <= root.width - ctx.lineWidth / 2; x += 2) {
+        for (var i = 0; i <= numSegments; i++) {
+            var x = root.lineWidth / 2 + i * step;
             var waveY = centerY + amplitude * Math.sin(frequency * 2 * Math.PI * x / root.fullLength + root.phase);
-            if (x === ctx.lineWidth / 2)
+            if (i === 0)
                 ctx.moveTo(x, waveY);
             else
                 ctx.lineTo(x, waveY);
