@@ -166,9 +166,10 @@ PanelWindow {
 
             RowLayout {
                 spacing: 4
-                VolumeSlider {
-                    id: volume
-                }
+                 VolumeSlider {
+                     id: volume
+                     bar: panel
+                 }
                 SysTray {
                     bar: panel
                 }
@@ -219,7 +220,9 @@ PanelWindow {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                VolumeSlider {}
+                 VolumeSlider {
+                     bar: panel
+                 }
                 SysTray {
                     bar: panel
                 }

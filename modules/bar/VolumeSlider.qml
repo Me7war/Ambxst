@@ -6,11 +6,19 @@ import qs.modules.theme
 
 Item {
     id: root
-    Layout.preferredWidth: 128
-    Layout.fillHeight: true
 
-    // required property var bar
-    // property bool vertical: bar.orientation === "vertical"
+    required property var bar
+
+    // Orientación derivada de la barra
+    property bool vertical: bar.orientation === "vertical"
+
+    // Ajustes de tamaño dinámicos según orientación
+    implicitWidth: root.vertical ? 4 : 128
+    implicitHeight: root.vertical ? 128 : 4
+    Layout.preferredWidth: root.vertical ? 4 : 128
+    Layout.preferredHeight: root.vertical ? 128 : 4
+    Layout.fillWidth: root.vertical
+    Layout.fillHeight: !root.vertical
 
     Component.onCompleted: volumeSlider.value = Audio.sink?.audio?.volume ?? 0
 
@@ -32,10 +40,12 @@ Item {
             id: volumeSlider
             anchors.fill: parent
             anchors.margins: 8
+            vertical: root.vertical
             value: 0
             wavy: true
-            wavyAmplitude: Audio.sink?.audio?.muted ? 0.5 : 2.0 * value
-            wavyFrequency: Audio.sink?.audio?.muted ? 1.0 : 10.0 * value
+            wavyAmplitude: Audio.sink?.audio?.muted ? 0.5 : 1.5 * value
+            wavyFrequency: Audio.sink?.audio?.muted ? 1.0 : 8.0 * value
+            iconPos: root.vertical ? "end" : "start"
             icon: {
                 if (Audio.sink?.audio?.muted)
                     return Icons.speakerSlash;
