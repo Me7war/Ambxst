@@ -74,6 +74,11 @@ QtObject {
     readonly property string speakerNone: ""
     readonly property string speakerLow: ""
     readonly property string speakerHigh: ""
+    // Keyboard
+    readonly property string keyboard: ""
+    readonly property string backspace: ""
+    readonly property string enter: ""
+    readonly property string shift: ""
     // Misc
     readonly property string accept: ""
     readonly property string cancel: ""
