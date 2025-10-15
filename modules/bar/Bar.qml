@@ -144,46 +144,40 @@ PanelWindow {
             anchors.margins: 4
             spacing: 4
 
-            RowLayout {
-                spacing: 4
-                LauncherButton {
-                    id: launcherButton
+            LauncherButton {
+                id: launcherButton
+            }
+            Workspaces {
+                orientation: panel.orientation
+                bar: QtObject {
+                    property var screen: panel.screen
                 }
-                Workspaces {
-                    orientation: panel.orientation
-                    bar: QtObject {
-                        property var screen: panel.screen
-                    }
-                }
-                OverviewButton {
-                    id: overviewButton
-                }
+            }
+            OverviewButton {
+                id: overviewButton
             }
 
             Item {
                 Layout.fillWidth: true
             }
 
-            RowLayout {
-                spacing: 4
-                 VolumeSlider {
-                     id: volume
-                     bar: panel
-                 }
-                SysTray {
-                    bar: panel
-                }
-                Weather {
-                    id: weatherComponent
-                    bar: panel
-                }
-                Clock {
-                    id: clockComponent
-                    bar: panel
-                }
-                PowerButton {
-                    id: powerButton
-                }
+            VolumeSlider {
+                id: volume
+                bar: panel
+            }
+            SysTray {
+                bar: panel
+            }
+            Weather {
+                id: weatherComponent
+                bar: panel
+            }
+            Clock {
+                id: clockComponent
+                bar: panel
+            }
+            PowerButton {
+                id: powerButton
             }
         }
 
@@ -194,50 +188,42 @@ PanelWindow {
             anchors.margins: 4
             spacing: 4
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 4
-                LauncherButton {
-                    id: launcherButtonVert
-                    Layout.preferredHeight: 36
+            LauncherButton {
+                id: launcherButtonVert
+                Layout.preferredHeight: 36
+            }
+            Workspaces {
+                orientation: panel.orientation
+                bar: QtObject {
+                    property var screen: panel.screen
                 }
-                Workspaces {
-                    orientation: panel.orientation
-                    bar: QtObject {
-                        property var screen: panel.screen
-                    }
-                }
-                OverviewButton {
-                    id: overviewButtonVert
-                    Layout.preferredHeight: 36
-                }
+            }
+            OverviewButton {
+                id: overviewButtonVert
+                Layout.preferredHeight: 36
             }
 
             Item {
                 Layout.fillHeight: true
             }
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 4
-                 VolumeSlider {
-                     bar: panel
-                 }
-                SysTray {
-                    bar: panel
-                }
-                Weather {
-                    id: weatherComponentVert
-                    bar: panel
-                }
-                Clock {
-                    id: clockComponentVert
-                    bar: panel
-                }
-                PowerButton {
-                    id: powerButtonVert
-                    Layout.preferredHeight: 36
-                }
+            VolumeSlider {
+                bar: panel
+            }
+            SysTray {
+                bar: panel
+            }
+            Weather {
+                id: weatherComponentVert
+                bar: panel
+            }
+            Clock {
+                id: clockComponentVert
+                bar: panel
+            }
+            PowerButton {
+                id: powerButtonVert
+                Layout.preferredHeight: 36
             }
         }
     }
