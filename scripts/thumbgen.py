@@ -85,18 +85,19 @@ class ThumbnailGenerator:
             return False
     
     def find_files(self) -> Tuple[List[Path], List[Path], List[Path]]:
-        """Find all media files in wallpaper directory."""
+        """Find all media files in wallpaper directory and subdirectories."""
         videos = []
         images = []
         gifs = []
-        
+
         if self.wall_path is None:
             print("ERROR: wall_path not initialized")
             return [], [], []
-        
+
         try:
-            for file_path in self.wall_path.iterdir():
-                if file_path.is_file():
+            # Recursively find all files in wallpaper directory and subdirectories
+            for file_path in self.wall_path.rglob('*'):
+                if file_path.is_file() and not file_path.name.startswith('.'):
                     ext = file_path.suffix.lower()
                     if ext in VIDEO_EXTENSIONS:
                         videos.append(file_path)
@@ -104,15 +105,15 @@ class ThumbnailGenerator:
                         images.append(file_path)
                     elif ext in GIF_EXTENSIONS:
                         gifs.append(file_path)
-                        
+
             # Sort all lists for consistent ordering
             videos.sort()
             images.sort()
             gifs.sort()
-            
+
             print(f"✓ Found {len(videos)} videos, {len(images)} images, {len(gifs)} GIFs")
             return videos, images, gifs
-            
+
         except Exception as e:
             print(f"ERROR scanning directory: {e}")
             return [], [], []

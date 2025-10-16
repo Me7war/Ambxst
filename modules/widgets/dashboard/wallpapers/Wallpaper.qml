@@ -96,7 +96,8 @@ PanelWindow {
     }
 
     function getSubfolderFromPath(filePath) {
-        var relativePath = filePath.replace(wallpaperDir + "/", "");
+        var basePath = wallpaperDir.endsWith("/") ? wallpaperDir : wallpaperDir + "/";
+        var relativePath = filePath.replace(basePath, "");
         var parts = relativePath.split("/");
         if (parts.length > 1) {
             return parts[0];
@@ -436,10 +437,10 @@ PanelWindow {
         // Remove onLoadFailed to prevent premature fallback activation
     }
 
-    Process {
-        id: scanWallpapers
-        running: false
-        command: ["find", wallpaperDir, "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"]
+     Process {
+         id: scanWallpapers
+         running: false
+         command: ["find", wallpaperDir, "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"]
 
         stdout: StdioCollector {
             onStreamFinished: {
