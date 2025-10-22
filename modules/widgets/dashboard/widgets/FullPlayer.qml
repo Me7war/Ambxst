@@ -160,7 +160,6 @@ PaneRect {
                         color: player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground
                         font.pixelSize: Config.theme.fontSize
                         font.family: Config.theme.font
-                        // opacity: 0.7
                         elide: Text.ElideRight
                         visible: text !== ""
                     }

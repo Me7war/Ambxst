@@ -157,8 +157,6 @@ Item {
                         anchors.centerIn: parent
                         text: compactPlayer.isPlaying ? Icons.pause : Icons.play
                         textFormat: Text.RichText
-                        // --- CAMBIO 2: SIMPLIFICADO ---
-                        // Ahora usamos PlayerColors directamente, condicionado por hasArtwork.
                         color: playPauseHover.hovered ? (hasArtwork ? PlayerColors.primary : Colors.primary) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
                         font.pixelSize: 16
                         font.family: Icons.font
@@ -206,7 +204,6 @@ Item {
                 id: previousBtn
                 text: Icons.previous
                 textFormat: Text.RichText
-                // --- CAMBIO 2: SIMPLIFICADO ---
                 color: previousHover.hovered ? (hasArtwork ? PlayerColors.primary : Colors.primary) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
                 font.pixelSize: 16
                 font.family: Icons.font
@@ -272,7 +269,6 @@ Item {
                 id: nextBtn
                 text: Icons.next
                 textFormat: Text.RichText
-                // --- CAMBIO 2: SIMPLIFICADO ---
                 color: nextHover.hovered ? (hasArtwork ? PlayerColors.primary : Colors.primary) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
                 font.pixelSize: 16
                 font.family: Icons.font
@@ -337,7 +333,6 @@ Item {
                     }
                 }
                 textFormat: Text.RichText
-                // --- CAMBIO 2: SIMPLIFICADO ---
                 color: modeHover.hovered ? (hasArtwork ? PlayerColors.primary : Colors.primary) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
                 font.pixelSize: 16
                 font.family: Icons.font
@@ -421,7 +416,6 @@ Item {
                     return Icons.player;
                 }
                 textFormat: Text.RichText
-                // --- CAMBIO 2: SIMPLIFICADO ---
                 color: playerIconHover.hovered ? (hasArtwork ? PlayerColors.primary : Colors.primary) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
                 font.pixelSize: 20
                 font.family: Icons.font
@@ -473,9 +467,6 @@ Item {
                     const menuItems = [];
                     for (let i = 0; i < players.length; i++) {
                         const player = players[i];
-                        // --- CAMBIO 3: SIMPLIFICADO ---
-                        // Ya no se generan colores para cada player en el menú.
-                        // Se usan los colores del player activo (o los de por defecto) para todo el menú.
                         menuItems.push({
                             text: player.trackTitle || player.identity || "Unknown Player",
                             icon: getPlayerIcon(player),

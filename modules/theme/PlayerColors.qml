@@ -44,7 +44,6 @@ Item {
     property color shadow: colorsView.adapter.shadow
     property color sourceColor: colorsView.adapter.sourceColor
 
-    // --- Toda la lógica está ahora dentro del 'Item' raíz ---
     function runMatugen(artworkUrl) {
         if (!artworkUrl || artworkUrl === "")
             return;
