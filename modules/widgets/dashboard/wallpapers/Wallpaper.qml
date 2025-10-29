@@ -31,9 +31,9 @@ PanelWindow {
     property bool usingFallback: false
     property string currentMatugenScheme: wallpaperConfig.adapter.matugenScheme
 
-    onCurrentMatugenSchemeChanged: {
-        // Optional: Add any logic if needed when scheme changes
-    }
+    onCurrentMatugenSchemeChanged:
+    // Optional: Add any logic if needed when scheme changes
+    {}
 
     // Funciones utilitarias para tipos de archivo
     function getFileType(path) {
@@ -52,13 +52,13 @@ PanelWindow {
         // Compute relative path from wallpaperDir
         var basePath = wallpaperDir.endsWith("/") ? wallpaperDir : wallpaperDir + "/";
         var relativePath = filePath.replace(basePath, "");
-        
+
         // Replace the filename with .jpg extension
         var pathParts = relativePath.split('/');
         var fileName = pathParts.pop();
         var thumbnailName = fileName + ".jpg";
         var relativeDir = pathParts.join('/');
-        
+
         // Build the proxy path
         var thumbnailPath = Quickshell.dataDir + "/thumbnails/" + relativeDir + "/" + thumbnailName;
         return thumbnailPath;
@@ -162,12 +162,12 @@ PanelWindow {
     }
 
     // Función para re-ejecutar Matugen con el wallpaper actual
-     function setMatugenScheme(scheme) {
-         wallpaperConfig.adapter.matugenScheme = scheme;
-         runMatugenForCurrentWallpaper();
-     }
+    function setMatugenScheme(scheme) {
+        wallpaperConfig.adapter.matugenScheme = scheme;
+        runMatugenForCurrentWallpaper();
+    }
 
-     function runMatugenForCurrentWallpaper() {
+    function runMatugenForCurrentWallpaper() {
         if (currentWallpaper && initialLoadCompleted) {
             console.log("Running Matugen for current wallpaper:", currentWallpaper);
 
@@ -176,21 +176,21 @@ PanelWindow {
 
             console.log("Using source for matugen:", matugenSource, "(type:", fileType + ")");
 
-              // Ejecutar matugen con configuración específica
-              var commandWithConfig = ["matugen", "image", matugenSource, "-c", Qt.resolvedUrl("../../../../assets/matugen/config.toml").toString().replace("file://", ""), "-t", wallpaperConfig.adapter.matugenScheme];
-             if (Config.theme.lightMode) {
-                 commandWithConfig.push("-m", "light");
-             }
-             matugenProcessWithConfig.command = commandWithConfig;
-             matugenProcessWithConfig.running = true;
+            // Ejecutar matugen con configuración específica
+            var commandWithConfig = ["matugen", "image", matugenSource, "-c", Qt.resolvedUrl("../../../../assets/matugen/config.toml").toString().replace("file://", ""), "-t", wallpaperConfig.adapter.matugenScheme];
+            if (Config.theme.lightMode) {
+                commandWithConfig.push("-m", "light");
+            }
+            matugenProcessWithConfig.command = commandWithConfig;
+            matugenProcessWithConfig.running = true;
 
-              // Ejecutar matugen normal en paralelo
-              var commandNormal = ["matugen", "image", matugenSource, "-t", wallpaperConfig.adapter.matugenScheme];
-             if (Config.theme.lightMode) {
-                 commandNormal.push("-m", "light");
-             }
-             matugenProcessNormal.command = commandNormal;
-             matugenProcessNormal.running = true;
+            // Ejecutar matugen normal en paralelo
+            var commandNormal = ["matugen", "image", matugenSource, "-t", wallpaperConfig.adapter.matugenScheme];
+            if (Config.theme.lightMode) {
+                commandNormal.push("-m", "light");
+            }
+            matugenProcessNormal.command = commandNormal;
+            matugenProcessNormal.running = true;
         }
     }
 
@@ -219,20 +219,22 @@ PanelWindow {
         watchChanges: true
 
         onFileChanged: reload()
-         onAdapterUpdated: {
-             // Ensure matugenScheme has a default value
-             if (!wallpaperConfig.adapter.matugenScheme) {
-                 wallpaperConfig.adapter.matugenScheme = "scheme-tonal-spot";
-             }
-             // Update the currentMatugenScheme property to trigger UI updates
-             currentMatugenScheme = Qt.binding(function() { return wallpaperConfig.adapter.matugenScheme; });
-             writeAdapter();
-         }
+        onAdapterUpdated: {
+            // Ensure matugenScheme has a default value
+            if (!wallpaperConfig.adapter.matugenScheme) {
+                wallpaperConfig.adapter.matugenScheme = "scheme-tonal-spot";
+            }
+            // Update the currentMatugenScheme property to trigger UI updates
+            currentMatugenScheme = Qt.binding(function () {
+                return wallpaperConfig.adapter.matugenScheme;
+            });
+            writeAdapter();
+        }
 
-         JsonAdapter {
-             property string currentWall: ""
-             property string wallPath: ""
-             property string matugenScheme: "scheme-tonal-spot"
+        JsonAdapter {
+            property string currentWall: ""
+            property string wallPath: ""
+            property string matugenScheme: "scheme-tonal-spot"
 
             onCurrentWallChanged: {
                 console.log("DEBUG: currentWall changed to:", currentWall);
@@ -432,10 +434,10 @@ PanelWindow {
         // Remove onLoadFailed to prevent premature fallback activation
     }
 
-     Process {
-         id: scanWallpapers
-         running: false
-         command: ["find", wallpaperDir, "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"]
+    Process {
+        id: scanWallpapers
+        running: false
+        command: ["find", wallpaperDir, "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"]
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -560,7 +562,7 @@ PanelWindow {
         Process {
             id: killMpvpaperProcess
             running: false
-            command: ["killall", "mpvpaper"]
+            command: ["pkill", "-f", "mpvpaper"]
 
             onExited: function (exitCode) {
                 console.log("Killed mpvpaper processes, exit code:", exitCode);
@@ -681,9 +683,9 @@ PanelWindow {
                     }
                 }
 
-                Component.onDestruction: {
-                    // mpvpaper script handles killing previous instances
-                }
+                Component.onDestruction:
+                // mpvpaper script handles killing previous instances
+                {}
 
                 Process {
                     id: mpvpaperProcess

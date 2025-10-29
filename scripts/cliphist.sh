@@ -17,9 +17,7 @@ ensure_watcher() {
     local type="$1"
     local pattern="wl-paste --type ${type} --watch cliphist store"
 
-    if pgrep -f "$pattern" >/dev/null 2>&1; then
-        return
-    fi
+    pkill -f "$pattern" >/dev/null 2>&1 || true
 
     nohup wl-paste --type "$type" --watch cliphist store >/dev/null 2>&1 &
 }
