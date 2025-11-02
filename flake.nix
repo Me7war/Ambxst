@@ -26,10 +26,7 @@
       };
 
       lib = nixpkgs.lib;
-
-      # Detect NixOS (nixos config only exists when NixOS imports us)
       isNixOS = pkgs ? config && pkgs.config ? nixosConfig;
-
       nixGL = nixgl.packages.${system}.nixGLDefault;
 
       wrapWithNixGL = pkg:
@@ -54,13 +51,9 @@
 
         brightnessctl
         ddcutil
-
         wl-clipboard
         cliphist
-
-        # nixGL solo en non-NixOS
-        ] ++ (if isNixOS then [] else [ nixGL ])
-        ++ (with pkgs; [
+      ] ++ (if isNixOS then [] else [ nixGL ]) ++ (with pkgs; [
         mesa
         libglvnd
         egl-wayland
@@ -72,7 +65,6 @@
         qt6.qtwayland
         qt6.qtdeclarative
         qt6.qtimageformats
-        qt6.qtwebengine
 
         kdePackages.breeze-icons
         hicolor-icon-theme
@@ -81,92 +73,28 @@
         imagemagick
         matugen
         ffmpeg
-
         playerctl
-        xdg-desktop-portal
-        xdg-desktop-portal-hyprland
 
         pipewire
         wireplumber
       ]);
 
-      envCore = pkgs.buildEnv {
-        name = "ambxst-env-core";
+      envAmbxst = pkgs.buildEnv {
+        name = "Ambxst-env";
         paths = baseEnv;
       };
 
-      hyprFullDeps = with pkgs; [
-        (wrapWithNixGL hyprland)
-        uwsm
-      ];
-
-      envFull = pkgs.buildEnv {
-        name = "ambxst-env-full";
-        paths = baseEnv ++ hyprFullDeps;
-      };
-
-      # launcher
       launcher = pkgs.writeShellScriptBin "ambxst" ''
         exec ${lib.optionalString (!isNixOS) "${nixGL}/bin/nixGL "}${pkgs.quickshell}/bin/qs -p ${self}/shell.qml
       '';
 
-      # Hyprland session scripts (nixGL removed automatically if NixOS)
-      ambxrlandBin = pkgs.writeShellScriptBin "Ambxrland" ''
-        exec ${lib.optionalString (!isNixOS) "${nixGL}/bin/nixGL "}${pkgs.hyprland}/bin/Hyprland -c ~/.config/hypr/hyprland.conf
-      '';
-
-      ambxrlandBinLower = pkgs.writeShellScriptBin "ambxrland" ''
-        exec Ambxrland
-      '';
-
-      ambxrlandSession = pkgs.writeTextFile {
-        name = "Ambxrland.desktop";
-        destination = "/share/wayland-sessions/Ambxrland.desktop";
-        text = ''
-[Desktop Entry]
-Name=Ambxrland
-Comment=Ambxrland session (Hyprland)
-Exec=Ambxrland
-TryExec=Ambxrland
-Type=Application
-DesktopNames=Ambxrland
-        '';
-      };
-
-      ambxrlandSessionUwsm = pkgs.writeTextFile {
-        name = "Ambxrland-uwsm.desktop";
-        destination = "/share/wayland-sessions/Ambxrland-uwsm.desktop";
-        text = ''
-[Desktop Entry]
-Name=Ambxrland (uwsm)
-Comment=Ambxrland with uwsm
-Exec=uwsm start -- Ambxrland.desktop
-TryExec=uwsm
-Type=Application
-DesktopNames=Ambxrland
-        '';
-      };
-
-      core = pkgs.buildEnv {
-        name = "ambxst-core";
-        paths = [ envCore launcher ];
-      };
-
-      full = pkgs.buildEnv {
-        name = "ambxst-full";
-        paths = [
-          envFull
-          launcher
-          ambxrlandBin
-          ambxrlandBinLower
-          ambxrlandSession
-          ambxrlandSessionUwsm
-        ];
+      Ambxst = pkgs.buildEnv {
+        name = "Ambxst";
+        paths = [ envAmbxst launcher ];
       };
     in {
-      default = full;
-      ambxst-core = core;
-      ambxst-full = full;
+      default = Ambxst;
+      Ambxst = Ambxst;
     });
   };
 }
