@@ -19,6 +19,12 @@
     forAllSystems = f:
       builtins.foldl' (acc: system: acc // { ${system} = f system; }) {} linuxSystems;
   in {
+    nixosModules.default = { config, lib, ... }: {
+      config = lib.mkIf (!config.networking.networkmanager.enable) {
+        networking.networkmanager.enable = lib.mkDefault true;
+      };
+    };
+
     packages = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
