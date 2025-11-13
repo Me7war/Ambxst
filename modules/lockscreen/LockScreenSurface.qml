@@ -14,23 +14,19 @@ import qs.modules.widgets.dashboard.widgets
 import qs.config
 
 // Lock surface UI - shown on each screen when locked
-Rectangle {
+WlSessionLockSurface {
     id: root
 
-    property bool ready: false
-    property bool captureReady: false
-    property bool unlocking: false
+    property bool startAnim: false
     property bool authenticating: false
     property string errorMessage: ""
     property int failLockSecondsLeft: 0
 
-    // Hide everything until capture is ready to prevent white flash
-    // Keep black during unlock animation
-    color: (captureReady && !unlocking) ? "transparent" : "black"
+    color: startAnim ? "transparent" : "black"
     
     Behavior on color {
         ColorAnimation {
-            duration: 150
+            duration: Config.animDuration
             easing.type: Easing.OutCubic
         }
     }
@@ -39,20 +35,7 @@ Rectangle {
     ScreencopyView {
         id: screencopyBackground
         anchors.fill: parent
-        captureSource: {
-            // Try to get screen from Window attached property
-            if (Window.window && Window.window.screen) {
-                console.log("Using Window.window.screen");
-                return Window.window.screen;
-            }
-            // Fallback to first screen if available
-            if (Quickshell.screens && Quickshell.screens.length > 0) {
-                console.log("Fallback to Quickshell.screens[0]");
-                return Quickshell.screens[0];
-            }
-            console.warn("No screen available for capture");
-            return null;
-        }
+        captureSource: root.screen
         live: false
         paintCursor: false
         visible: false
@@ -65,12 +48,12 @@ Rectangle {
         source: screencopyBackground
         autoPaddingEnabled: false
         blurEnabled: true
-        blur: 0
+        blur: startAnim ? 1 : 0
         blurMax: 64
-        visible: captureReady
-        opacity: (ready && !unlocking) ? 1 : 0
+        visible: true
+        opacity: startAnim ? 1 : 0
 
-        property real zoomScale: (ready && !unlocking) ? 1.1 : 1.0
+        property real zoomScale: startAnim ? 1.1 : 1.0
 
         transform: Scale {
             origin.x: blurEffect.width / 2
@@ -105,9 +88,9 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         color: "black"
-        opacity: (ready && !unlocking) ? 0.25 : 0
+        opacity: startAnim ? 0.25 : 0
 
-        property real zoomScale: (ready && !unlocking) ? 1.1 : 1.0
+        property real zoomScale: startAnim ? 1.1 : 1.0
 
         transform: Scale {
             origin.x: parent.width / 2
@@ -138,19 +121,32 @@ Rectangle {
             left: parent.left
             leftMargin: 32
             bottom: parent.bottom
-            bottomMargin: 32
+            bottomMargin: startAnim ? 32 : -80
         }
         width: 350
         height: playerContent.height
 
-        transform: Translate {
-            x: (ready && !unlocking) ? 0 : -(playerContainer.width + 32)
+        opacity: startAnim ? 1 : 0
+        scale: startAnim ? 1 : 0.9
 
-            Behavior on x {
-                NumberAnimation {
-                    duration: Config.animDuration
-                    easing.type: Easing.OutCubic
-                }
+        Behavior on anchors.bottomMargin {
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
             }
         }
 
@@ -166,19 +162,32 @@ Rectangle {
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
-            bottomMargin: 32
+            bottomMargin: startAnim ? 32 : -80
         }
         width: 350
         height: 96
 
-        transform: Translate {
-            y: (ready && !unlocking) ? 0 : passwordContainer.height + 32
+        opacity: startAnim ? 1 : 0
+        scale: startAnim ? 1 : 0.9
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Config.animDuration
-                    easing.type: Easing.OutCubic
-                }
+        Behavior on anchors.bottomMargin {
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
             }
         }
 
@@ -361,12 +370,6 @@ Rectangle {
                                 errorMessage = "";
                                 pamAuth.running = true;
                             }
-
-                            Component.onCompleted: {
-                                if (GlobalStates.lockscreenVisible) {
-                                    passwordInput.forceActiveFocus();
-                                }
-                            }
                         }
                     }
                 }
@@ -418,22 +421,11 @@ Rectangle {
         }
     }
 
-    // Timer to animate blur after capture
+    // Timer to unlock after exit animation
     Timer {
-        id: blurAnimTimer
-        interval: 50
-        onTriggered: {
-            blurEffect.blur = 1;
-        }
-    }
-
-    // Timer to reset unlocking state after animation starts
-    Timer {
-        id: unlockResetTimer
+        id: unlockTimer
         interval: Config.animDuration
         onTriggered: {
-            unlocking = false;
-            // Now actually unlock
             GlobalStates.lockscreenVisible = false;
         }
     }
@@ -522,12 +514,11 @@ Rectangle {
             authPasswordHolder.password = "";
 
             if (exitCode === 0) {
-                // Autenticación exitosa
-                unlocking = true;
-                ready = false; // Trigger exit animation
+                // Autenticación exitosa - trigger exit animation
+                startAnim = false;
                 
                 // Wait for exit animation, then unlock
-                unlockResetTimer.start();
+                unlockTimer.start();
                 
                 errorMessage = "";
                 authenticating = false;
@@ -622,24 +613,11 @@ Rectangle {
 
     // Initialize when component is created (when lock becomes active)
     Component.onCompleted: {
-        console.log("LockScreenSurface: Component created");
-        console.log("LockScreenSurface: Capturing screen...");
-        
         // Capture screen immediately
-        blurEffect.blur = 0;
         screencopyBackground.captureFrame();
         
-        // Wait a moment for capture to complete, then show with animation
-        Qt.callLater(() => {
-            captureReady = true;
-            console.log("LockScreenSurface: Capture ready, starting animations");
-            
-            // Small delay before starting animations for smoother appearance
-            Qt.callLater(() => {
-                ready = true;
-                blurAnimTimer.start();
-                passwordInput.forceActiveFocus();
-            });
-        });
+        // Start animations
+        startAnim = true;
+        passwordInput.forceActiveFocus();
     }
 }
