@@ -69,7 +69,6 @@ QtObject {
                 var hash = parts[1];
                 
                 if (hash && hash !== root._lastTextHash) {
-                    console.log("ClipboardService: Text clipboard changed, hash:", hash);
                     root._lastTextHash = hash;
                     root._pendingTmpFile = tmpFile;
                     readTmpFileProcess.running = true;
@@ -100,7 +99,6 @@ QtObject {
             onStreamFinished: {
                 var content = text;
                 if (content.length > 0) {
-                    console.log("ClipboardService: New text item detected, content length:", content.length);
                     // Pass the tmpFile directly to insertTextItem instead of content
                     root.insertTextItemFromFile(root._lastTextHash, root._pendingTmpFile);
                 }
@@ -144,7 +142,6 @@ QtObject {
             onStreamFinished: {
                 var hash = text.trim();
                 if (hash && hash !== root._lastImageHash) {
-                    console.log("ClipboardService: New image item detected, hash:", hash, "mime:", getImageHashProcess.mimeType);
                     root._lastImageHash = hash;
                     root.insertImageItem(hash, getImageHashProcess.mimeType);
                 }
@@ -211,7 +208,6 @@ QtObject {
         
         onExited: function(code) {
             if (code === 0) {
-                console.log("ClipboardService: Item inserted successfully");
                 Qt.callLater(root.list);
             } else {
                 console.warn("ClipboardService: insertProcess failed with code:", code);
@@ -237,7 +233,6 @@ QtObject {
         
         onExited: function(code) {
             if (code === 0) {
-                console.log("ClipboardService: Image saved, inserting into database");
                 var binaryPath = root.binaryDataDir + "/" + saveImageProcess.hash;
                 
                 // Use script to insert, with empty content
@@ -261,7 +256,6 @@ QtObject {
         
         onExited: function(code) {
             if (code === 0) {
-                console.log("ClipboardService: Image inserted successfully");
                 Qt.callLater(root.list);
             } else {
                 console.warn("ClipboardService: Failed to insert image into database");
@@ -364,8 +358,6 @@ QtObject {
     }
 
     function insertTextItemFromFile(hash, tmpFile) {
-        console.log("ClipboardService: insertTextItemFromFile called with hash:", hash, "file:", tmpFile);
-        
         // Call insert script with temp file
         insertProcess.itemHash = hash;
         insertProcess.tmpFile = tmpFile;
@@ -387,7 +379,6 @@ QtObject {
             onStreamFinished: {
                 var tmpFile = text.trim();
                 if (tmpFile.length > 0) {
-                    console.log("ClipboardService: Created temp file:", tmpFile);
                     // Now call insert script with temp file
                     insertProcess.itemHash = writeTmpProcess.itemHash;
                     insertProcess.tmpFile = tmpFile;
