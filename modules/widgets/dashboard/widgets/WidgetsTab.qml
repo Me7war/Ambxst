@@ -388,10 +388,11 @@ Rectangle {
         }
 
         // Separator
-        Rectangle {
+        Separator {
             Layout.preferredWidth: 2
             Layout.fillHeight: true
-            radius: Config.roundness
+            vert: true
+            gradient: null
             color: Colors.surface
         }
 

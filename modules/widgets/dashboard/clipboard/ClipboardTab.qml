@@ -1107,7 +1107,7 @@ Item {
                                 Text {
                                     text: "MIME Type"
                                     font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize - 2
+                                    font.pixelSize: Config.theme.fontSize
                                     font.weight: Font.Medium
                                     color: Colors.surfaceBright
                                 }
@@ -1130,7 +1130,7 @@ Item {
                                 Text {
                                     text: "Size"
                                     font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize - 2
+                                    font.pixelSize: Config.theme.fontSize
                                     font.weight: Font.Medium
                                     color: Colors.surfaceBright
                                 }
@@ -1164,7 +1164,7 @@ Item {
                                 Text {
                                     text: "Date"
                                     font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize - 2
+                                    font.pixelSize: Config.theme.fontSize
                                     font.weight: Font.Medium
                                     color: Colors.surfaceBright
                                 }
@@ -1201,7 +1201,7 @@ Item {
                                 Text {
                                     text: "Checksum"
                                     font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize - 2
+                                    font.pixelSize: Config.theme.fontSize
                                     font.weight: Font.Medium
                                     color: Colors.surfaceBright
                                 }

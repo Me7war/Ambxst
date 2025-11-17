@@ -274,10 +274,11 @@ NotchAnimationBehavior {
         }
 
         // Separator
-        Rectangle {
+        Separator {
             width: 2
             height: parent.height
-            radius: Config.roundness
+            vert: true
+            gradient: null
             color: Colors.surface
         }
 
