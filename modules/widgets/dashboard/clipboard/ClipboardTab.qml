@@ -2754,125 +2754,250 @@ Item {
                     width: parent.width
                     height: 80
 
-                    Column {
+                    Row {
                         anchors.fill: parent
-                        spacing: 4
+                        spacing: 8
 
-                        // Row 1: MIME and Size
-                        Row {
-                            width: parent.width
-                            spacing: 16
+                        Column {
+                            width: {
+                                var buttonsVisible = previewPanel.currentItem && (previewPanel.currentItem.isFile || ClipboardUtils.isUrl(root.currentFullContent || previewPanel.currentItem.preview));
+                                return parent.width - (buttonsVisible ? 56 : 0);
+                            }
+                            height: parent.height
+                            spacing: 4
 
-                            Column {
-                                width: (parent.width - parent.spacing) / 2
-                                spacing: 2
+                            // Row 1: MIME and Size
+                            Row {
+                                width: parent.width
+                                spacing: 16
 
-                                Text {
-                                    text: "MIME Type"
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Medium
-                                    color: Colors.outline
+                                Column {
+                                    width: (parent.width - parent.spacing) / 2
+                                    spacing: 2
+
+                                    Text {
+                                        text: "MIME Type"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Medium
+                                        color: Colors.outline
+                                    }
+
+                                    Text {
+                                        text: previewPanel.currentItem ? previewPanel.currentItem.mime : ""
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Bold
+                                        color: Colors.overBackground
+                                        elide: Text.ElideRight
+                                        width: parent.width
+                                    }
                                 }
 
-                                Text {
-                                    text: previewPanel.currentItem ? previewPanel.currentItem.mime : ""
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Bold
-                                    color: Colors.overBackground
-                                    elide: Text.ElideRight
-                                    width: parent.width
+                                Column {
+                                    width: (parent.width - parent.spacing) / 2
+                                    spacing: 2
+
+                                    Text {
+                                        text: "Size"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Medium
+                                        color: Colors.outline
+                                    }
+
+                                    Text {
+                                        text: {
+                                            if (!previewPanel.currentItem) return "";
+                                            var bytes = previewPanel.currentItem.size || 0;
+                                            if (bytes < 1024) return bytes + " B";
+                                            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+                                            return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+                                        }
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Bold
+                                        color: Colors.overBackground
+                                    }
                                 }
                             }
 
-                            Column {
-                                width: (parent.width - parent.spacing) / 2
-                                spacing: 2
+                            // Row 2: Date and Checksum
+                            Row {
+                                width: parent.width
+                                spacing: 16
 
-                                Text {
-                                    text: "Size"
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Medium
-                                    color: Colors.outline
+                                Column {
+                                    width: (parent.width - parent.spacing) / 2
+                                    spacing: 2
+
+                                    Text {
+                                        text: "Date"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Medium
+                                        color: Colors.outline
+                                    }
+
+                                    Text {
+                                        text: {
+                                            if (!previewPanel.currentItem || !previewPanel.currentItem.createdAt) return "Unknown";
+                                            var date = new Date(previewPanel.currentItem.createdAt);
+                                            return Qt.formatDateTime(date, "MMM dd, yyyy hh:mm:ss AP");
+                                        }
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Bold
+                                        color: Colors.overBackground
+                                    }
                                 }
 
-                                Text {
-                                    text: {
-                                        if (!previewPanel.currentItem) return "";
-                                        var bytes = previewPanel.currentItem.size || 0;
-                                        if (bytes < 1024) return bytes + " B";
-                                        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-                                        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+                                Column {
+                                    width: (parent.width - parent.spacing) / 2
+                                    spacing: 2
+
+                                    Text {
+                                        text: "Checksum"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Medium
+                                        color: Colors.outline
                                     }
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Bold
-                                    color: Colors.overBackground
+
+                                    Text {
+                                        text: {
+                                            if (!previewPanel.currentItem || !previewPanel.currentItem.hash)
+                                                return "N/A";
+                                            var hash = previewPanel.currentItem.hash;
+                                            // Show first 8 and last 8 characters
+                                            if (hash.length > 16) {
+                                                return hash.substring(0, 8) + "..." + hash.substring(hash.length - 8);
+                                            }
+                                            return hash;
+                                        }
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize
+                                        font.weight: Font.Bold
+                                        color: Colors.overBackground
+                                        elide: Text.ElideMiddle
+                                        width: parent.width
+                                    }
                                 }
                             }
                         }
 
-                        // Row 2: Date and Checksum
-                        Row {
-                            width: parent.width
-                            spacing: 16
+                        // Action buttons column (Open and Drag)
+                        Column {
+                            width: 48
+                            height: parent.height
+                            spacing: 4
+                            visible: previewPanel.currentItem
 
-                            Column {
-                                width: (parent.width - parent.spacing) / 2
-                                spacing: 2
+                            // Open button (only for files and URLs)
+                            Rectangle {
+                                width: 48
+                                height: 36
+                                color: metadataOpenButtonMouseArea.containsMouse ? Colors.surfaceBright : Colors.surface
+                                radius: Config.roundness
+                                visible: previewPanel.currentItem && (previewPanel.currentItem.isFile || ClipboardUtils.isUrl(root.currentFullContent || previewPanel.currentItem.preview))
+                                
+                                Behavior on color {
+                                    enabled: Config.animDuration > 0
+                                    ColorAnimation {
+                                        duration: Config.animDuration / 2
+                                        easing.type: Easing.OutQuart
+                                    }
+                                }
 
-                                Text {
-                                    text: "Date"
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Medium
-                                    color: Colors.outline
+                                MouseArea {
+                                    id: metadataOpenButtonMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    
+                                    onClicked: {
+                                        if (previewPanel.currentItem) {
+                                            root.openItem(previewPanel.currentItem.id);
+                                        }
+                                    }
                                 }
 
                                 Text {
-                                    text: {
-                                        if (!previewPanel.currentItem || !previewPanel.currentItem.createdAt) return "Unknown";
-                                        var date = new Date(previewPanel.currentItem.createdAt);
-                                        return Qt.formatDateTime(date, "MMM dd, yyyy hh:mm:ss AP");
+                                    anchors.centerIn: parent
+                                    text: Icons.popOpen
+                                    font.family: Icons.font
+                                    font.pixelSize: 20
+                                    color: metadataOpenButtonMouseArea.containsMouse ? Colors.primary : Colors.overBackground
+                                    textFormat: Text.RichText
+                                    
+                                    Behavior on color {
+                                        enabled: Config.animDuration > 0
+                                        ColorAnimation {
+                                            duration: Config.animDuration / 2
+                                            easing.type: Easing.OutQuart
+                                        }
                                     }
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Bold
-                                    color: Colors.overBackground
                                 }
                             }
 
-                            Column {
-                                width: (parent.width - parent.spacing) / 2
-                                spacing: 2
-
-                                Text {
-                                    text: "Checksum"
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Medium
-                                    color: Colors.outline
+                            // Drag button
+                            Rectangle {
+                                id: dragButton
+                                width: 48
+                                height: 36
+                                color: metadataDragArea.containsMouse ? Colors.surfaceBright : Colors.surface
+                                radius: Config.roundness
+                                
+                                Behavior on color {
+                                    enabled: Config.animDuration > 0
+                                    ColorAnimation {
+                                        duration: Config.animDuration / 2
+                                        easing.type: Easing.OutQuart
+                                    }
+                                }
+                                
+                                // Invisible drag target
+                                Item {
+                                    id: dragTarget
+                                    
+                                    // Drag properties on the invisible item
+                                    Drag.active: metadataDragArea.drag.active
+                                    Drag.dragType: Drag.Automatic
+                                    Drag.supportedActions: Qt.CopyAction
+                                    Drag.mimeData: {
+                                        if (!previewPanel.currentItem) return {};
+                                        var content = (root.currentFullContent || previewPanel.currentItem.preview).trim();
+                                        if (previewPanel.currentItem.isFile) {
+                                            return { "text/uri-list": content };
+                                        } else {
+                                            return { "text/plain": content };
+                                        }
+                                    }
                                 }
 
                                 Text {
-                                    text: {
-                                        if (!previewPanel.currentItem || !previewPanel.currentItem.hash)
-                                            return "N/A";
-                                        var hash = previewPanel.currentItem.hash;
-                                        // Show first 8 and last 8 characters
-                                        if (hash.length > 16) {
-                                            return hash.substring(0, 8) + "..." + hash.substring(hash.length - 8);
+                                    anchors.centerIn: parent
+                                    text: Icons.handGrab
+                                    font.family: Icons.font
+                                    font.pixelSize: 20
+                                    color: metadataDragArea.containsMouse ? Colors.primary : Colors.overBackground
+                                    textFormat: Text.RichText
+                                    
+                                    Behavior on color {
+                                        enabled: Config.animDuration > 0
+                                        ColorAnimation {
+                                            duration: Config.animDuration / 2
+                                            easing.type: Easing.OutQuart
                                         }
-                                        return hash;
                                     }
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Config.theme.fontSize
-                                    font.weight: Font.Bold
-                                    color: Colors.overBackground
-                                    elide: Text.ElideMiddle
-                                    width: parent.width
+                                }
+
+                                MouseArea {
+                                    id: metadataDragArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.OpenHandCursor
+                                    drag.target: dragTarget
                                 }
                             }
                         }
