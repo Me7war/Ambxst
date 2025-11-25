@@ -126,4 +126,12 @@ ShellRoot {
     HyprlandKeybinds {
         id: hyprlandKeybinds
     }
+
+    // Initialize clipboard service at startup to ensure clipboard watching starts immediately
+    Connections {
+        target: ClipboardService
+        function onListCompleted() {
+            // Service initialized and ready
+        }
+    }
 }
