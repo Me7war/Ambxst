@@ -9,7 +9,8 @@ import qs.modules.components
 import qs.modules.services
 import qs.config
 
-PaneRect {
+StyledRect {
+    variant: "pane"
     id: player
 
     property real playerRadius: Config.roundness > 0 ? Config.roundness + 4 : 0

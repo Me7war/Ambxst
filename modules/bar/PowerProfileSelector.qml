@@ -7,7 +7,8 @@ import qs.modules.services
 import qs.modules.components
 import qs.config
 
-BgRect {
+StyledRect {
+    variant: "bg"
     id: root
 
     required property string orientation

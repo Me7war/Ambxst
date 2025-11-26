@@ -24,8 +24,9 @@ Button {
     // Check if buttonIcon is a single character (icon font) or a file path
     readonly property bool isIconPath: buttonIcon.length > 1
 
-    background: BgRect {
-        layer.enabled: root.enableShadow && Config.bar.showBackground
+    background: StyledRect {
+        variant: "bg"
+        enableShadow: root.enableShadow && Config.bar.showBackground
         Rectangle {
             anchors.fill: parent
             color: Colors.primary

@@ -5,7 +5,8 @@ import qs.modules.services
 import qs.modules.components
 import qs.config
 
-PaneRect {
+StyledRect {
+    variant: "pane"
     id: root
     Layout.fillHeight: true
     implicitWidth: parent.width

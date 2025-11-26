@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import qs.modules.theme
 import qs.config
 
-PaneRect {
+StyledRect {
+    variant: "pane"
     id: root
 
     property alias text: textField.text

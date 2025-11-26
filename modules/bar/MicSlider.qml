@@ -30,7 +30,7 @@ Item {
         }
     }
 
-    // Tamaño basado en hover para BgRect con animación
+    // Tamaño basado en hover para StyledRect con animación
     Layout.preferredWidth: root.vertical ? 36 : 36
     Layout.preferredHeight: root.vertical ? 36 : 36
 
@@ -58,9 +58,10 @@ Item {
 
     Component.onCompleted: micSlider.value = Audio.source?.audio?.volume ?? 0
 
-    BgRect {
+    StyledRect {
+        variant: "bg"
         anchors.fill: parent
-        layer.enabled: root.layerEnabled
+        enableShadow: root.layerEnabled
 
         Rectangle {
             anchors.fill: parent

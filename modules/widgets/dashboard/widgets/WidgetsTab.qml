@@ -906,7 +906,8 @@ Rectangle {
                         Layout.preferredHeight: width
                     }
 
-                    PaneRect {
+                    StyledRect {
+                        variant: "pane"
                         Layout.fillWidth: true
                         Layout.preferredHeight: 150
                     }

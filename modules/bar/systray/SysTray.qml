@@ -4,7 +4,8 @@ import Quickshell.Services.SystemTray
 import qs.modules.theme
 import qs.modules.components
 
-BgRect {
+StyledRect {
+    variant: "bg"
     id: root
 
     required property var bar

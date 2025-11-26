@@ -87,9 +87,10 @@ Item {
 
     onCurrentMonitorChanged: updateSliderFromMonitor(false)
 
-    BgRect {
+    StyledRect {
+        variant: "bg"
         anchors.fill: parent
-        layer.enabled: root.layerEnabled
+        enableShadow: root.layerEnabled
 
         Rectangle {
             anchors.fill: parent

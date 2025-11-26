@@ -5,8 +5,9 @@ import qs.config
 import qs.modules.theme
 import qs.modules.components
 
-BgRect {
+StyledRect {
     id: weatherContainer
+    variant: "bg"
     visible: weatherVisible
 
     // Day + weather raw values

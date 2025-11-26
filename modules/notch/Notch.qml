@@ -62,7 +62,8 @@ Item {
         property int size: Config.roundness > 0 ? Config.roundness + 4 : 0
         clip: true
 
-        BgRect {
+        StyledRect {
+            variant: "bg"
             id: leftCornerBg
             anchors.top: parent.top
             anchors.left: parent.left
@@ -101,7 +102,8 @@ Item {
         }
     }
 
-    BgRect {
+    StyledRect {
+        variant: "bg"
         id: notchRect
         anchors.centerIn: parent
         width: parent.implicitWidth - 40
@@ -310,7 +312,8 @@ Item {
         property int size: Config.roundness > 0 ? Config.roundness + 4 : 0
         clip: true
 
-        BgRect {
+        StyledRect {
+            variant: "bg"
             id: rightCornerBg
             anchors.top: parent.top
             anchors.right: parent.right

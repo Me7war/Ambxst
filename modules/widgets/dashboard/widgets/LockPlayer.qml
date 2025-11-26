@@ -8,7 +8,8 @@ import qs.modules.components
 import qs.modules.services
 import qs.config
 
-BgRect {
+StyledRect {
+    variant: "bg"
     id: lockPlayer
 
     property bool isPlaying: MprisController.activePlayer?.playbackState === MprisPlaybackState.Playing

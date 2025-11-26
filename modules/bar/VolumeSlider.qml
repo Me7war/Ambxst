@@ -30,7 +30,7 @@ Item {
         }
     }
 
-    // Tamaño basado en hover para BgRect con animación
+    // Tamaño basado en hover para StyledRect con animación
     // implicitWidth: root.vertical ? 4 : 36
     // implicitHeight: root.vertical ? 36 : 4
     Layout.preferredWidth: root.vertical ? 36 : 36
@@ -60,9 +60,10 @@ Item {
 
     Component.onCompleted: volumeSlider.value = Audio.sink?.audio?.volume ?? 0
 
-    BgRect {
+    StyledRect {
+        variant: "bg"
         anchors.fill: parent
-        layer.enabled: root.layerEnabled
+        enableShadow: root.layerEnabled
 
         Rectangle {
             anchors.fill: parent

@@ -63,7 +63,11 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 40
-                color: Colors.surface
+                color: {
+                    const stopData = calendarPane.gradientStops[0] || ["surface", 0.0]
+                    const colorValue = stopData[0]
+                    return Config.resolveColor(colorValue)
+                }
                 topLeftRadius: Config.roundness > 0 ? Config.roundness + 4 : 0
                 topRightRadius: Config.roundness > 0 ? Config.roundness + 4 : 0
                 Rectangle {
@@ -95,14 +99,24 @@ Item {
                     anchors.left: parent.left
                     size: Config.roundness > 0 ? Config.roundness + 4 : 0
                     corner: RoundCorner.CornerEnum.BottomLeft
-                    color: Colors.surface
+                    color: {
+                        const stopData = calendarPane.gradientStops[0] || ["surface", 0.0]
+                        const colorValue = stopData[0]
+                        return Config.resolveColor(colorValue)
+                    }
                 }
 
                 Rectangle {
                     id: leftButton
                     radius: leftMouseArea.pressed ? Config.roundness : (leftMouseArea.containsMouse ? (Config.roundness > 4 ? Config.roundness - 4 : 0) : Config.roundness)
                     bottomLeftRadius: Config.roundness
-                    color: leftMouseArea.pressed ? Colors.primary : (leftMouseArea.containsMouse ? Colors.surfaceBright : Colors.surface)
+                    color: {
+                        if (leftMouseArea.pressed) return Colors.primary
+                        if (leftMouseArea.containsMouse) return Colors.surfaceBright
+                        const stopData = calendarPane.gradientStops[0] || ["surface", 0.0]
+                        const colorValue = stopData[0]
+                        return Config.resolveColor(colorValue)
+                    }
                     width: 36
                     height: 36
                     anchors.top: parent.top
@@ -151,7 +165,13 @@ Item {
                 Layout.preferredHeight: 36
                 Layout.bottomMargin: 4
                 radius: rightMouseArea.pressed ? Config.roundness : (rightMouseArea.containsMouse ? (Config.roundness > 4 ? Config.roundness - 4 : 0) : Config.roundness)
-                color: rightMouseArea.pressed ? Colors.primary : (rightMouseArea.containsMouse ? Colors.surfaceBright : Colors.surface)
+                color: {
+                    if (rightMouseArea.pressed) return Colors.primary
+                    if (rightMouseArea.containsMouse) return Colors.surfaceBright
+                    const stopData = calendarPane.gradientStops[0] || ["surface", 0.0]
+                    const colorValue = stopData[0]
+                    return Config.resolveColor(colorValue)
+                }
 
                 Behavior on color {
                     enabled: Config.animDuration > 0
@@ -191,7 +211,9 @@ Item {
             }
         }
 
-        PaneRect {
+        StyledRect {
+            id: calendarPane
+            variant: "pane"
             Layout.fillWidth: true
             Layout.fillHeight: true
             color: Colors.surface

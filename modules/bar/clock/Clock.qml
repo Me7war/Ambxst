@@ -4,7 +4,8 @@ import qs.config
 import qs.modules.theme
 import qs.modules.components
 
-BgRect {
+StyledRect {
+    variant: "bg"
     id: clockContainer
 
     property string currentTime: ""

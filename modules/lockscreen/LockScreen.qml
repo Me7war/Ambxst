@@ -357,7 +357,8 @@ WlSessionLockSurface {
         }
 
         // Password input with avatar
-        BgRect {
+        StyledRect {
+            variant: "bg"
             id: passwordInputBox
             anchors.centerIn: parent
             width: parent.width

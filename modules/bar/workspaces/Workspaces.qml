@@ -110,7 +110,8 @@ Item {
     implicitWidth: orientation === "vertical" ? baseSize : workspaceButtonSize * effectiveWorkspaceCount + widgetPadding * 2
     implicitHeight: orientation === "vertical" ? workspaceButtonSize * effectiveWorkspaceCount + widgetPadding * 2 : baseSize
 
-    BgRect {
+    StyledRect {
+        variant: "bg"
         id: bgRect
         anchors.fill: parent
     }

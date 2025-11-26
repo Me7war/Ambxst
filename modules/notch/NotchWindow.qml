@@ -147,7 +147,8 @@ PanelWindow {
         }
 
         // Popup de notificaciones debajo del notch
-        BgRect {
+        StyledRect {
+            variant: "bg"
             id: notificationPopupContainer
             anchors.top: notchContainer.bottom
             anchors.horizontalCenter: parent.horizontalCenter
