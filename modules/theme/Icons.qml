@@ -161,4 +161,5 @@ QtObject {
     readonly property string folder: ""
     readonly property string cactus: ""
     readonly property string countdown: ""
+    readonly property string temperature: ""
 }

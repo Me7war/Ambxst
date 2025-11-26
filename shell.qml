@@ -144,6 +144,7 @@ ShellRoot {
             let _ = NightLightService.active
             _ = GameModeService.toggled
             _ = CaffeineService.inhibit
+            _ = WeatherService.dataAvailable
         }
     }
 }
