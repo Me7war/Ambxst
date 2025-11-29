@@ -180,11 +180,17 @@ Item {
 
         if (!deleteMode && !renameMode) {
             if (searchText.length > 0 && newFilteredSessions.length > 0) {
+                resultsList.enableScrollAnimation = false;
                 selectedIndex = 0;
                 resultsList.currentIndex = 0;
+                resultsList.positionViewAtBeginning();
+                Qt.callLater(() => { resultsList.enableScrollAnimation = true; });
             } else if (searchText.length === 0) {
+                resultsList.enableScrollAnimation = false;
                 selectedIndex = -1;
                 resultsList.currentIndex = -1;
+                resultsList.positionViewAtBeginning();
+                Qt.callLater(() => { resultsList.enableScrollAnimation = true; });
             }
         }
 
@@ -781,9 +787,11 @@ Item {
             model: animatedSessionsModel
             currentIndex: root.selectedIndex
             
+            property bool enableScrollAnimation: true
+            
             // Smooth scroll animation
             Behavior on contentY {
-                enabled: Config.animDuration > 0
+                enabled: Config.animDuration > 0 && resultsList.enableScrollAnimation
                 NumberAnimation {
                     duration: Config.animDuration / 2
                     easing.type: Easing.OutCubic

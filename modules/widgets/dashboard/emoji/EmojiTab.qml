@@ -81,6 +81,7 @@ Rectangle {
         
         // Load initial emojis when clearing search
         loadInitialEmojis();
+        emojiList.positionViewAtBeginning();
     }
 
     function resetClearButton() {
@@ -105,6 +106,10 @@ Rectangle {
             loadInitialEmojis();
             selectedIndex = -1;
             selectedRecentIndex = -1;
+            
+            emojiList.enableScrollAnimation = false;
+            emojiList.positionViewAtBeginning();
+            Qt.callLater(() => { emojiList.enableScrollAnimation = true; });
             return;
         }
         
@@ -135,11 +140,17 @@ Rectangle {
         updateAnimatedEmojisModel(filtered);
 
         if (searchText.length > 0 && filteredEmojis.length > 0 && !isRecentFocused) {
+            emojiList.enableScrollAnimation = false;
             selectedIndex = 0;
             emojiList.currentIndex = 0;
+            emojiList.positionViewAtBeginning();
+            Qt.callLater(() => { emojiList.enableScrollAnimation = true; });
         } else if (searchText.length === 0 && !hasNavigatedFromSearch) {
+            emojiList.enableScrollAnimation = false;
             selectedIndex = -1;
             selectedRecentIndex = -1;
+            emojiList.positionViewAtBeginning();
+            Qt.callLater(() => { emojiList.enableScrollAnimation = true; });
         }
     }
 
@@ -685,9 +696,11 @@ Rectangle {
                     model: animatedEmojisModel
                     currentIndex: root.selectedIndex
                     
+                    property bool enableScrollAnimation: true
+                    
                     // Smooth scroll animation
                     Behavior on contentY {
-                        enabled: Config.animDuration > 0
+                        enabled: Config.animDuration > 0 && emojiList.enableScrollAnimation
                         NumberAnimation {
                             duration: Config.animDuration / 2
                             easing.type: Easing.OutCubic

@@ -281,15 +281,24 @@ Rectangle {
                     onSearchTextChanged: text => {
                         GlobalStates.launcherSearchText = text;
                         appLauncher.searchText = text;
+                        
+                        resultsList.enableScrollAnimation = false;
+
                         if (text.length > 0) {
                             GlobalStates.launcherSelectedIndex = 0;
                             appLauncher.selectedIndex = 0;
                             resultsList.currentIndex = 0;
+                            resultsList.positionViewAtBeginning();
                         } else {
                             GlobalStates.launcherSelectedIndex = -1;
                             appLauncher.selectedIndex = -1;
                             resultsList.currentIndex = -1;
+                            resultsList.positionViewAtBeginning();
                         }
+
+                        Qt.callLater(() => {
+                            resultsList.enableScrollAnimation = true;
+                        });
                     }
 
                     onAccepted: {
@@ -389,9 +398,11 @@ Rectangle {
                     model: animatedModel
                     currentIndex: appLauncher.selectedIndex
 
+                    property bool enableScrollAnimation: true
+
                     // Smooth scroll animation
                     Behavior on contentY {
-                        enabled: Config.animDuration > 0
+                        enabled: Config.animDuration > 0 && resultsList.enableScrollAnimation
                         NumberAnimation {
                             duration: Config.animDuration / 2
                             easing.type: Easing.OutCubic

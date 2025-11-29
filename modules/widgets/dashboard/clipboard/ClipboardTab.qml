@@ -345,13 +345,19 @@ Item {
 
         // Default behavior when no pending item
         if (searchText.length > 0 && allItems.length > 0) {
+            resultsList.enableScrollAnimation = false;
             selectedIndex = 0;
             resultsList.currentIndex = 0;
+            resultsList.positionViewAtBeginning();
+            Qt.callLater(() => { resultsList.enableScrollAnimation = true; });
         } else if (searchText.length === 0) {
             // When clearing search, only reset if we haven't navigated or if list is empty
             if (!hasNavigatedFromSearch || allItems.length === 0) {
+                resultsList.enableScrollAnimation = false;
                 selectedIndex = -1;
                 resultsList.currentIndex = -1;
+                resultsList.positionViewAtBeginning();
+                Qt.callLater(() => { resultsList.enableScrollAnimation = true; });
             } else {
                 // Keep current selection valid, or default to first item
                 if (selectedIndex >= allItems.length) {
@@ -875,9 +881,11 @@ Item {
                     model: animatedItemsModel
                     currentIndex: root.selectedIndex
                     
+                    property bool enableScrollAnimation: true
+
                     // Smooth scroll animation
                     Behavior on contentY {
-                        enabled: Config.animDuration > 0
+                        enabled: Config.animDuration > 0 && resultsList.enableScrollAnimation
                         NumberAnimation {
                             duration: Config.animDuration / 2
                             easing.type: Easing.OutCubic
