@@ -42,19 +42,63 @@ Item {
     property int renameButtonIndex: 0 // 0 = cancel, 1 = confirm
     property string pendingRenamedSession: "" // Track session to select after rename
 
-    // Options menu state
-    property bool optionsMenuOpen: false
-    property int menuItemIndex: -1
-    property bool menuJustClosed: false
+    // Options menu state (expandable list)
+    property int expandedItemIndex: -1
+    property int selectedOptionIndex: 0
+    property bool keyboardNavigation: false
     
     // Session preview state
     property var sessionWindows: []
     property var sessionPanes: []
     property bool loadingSessionInfo: false
 
+    
+    onExpandedItemIndexChanged: {
+        // Adjust scroll when item expands to ensure it's fully visible
+        if (expandedItemIndex >= 0 && expandedItemIndex < animatedSessionsModel.count) {
+            Qt.callLater(() => {
+                adjustScrollForExpandedItem(expandedItemIndex);
+            });
+        }
+    }
+    
+    function adjustScrollForExpandedItem(index) {
+        if (index < 0 || index >= animatedSessionsModel.count) return;
+        
+        // Calculate Y position of the item
+        var itemY = 0;
+        for (var i = 0; i < index; i++) {
+            itemY += 48; // All items before are collapsed (base height)
+        }
+        
+        // Calculate expanded item height - always 3 options (Open, Rename, Quit)
+        var listHeight = 36 * 3;
+        var expandedHeight = 48 + 4 + listHeight + 8;
+        
+        var viewportTop = resultsList.contentY;
+        var viewportBottom = viewportTop + resultsList.height;
+        var viewportCenter = viewportTop + resultsList.height / 2;
+        
+        // Calculate desired position to center the expanded item
+        var desiredY = itemY - (resultsList.height / 2 - expandedHeight / 2);
+        
+        // Clamp to valid scroll range
+        var maxContentY = Math.max(0, resultsList.contentHeight - resultsList.height);
+        desiredY = Math.max(0, Math.min(desiredY, maxContentY));
+        
+        resultsList.contentY = desiredY;
+    }
+
     onSelectedIndexChanged: {
         if (selectedIndex === -1 && resultsList.count > 0) {
             resultsList.positionViewAtIndex(0, ListView.Beginning);
+        }
+        
+        // Close expanded options when selection changes to a different item
+        if (expandedItemIndex >= 0 && selectedIndex !== expandedItemIndex) {
+            expandedItemIndex = -1;
+            selectedOptionIndex = 0;
+            keyboardNavigation = false;
         }
         
         // Load session info when selection changes
@@ -576,6 +620,21 @@ Item {
             onAccepted: {
                 if (root.deleteMode) {
                     root.cancelDeleteMode();
+                } else if (root.expandedItemIndex >= 0) {
+                    // Execute selected option when menu is expanded
+                    let session = root.filteredSessions[root.expandedItemIndex];
+                    if (session && !session.isCreateButton && !session.isCreateSpecificButton) {
+                        // Build options array (Open, Rename, Quit)
+                        let options = [
+                            function() { root.attachToSession(session.name); },
+                            function() { root.enterRenameMode(session.name); root.expandedItemIndex = -1; },
+                            function() { root.enterDeleteMode(session.name); root.expandedItemIndex = -1; }
+                        ];
+                        
+                        if (root.selectedOptionIndex >= 0 && root.selectedOptionIndex < options.length) {
+                            options[root.selectedOptionIndex]();
+                        }
+                    }
                 } else {
                     if (root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
                         let selectedSession = root.filteredSessions[root.selectedIndex];
@@ -595,10 +654,21 @@ Item {
             }
 
             onShiftAccepted: {
-                if (!root.deleteMode && root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
-                    let selectedSession = root.filteredSessions[root.selectedIndex];
-                    if (selectedSession && !selectedSession.isCreateButton && !selectedSession.isCreateSpecificButton) {
-                        root.enterDeleteMode(selectedSession.name);
+                if (!root.deleteMode && !root.renameMode) {
+                    if (root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
+                        let selectedSession = root.filteredSessions[root.selectedIndex];
+                        if (selectedSession && !selectedSession.isCreateButton && !selectedSession.isCreateSpecificButton) {
+                            // Toggle expanded state
+                            if (root.expandedItemIndex === root.selectedIndex) {
+                                root.expandedItemIndex = -1;
+                                root.selectedOptionIndex = 0;
+                                root.keyboardNavigation = false;
+                            } else {
+                                root.expandedItemIndex = root.selectedIndex;
+                                root.selectedOptionIndex = 0;
+                                root.keyboardNavigation = true;
+                            }
+                        }
                     }
                 }
             }
@@ -613,15 +683,23 @@ Item {
             }
 
             onEscapePressed: {
-                if (!root.deleteMode && !root.renameMode) {
+                if (root.expandedItemIndex >= 0) {
+                    root.expandedItemIndex = -1;
+                    root.selectedOptionIndex = 0;
+                    root.keyboardNavigation = false;
+                } else if (!root.deleteMode && !root.renameMode) {
                     Visibilities.setActiveModule("");
                 }
-                // Si estamos en modo eliminar o renombrar, no hacer nada aquí
-                // El handler global del root se encargará
             }
 
             onDownPressed: {
-                if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
+                if (root.expandedItemIndex >= 0) {
+                    // Navigate options when menu is expanded - always 3 options
+                    if (root.selectedOptionIndex < 2) {
+                        root.selectedOptionIndex++;
+                        root.keyboardNavigation = true;
+                    }
+                } else if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
                     if (root.selectedIndex === -1) {
                         root.selectedIndex = 0;
                         resultsList.currentIndex = 0;
@@ -633,7 +711,13 @@ Item {
             }
 
             onUpPressed: {
-                if (!root.deleteMode && !root.renameMode) {
+                if (root.expandedItemIndex >= 0) {
+                    // Navigate options when menu is expanded
+                    if (root.selectedOptionIndex > 0) {
+                        root.selectedOptionIndex--;
+                        root.keyboardNavigation = true;
+                    }
+                } else if (!root.deleteMode && !root.renameMode) {
                     if (root.selectedIndex > 0) {
                         root.selectedIndex--;
                         resultsList.currentIndex = root.selectedIndex;
@@ -689,7 +773,7 @@ Item {
             height: parent.height - searchInput.height - parent.spacing
             visible: true
             clip: true
-            interactive: !root.deleteMode && !root.renameMode && !root.optionsMenuOpen
+            interactive: !root.deleteMode && !root.renameMode && root.expandedItemIndex === -1
             cacheBuffer: 96
             reuseItems: false
 
@@ -758,18 +842,33 @@ Item {
                     root.selectedIndex = currentIndex;
                 }
                 
-                // Manual smooth auto-scroll
+                // Manual smooth auto-scroll (accounting for variable height items)
                 if (currentIndex >= 0) {
-                    var itemY = currentIndex * 48;
+                    var itemY = 0;
+                    for (var i = 0; i < currentIndex && i < animatedSessionsModel.count; i++) {
+                        var itemHeight = 48;
+                        if (i === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                            var listHeight = 36 * 3; // Always 3 options
+                            itemHeight = 48 + 4 + listHeight + 8;
+                        }
+                        itemY += itemHeight;
+                    }
+                    
+                    var currentItemHeight = 48;
+                    if (currentIndex === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                        var listHeight = 36 * 3;
+                        currentItemHeight = 48 + 4 + listHeight + 8;
+                    }
+                    
                     var viewportTop = resultsList.contentY;
                     var viewportBottom = viewportTop + resultsList.height;
                     
                     if (itemY < viewportTop) {
                         // Item is above viewport, scroll up
                         resultsList.contentY = itemY;
-                    } else if (itemY + 48 > viewportBottom) {
+                    } else if (itemY + currentItemHeight > viewportBottom) {
                         // Item is below viewport, scroll down
-                        resultsList.contentY = itemY + 48 - resultsList.height;
+                        resultsList.contentY = itemY + currentItemHeight - resultsList.height;
                     }
                 }
             }
@@ -782,18 +881,36 @@ Item {
                 property var modelData: sessionData
 
                 width: resultsList.width
-                height: 48
+                height: {
+                    let baseHeight = 48;
+                    if (index === root.expandedItemIndex && !isInDeleteMode && !isInRenameMode) {
+                        var listHeight = 36 * 3; // Always 3 options: Open, Rename, Quit
+                        return baseHeight + 4 + listHeight + 8; // base + spacing + list + bottom margin
+                    }
+                    return baseHeight;
+                }
                 color: "transparent"
                 radius: 16
+                
+                Behavior on height {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutQuart
+                    }
+                }
                 clip: true
 
                 property bool isInDeleteMode: root.deleteMode && modelData.name === root.sessionToDelete
                 property bool isInRenameMode: root.renameMode && modelData.name === root.sessionToRename
+                property bool isExpanded: index === root.expandedItemIndex
                 property color textColor: {
                     if (isInDeleteMode) {
                         return Colors.overError;
                     } else if (isInRenameMode) {
                         return Colors.overSecondary;
+                    } else if (isExpanded) {
+                        return Colors.overBackground;
                     } else if (root.selectedIndex === index) {
                         return Colors.overPrimary;
                     } else {
@@ -805,7 +922,7 @@ Item {
                     id: mouseArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    enabled: !isInDeleteMode && !isInRenameMode && !root.optionsMenuOpen
+                    enabled: !isInDeleteMode && !isInRenameMode
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                     property real startX: 0
@@ -814,17 +931,13 @@ Item {
                     property bool longPressTriggered: false
 
                     onEntered: {
-                        if (!root.deleteMode && !root.renameMode && !root.optionsMenuOpen) {
+                        if (!root.deleteMode && !root.renameMode && root.expandedItemIndex === -1) {
                             root.selectedIndex = index;
                             resultsList.currentIndex = index;
                         }
                     }
 
                     onClicked: mouse => {
-                        if (root.menuJustClosed) {
-                            return;
-                        }
-
                         if (mouse.button === Qt.LeftButton) {
                             if (root.deleteMode && modelData.name !== root.sessionToDelete) {
                                 root.cancelDeleteMode();
@@ -834,7 +947,7 @@ Item {
                                 return;
                             }
 
-                            if (!root.deleteMode && !root.renameMode) {
+                            if (!root.deleteMode && !root.renameMode && !isExpanded) {
                                 if (modelData.isCreateSpecificButton) {
                                     root.createTmuxSession(modelData.sessionNameToCreate);
                                 } else if (modelData.isCreateButton) {
@@ -844,19 +957,26 @@ Item {
                                 }
                             }
                         } else if (mouse.button === Qt.RightButton) {
-                            if (root.deleteMode || root.renameMode) {
-                                if (root.deleteMode) {
-                                    root.cancelDeleteMode();
-                                } else if (root.renameMode) {
-                                    root.cancelRenameMode();
-                                }
+                            if (root.deleteMode) {
+                                root.cancelDeleteMode();
+                                return;
+                            } else if (root.renameMode) {
+                                root.cancelRenameMode();
                                 return;
                             }
 
                             if (!modelData.isCreateButton && !modelData.isCreateSpecificButton) {
-                                root.menuItemIndex = index;
-                                root.optionsMenuOpen = true;
-                                contextMenu.popup(mouse.x, mouse.y);
+                                // Toggle expanded state instead of opening menu
+                                if (root.expandedItemIndex === index) {
+                                    root.expandedItemIndex = -1;
+                                    root.selectedOptionIndex = 0;
+                                    root.keyboardNavigation = false;
+                                } else {
+                                    root.expandedItemIndex = index;
+                                    root.selectedIndex = index;
+                                    root.selectedOptionIndex = 0;
+                                    root.keyboardNavigation = false;
+                                }
                             }
                         }
                     }
@@ -912,52 +1032,214 @@ Item {
                         }
                     }
 
-                    OptionsMenu {
-                    id: contextMenu
+                    // Expandable options list (similar to ClipboardTab)
+                    RowLayout {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.leftMargin: 8
+                        anchors.rightMargin: 8
+                        anchors.bottomMargin: 8
+                        spacing: 4
+                        visible: isExpanded && !isInDeleteMode && !isInRenameMode
+                        opacity: (isExpanded && !isInDeleteMode && !isInRenameMode) ? 1 : 0
 
-                    onClosed: {
-                        root.optionsMenuOpen = false;
-                        root.menuItemIndex = -1;
-                        root.menuJustClosed = true;
-                        menuClosedTimer.start();
-                    }
-
-                    Timer {
-                        id: menuClosedTimer
-                        interval: 100
-                        repeat: false
-                        onTriggered: {
-                            root.menuJustClosed = false;
-                        }
-                    }
-
-                    items: [
-                        {
-                            text: "Rename",
-                            icon: Icons.edit,
-                            highlightColor: Colors.secondary,
-                            textColor: Colors.overSecondary,
-                            onTriggered: function () {
-                                root.enterRenameMode(modelData.name);
-                            }
-                        },
-                        {
-                            text: "Quit",
-                            icon: Icons.alert,
-                            highlightColor: Colors.errorContainer,
-                            textColor: Colors.error,
-                            onTriggered: function () {
-                                root.enterDeleteMode(modelData.name);
+                        Behavior on opacity {
+                            enabled: Config.animDuration > 0
+                            NumberAnimation {
+                                duration: Config.animDuration
+                                easing.type: Easing.OutQuart
                             }
                         }
-                    ]
+
+                        ClippingRectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 36 * 3 // Always 3 options
+                            color: Colors.background
+                            radius: Config.roundness
+
+                            Behavior on Layout.preferredHeight {
+                                enabled: Config.animDuration > 0
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
+
+                            ListView {
+                                id: optionsListView
+                                anchors.fill: parent
+                                clip: true
+                                interactive: false
+                                boundsBehavior: Flickable.StopAtBounds
+                                model: [
+                                    {
+                                        text: "Open",
+                                        icon: Icons.popOpen,
+                                        highlightColor: Colors.primary,
+                                        textColor: Colors.overPrimary,
+                                        action: function() {
+                                            root.attachToSession(modelData.name);
+                                        }
+                                    },
+                                    {
+                                        text: "Rename",
+                                        icon: Icons.edit,
+                                        highlightColor: Colors.secondary,
+                                        textColor: Colors.overSecondary,
+                                        action: function() {
+                                            root.enterRenameMode(modelData.name);
+                                            root.expandedItemIndex = -1;
+                                        }
+                                    },
+                                    {
+                                        text: "Quit",
+                                        icon: Icons.alert,
+                                        highlightColor: Colors.error,
+                                        textColor: Colors.overError,
+                                        action: function() {
+                                            root.enterDeleteMode(modelData.name);
+                                            root.expandedItemIndex = -1;
+                                        }
+                                    }
+                                ]
+                                currentIndex: root.selectedOptionIndex
+                                highlightFollowsCurrentItem: true
+                                highlightRangeMode: ListView.ApplyRange
+                                preferredHighlightBegin: 0
+                                preferredHighlightEnd: height
+
+                                highlight: StyledRect {
+                                    variant: {
+                                        if (optionsListView.currentIndex >= 0 && optionsListView.currentIndex < optionsListView.count) {
+                                            var item = optionsListView.model[optionsListView.currentIndex];
+                                            if (item && item.highlightColor) {
+                                                if (item.highlightColor === Colors.error)
+                                                    return "error";
+                                                if (item.highlightColor === Colors.secondary)
+                                                    return "secondary";
+                                                return "primary";
+                                            }
+                                        }
+                                        return "primary";
+                                    }
+                                    radius: Config.roundness
+                                    visible: optionsListView.currentIndex >= 0
+                                    z: -1
+
+                                    Behavior on opacity {
+                                        enabled: Config.animDuration > 0
+                                        NumberAnimation {
+                                            duration: Config.animDuration / 2
+                                            easing.type: Easing.OutQuart
+                                        }
+                                    }
+                                }
+
+                                highlightMoveDuration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
+                                highlightMoveVelocity: -1
+                                highlightResizeDuration: Config.animDuration / 2
+                                highlightResizeVelocity: -1
+
+                                delegate: Item {
+                                    required property var modelData
+                                    required property int index
+
+                                    property alias itemData: delegateData.modelData
+
+                                    QtObject {
+                                        id: delegateData
+                                        property var modelData: parent ? parent.modelData : null
+                                    }
+
+                                    width: optionsListView.width
+                                    height: 36
+
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        color: "transparent"
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 8
+                                            spacing: 8
+
+                                            Text {
+                                                text: modelData && modelData.icon ? modelData.icon : ""
+                                                font.family: Icons.font
+                                                font.pixelSize: 14
+                                                font.weight: Font.Bold
+                                                textFormat: Text.RichText
+                                                color: {
+                                                    if (optionsListView.currentIndex === index && modelData && modelData.textColor) {
+                                                        return modelData.textColor;
+                                                    }
+                                                    return Colors.overSurface;
+                                                }
+
+                                                Behavior on color {
+                                                    enabled: Config.animDuration > 0
+                                                    ColorAnimation {
+                                                        duration: Config.animDuration / 2
+                                                        easing.type: Easing.OutQuart
+                                                    }
+                                                }
+                                            }
+
+                                            Text {
+                                                Layout.fillWidth: true
+                                                text: modelData && modelData.text ? modelData.text : ""
+                                                font.family: Config.theme.font
+                                                font.pixelSize: Config.theme.fontSize
+                                                font.weight: optionsListView.currentIndex === index ? Font.Bold : Font.Normal
+                                                color: {
+                                                    if (optionsListView.currentIndex === index && modelData && modelData.textColor) {
+                                                        return modelData.textColor;
+                                                    }
+                                                    return Colors.overSurface;
+                                                }
+                                                elide: Text.ElideRight
+                                                maximumLineCount: 1
+
+                                                Behavior on color {
+                                                    enabled: Config.animDuration > 0
+                                                    ColorAnimation {
+                                                        duration: Config.animDuration / 2
+                                                        easing.type: Easing.OutQuart
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+
+                                            onEntered: {
+                                                optionsListView.currentIndex = index;
+                                                root.selectedOptionIndex = index;
+                                                root.keyboardNavigation = false;
+                                            }
+
+                                            onClicked: {
+                                                if (modelData && modelData.action) {
+                                                    modelData.action();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     Rectangle {
                         id: renameActionContainer
                         anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: parent.top
                         anchors.rightMargin: 8
+                        anchors.topMargin: 8
                         width: 68
                         height: 32
                     color: "transparent"
@@ -1113,9 +1395,12 @@ Item {
 
                     RowLayout {
                         id: mainContent
-                        anchors.fill: parent
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
                         anchors.margins: 8
                         anchors.rightMargin: isInRenameMode ? 84 : 8
+                        height: 32
                         spacing: 8
 
                         Behavior on anchors.rightMargin {
@@ -1248,8 +1533,9 @@ Item {
                     Rectangle {
                         id: actionContainer
                         anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: parent.top
                         anchors.rightMargin: 8
+                        anchors.topMargin: 8
                         width: 68
                         height: 32
                     color: "transparent"
@@ -1406,10 +1692,29 @@ Item {
 
             highlight: Item {
                 width: resultsList.width
-                height: 48
+                height: {
+                    let baseHeight = 48;
+                    if (resultsList.currentIndex === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                        var listHeight = 36 * 3;
+                        return baseHeight + 4 + listHeight + 8;
+                    }
+                    return baseHeight;
+                }
                 
-                // Calculate Y position based on index, not item position
-                y: resultsList.currentIndex * 48
+                // Calculate Y position based on index, accounting for expanded items
+                y: {
+                    var yPos = 0;
+                    for (var i = 0; i < resultsList.currentIndex && i < animatedSessionsModel.count; i++) {
+                        var itemData = animatedSessionsModel.get(i).sessionData;
+                        var itemHeight = 48;
+                        if (i === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                            var listHeight = 36 * 3;
+                            itemHeight = 48 + 4 + listHeight + 8;
+                        }
+                        yPos += itemHeight;
+                    }
+                    return yPos;
+                }
                 
                 Behavior on y {
                     enabled: Config.animDuration > 0
@@ -1419,19 +1724,31 @@ Item {
                     }
                 }
                 
+                Behavior on height {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutQuart
+                    }
+                }
+                
                 StyledRect {
                     anchors.fill: parent
+                    anchors.topMargin: 0
+                    anchors.bottomMargin: 0
                     variant: {
                         if (root.deleteMode) {
                             return "error";
                         } else if (root.renameMode) {
                             return "secondary";
+                        } else if (root.expandedItemIndex >= 0 && root.selectedIndex === root.expandedItemIndex) {
+                            return "pane";
                         } else {
                             return "primary";
                         }
                     }
                     radius: Config.roundness > 0 ? Config.roundness + 4 : 0
-                    visible: root.selectedIndex >= 0 && (root.optionsMenuOpen ? root.selectedIndex === root.menuItemIndex : true)
+                    visible: root.selectedIndex >= 0
 
                     Behavior on color {
                         enabled: Config.animDuration > 0

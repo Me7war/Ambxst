@@ -94,24 +94,14 @@ Item {
         var listHeight = 36 * Math.min(3, optionsCount);
         var expandedHeight = 48 + 4 + listHeight + 8;
         
-        var viewportTop = resultsList.contentY;
-        var viewportBottom = viewportTop + resultsList.height;
+        // Calculate desired position to center the expanded item
+        var desiredY = itemY - (resultsList.height / 2 - expandedHeight / 2);
         
-        // Check if expanded item fits in viewport
-        if (itemY + expandedHeight > viewportBottom) {
-            // Item is too big or goes below viewport, scroll down to fit it
-            var newContentY = itemY + expandedHeight - resultsList.height;
-            
-            // Make sure we don't scroll past the top
-            if (newContentY < itemY) {
-                newContentY = itemY;
-            }
-            
-            resultsList.contentY = newContentY;
-        } else if (itemY < viewportTop) {
-            // Item starts above viewport, scroll up
-            resultsList.contentY = itemY;
-        }
+        // Clamp to valid scroll range
+        var maxContentY = Math.max(0, resultsList.contentHeight - resultsList.height);
+        desiredY = Math.max(0, Math.min(desiredY, maxContentY));
+        
+        resultsList.contentY = desiredY;
     }
 
     property int previewImageSize: 200
