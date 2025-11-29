@@ -27,7 +27,7 @@ PanelWindow {
 
     color: "transparent"
 
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     // Get this screen's visibility state
     readonly property var screenVisibilities: Visibilities.getForScreen(screen.name)
@@ -229,6 +229,7 @@ PanelWindow {
         function onDashboardChanged() {
             if (screenVisibilities.dashboard) {
                 notchContainer.stackView.push(dashboardViewComponent);
+                Qt.callLater(() => notchContainer.forceActiveFocus());
             } else {
                 if (notchContainer.stackView.depth > 1) {
                     notchContainer.stackView.replace(defaultViewComponent);
@@ -241,6 +242,7 @@ PanelWindow {
         function onOverviewChanged() {
             if (screenVisibilities.overview) {
                 notchContainer.stackView.push(overviewViewComponent);
+                Qt.callLater(() => notchContainer.forceActiveFocus());
             } else {
                 if (notchContainer.stackView.depth > 1) {
                     notchContainer.stackView.replace(defaultViewComponent);
@@ -253,6 +255,7 @@ PanelWindow {
         function onPowermenuChanged() {
             if (screenVisibilities.powermenu) {
                 notchContainer.stackView.push(powermenuViewComponent);
+                Qt.callLater(() => notchContainer.forceActiveFocus());
             } else {
                 if (notchContainer.stackView.depth > 1) {
                     notchContainer.stackView.replace(defaultViewComponent);

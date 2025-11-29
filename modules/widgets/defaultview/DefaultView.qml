@@ -10,12 +10,10 @@ Item {
     id: root
     anchors.top: parent.top
 
-    focus: true
+    focus: false
 
     Component.onCompleted: {
-        Qt.callLater(() => {
-            forceActiveFocus();
-        });
+        // Removed forceActiveFocus to prevent shell from taking focus on startup
     }
 
     readonly property real mainRowContentWidth: 200 + userInfo.width + separator1.width + separator2.width + notifIndicator.width + (mainRow.spacing * 4) + 32
