@@ -6,6 +6,8 @@ import Quickshell.Io
 import qs.modules.globals
 import qs.modules.theme
 import qs.modules.services as Services
+import "ConfigDefaults.js" as ConfigDefaults
+import "ConfigValidator.js" as ConfigValidator
 
 Singleton {
     id: root
@@ -17,6 +19,37 @@ Singleton {
     property string configPath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/Ambxst/config.json"
     property string keybindsPath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/Ambxst/binds.json"
 
+    FileView {
+        id: rawLoader
+        path: configPath
+        onLoaded: {
+            if (!root.initialLoadComplete) {
+                validateConfig();
+            }
+        }
+    }
+
+    function validateConfig() {
+        var raw = rawLoader.text();
+        if (!raw) return;
+
+        try {
+            var current = JSON.parse(raw);
+            var validated = ConfigValidator.validate(current, ConfigDefaults.data);
+
+            if (JSON.stringify(current) !== JSON.stringify(validated)) {
+                console.log("Merging and updating config.json...");
+                rawLoader.setText(JSON.stringify(validated, null, 4));
+            }
+            root.initialLoadComplete = true;
+        } catch(e) {
+            console.log("Error validating config (invalid JSON?): " + e);
+            console.log("Overwriting with defaults due to error.");
+            rawLoader.setText(JSON.stringify(ConfigDefaults.data, null, 4));
+            root.initialLoadComplete = true;
+        }
+    }
+
     Process {
         id: checkFile
         running: true
@@ -25,9 +58,9 @@ Singleton {
         onExited: exitCode => {
             if (exitCode !== 0) {
                 console.log("config.json not found, creating with default values...");
-                loader.writeAdapter();
+                rawLoader.setText(JSON.stringify(ConfigDefaults.data, null, 4));
+                root.initialLoadComplete = true;
             }
-            root.initialLoadComplete = true;
         }
     }
 
