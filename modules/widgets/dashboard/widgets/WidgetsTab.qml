@@ -631,14 +631,30 @@ Rectangle {
                         }
                     }
 
-                    highlight: StyledRect {
-                        variant: "primary"
-                        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
-                        visible: appLauncher.selectedIndex >= 0 && (appLauncher.optionsMenuOpen ? appLauncher.selectedIndex === appLauncher.menuItemIndex : true)
+                    highlight: Item {
+                        width: resultsList.width
+                        height: 48
+                        
+                        // Calculate Y position based on index, not item position
+                        y: resultsList.currentIndex * 48
+                        
+                        Behavior on y {
+                            enabled: Config.animDuration > 0
+                            NumberAnimation {
+                                duration: Config.animDuration / 2
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+                        
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: "primary"
+                            radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                            visible: appLauncher.selectedIndex >= 0 && (appLauncher.optionsMenuOpen ? appLauncher.selectedIndex === appLauncher.menuItemIndex : true)
+                        }
                     }
 
-                    highlightMoveDuration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
-                    highlightMoveVelocity: -1
+                    highlightFollowsCurrentItem: false
                 }
             }
 
