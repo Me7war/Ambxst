@@ -1894,10 +1894,10 @@ Item {
                                 property bool hovered: false
                                 variant: hovered ? "focus" : "pane"
                                 
-                                x: modelData.left * parent.scaleX
-                                y: modelData.top * parent.scaleY
-                                width: modelData.width * parent.scaleX
-                                height: modelData.height * parent.scaleY
+                                x: Math.floor(modelData.left * parent.scaleX)
+                                y: Math.floor(modelData.top * parent.scaleY)
+                                width: Math.floor(modelData.width * parent.scaleX)
+                                height: Math.floor(modelData.height * parent.scaleY)
                                 
                                 radius: Config.roundness > 0 ? Math.max(Config.roundness - 2, 0) : 0
                                 
@@ -2108,7 +2108,7 @@ Item {
                                             return hovered ? "focus" : "common";
                                         }
                                     }
-                                    width: windowText.width + 16
+                                    width: Math.ceil(windowText.width) + 16
                                     height: parent.height
                                     radius: Config.roundness > 0 ? Math.max(Config.roundness - 4, 0) : 0
                                     
