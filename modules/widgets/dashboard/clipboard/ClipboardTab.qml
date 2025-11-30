@@ -39,7 +39,7 @@ Item {
     property int selectedIndex: -1
     property var allItems: []
     property bool hasNavigatedFromSearch: false
-    
+
     // Animated list model for smooth transitions
     ListModel {
         id: animatedItemsModel
@@ -68,20 +68,21 @@ Item {
     property int expandedItemIndex: -1
     property int selectedOptionIndex: 0
     property bool keyboardNavigation: false
-    
-    onExpandedItemIndexChanged: {
-        // Close expanded options when selection changes to a different item is handled in onSelectedIndexChanged
-    }
-    
+
+    onExpandedItemIndexChanged:
+    // Close expanded options when selection changes to a different item is handled in onSelectedIndexChanged
+    {}
+
     function adjustScrollForExpandedItem(index) {
-        if (index < 0 || index >= animatedItemsModel.count) return;
-        
+        if (index < 0 || index >= animatedItemsModel.count)
+            return;
+
         // Calculate Y position of the item
         var itemY = 0;
         for (var i = 0; i < index; i++) {
             itemY += 48; // All items before are collapsed (base height)
         }
-        
+
         // Calculate expanded item height
         var itemData = animatedItemsModel.get(index).itemData;
         var optionsCount = 4;
@@ -90,17 +91,17 @@ Item {
         }
         var listHeight = 36 * Math.min(3, optionsCount);
         var expandedHeight = 48 + 4 + listHeight + 8;
-        
+
         // Calculate max valid scroll position
         var maxContentY = Math.max(0, resultsList.contentHeight - resultsList.height);
-        
+
         // Current viewport bounds
         var viewportTop = resultsList.contentY;
         var viewportBottom = viewportTop + resultsList.height;
-        
+
         // Only scroll if item is not fully visible
         var itemBottom = itemY + expandedHeight;
-        
+
         if (itemY < viewportTop) {
             // Item top is above viewport - scroll up to show it
             resultsList.contentY = itemY;
@@ -108,7 +109,7 @@ Item {
             // Item bottom is below viewport - scroll down to show it
             resultsList.contentY = Math.min(itemBottom - resultsList.height, maxContentY);
         }
-        // Otherwise, item is already fully visible - no scroll needed
+    // Otherwise, item is already fully visible - no scroll needed
     }
 
     property int previewImageSize: 200
@@ -340,7 +341,9 @@ Item {
                     selectedIndex = i;
                     resultsList.currentIndex = i;
                     pendingItemIdToSelect = "";
-                    Qt.callLater(() => { resultsList.enableScrollAnimation = true; });
+                    Qt.callLater(() => {
+                        resultsList.enableScrollAnimation = true;
+                    });
                     return;
                 }
             }
@@ -352,13 +355,17 @@ Item {
         if (searchText.length > 0 && allItems.length > 0) {
             selectedIndex = 0;
             resultsList.currentIndex = 0;
-            Qt.callLater(() => { resultsList.enableScrollAnimation = true; });
+            Qt.callLater(() => {
+                resultsList.enableScrollAnimation = true;
+            });
         } else if (searchText.length === 0) {
             // When clearing search, only reset if we haven't navigated or if list is empty
             if (!hasNavigatedFromSearch || allItems.length === 0) {
                 selectedIndex = -1;
                 resultsList.currentIndex = -1;
-                Qt.callLater(() => { resultsList.enableScrollAnimation = true; });
+                Qt.callLater(() => {
+                    resultsList.enableScrollAnimation = true;
+                });
             } else {
                 // Keep current selection valid, or default to first item
                 if (selectedIndex >= allItems.length) {
@@ -575,15 +582,16 @@ Item {
         spacing: 8
 
         // Columna izquierda: Search + Lista
-        Column {
+        Item {
             Layout.preferredWidth: root.leftPanelWidth
             Layout.fillHeight: true
-            spacing: 10
 
             // Barra de búsqueda con botón de limpiar
             Row {
+                id: searchRow
                 width: parent.width
                 height: 48
+                anchors.top: parent.top
                 spacing: 8
 
                 SearchInput {
@@ -867,7 +875,9 @@ Item {
             // Lista del clipboard
             Item {
                 width: parent.width
-                height: parent.height - 58
+                anchors.top: searchRow.bottom
+                anchors.bottom: parent.bottom
+                anchors.topMargin: 8
 
                 ListView {
                     id: resultsList
@@ -881,79 +891,79 @@ Item {
 
                     model: animatedItemsModel
                     currentIndex: root.selectedIndex
-                    
-                     property bool enableScrollAnimation: true
 
-                     // Smooth scroll animation
-                     Behavior on contentY {
-                         enabled: Config.animDuration > 0 && resultsList.enableScrollAnimation
-                         NumberAnimation {
-                             duration: Config.animDuration / 2
-                             easing.type: Easing.OutCubic
-                         }
-                     }
+                    property bool enableScrollAnimation: true
 
-                      // Smooth animations for filtering
-                      displaced: Transition {
-                          ParallelAnimation {
-                              NumberAnimation {
-                                  property: "y"
-                                  duration: Config.animDuration > 0 ? Config.animDuration : 0
-                                  easing.type: Easing.OutCubic
-                              }
-                              NumberAnimation {
-                                  property: "opacity"
-                                  to: 1
-                                  duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
-                                  easing.type: Easing.OutCubic
-                              }
-                          }
-                      }
+                    // Smooth scroll animation
+                    Behavior on contentY {
+                        enabled: Config.animDuration > 0 && resultsList.enableScrollAnimation
+                        NumberAnimation {
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
+                        }
+                    }
 
-                     add: Transition {
-                         ParallelAnimation {
-                             NumberAnimation {
-                                 property: "opacity"
-                                 from: 0
-                                 to: 1
-                                 duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
-                                 easing.type: Easing.OutCubic
-                             }
-                             NumberAnimation {
-                                 property: "y"
-                                 duration: Config.animDuration > 0 ? Config.animDuration : 0
-                                 easing.type: Easing.OutCubic
-                             }
-                         }
-                     }
+                    // Smooth animations for filtering
+                    displaced: Transition {
+                        ParallelAnimation {
+                            NumberAnimation {
+                                property: "y"
+                                duration: Config.animDuration > 0 ? Config.animDuration : 0
+                                easing.type: Easing.OutCubic
+                            }
+                            NumberAnimation {
+                                property: "opacity"
+                                to: 1
+                                duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+                    }
 
-                     remove: Transition {
-                         SequentialAnimation {
-                             PauseAnimation {
-                                 duration: 50
-                             }
-                             ParallelAnimation {
-                                 NumberAnimation {
-                                     property: "opacity"
-                                     to: 0
-                                     duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
-                                     easing.type: Easing.OutCubic
-                                 }
-                                 NumberAnimation {
-                                     property: "height"
-                                     to: 0
-                                     duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
-                                     easing.type: Easing.OutCubic
-                                 }
-                             }
-                         }
-                     }
+                    add: Transition {
+                        ParallelAnimation {
+                            NumberAnimation {
+                                property: "opacity"
+                                from: 0
+                                to: 1
+                                duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
+                                easing.type: Easing.OutCubic
+                            }
+                            NumberAnimation {
+                                property: "y"
+                                duration: Config.animDuration > 0 ? Config.animDuration : 0
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+                    }
+
+                    remove: Transition {
+                        SequentialAnimation {
+                            PauseAnimation {
+                                duration: 50
+                            }
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    property: "opacity"
+                                    to: 0
+                                    duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
+                                    easing.type: Easing.OutCubic
+                                }
+                                NumberAnimation {
+                                    property: "height"
+                                    to: 0
+                                    duration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+                        }
+                    }
 
                     onCurrentIndexChanged: {
                         if (currentIndex !== root.selectedIndex) {
                             root.selectedIndex = currentIndex;
                         }
-                        
+
                         // Manual smooth auto-scroll (simplified for variable height items)
                         if (currentIndex >= 0) {
                             var itemY = 0;
@@ -970,7 +980,7 @@ Item {
                                 }
                                 itemY += itemHeight;
                             }
-                            
+
                             var currentItemHeight = 48;
                             if (currentIndex === root.expandedItemIndex && !root.deleteMode && !root.aliasMode && currentIndex < animatedItemsModel.count) {
                                 var itemData = animatedItemsModel.get(currentIndex).itemData;
@@ -981,10 +991,10 @@ Item {
                                 var listHeight = 36 * Math.min(3, optionsCount);
                                 currentItemHeight = 48 + 4 + listHeight + 8;
                             }
-                            
+
                             var viewportTop = resultsList.contentY;
                             var viewportBottom = viewportTop + resultsList.height;
-                            
+
                             if (itemY < viewportTop) {
                                 // Item is above viewport, scroll up
                                 resultsList.contentY = itemY;
@@ -2126,7 +2136,7 @@ Item {
                             }
                             return baseHeight;
                         }
-                        
+
                         onHeightChanged: {
                             // Adjust scroll immediately when height changes due to expansion
                             if (root.expandedItemIndex >= 0 && height > 48) {
@@ -2135,7 +2145,7 @@ Item {
                                 });
                             }
                         }
-                        
+
                         // Calculate Y position based on index, accounting for expanded items
                         y: {
                             var yPos = 0;
@@ -2154,7 +2164,7 @@ Item {
                             }
                             return yPos;
                         }
-                        
+
                         Behavior on y {
                             enabled: Config.animDuration > 0
                             NumberAnimation {
@@ -2162,7 +2172,7 @@ Item {
                                 easing.type: Easing.OutCubic
                             }
                         }
-                        
+
                         Behavior on height {
                             enabled: Config.animDuration > 0
                             NumberAnimation {
@@ -2170,7 +2180,7 @@ Item {
                                 easing.type: Easing.OutQuart
                             }
                         }
-                        
+
                         StyledRect {
                             anchors.fill: parent
                             variant: {
@@ -2199,14 +2209,15 @@ Item {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                     function isClickInsideExpandedItem(mouseY) {
-                        if (root.expandedItemIndex < 0) return false;
-                        
+                        if (root.expandedItemIndex < 0)
+                            return false;
+
                         // Calculate Y position of expanded item
                         var itemY = 0;
                         for (var i = 0; i < root.expandedItemIndex; i++) {
                             itemY += 48; // All items before are collapsed
                         }
-                        
+
                         // Calculate expanded item height
                         var itemData = animatedItemsModel.get(root.expandedItemIndex).itemData;
                         var optionsCount = 4;
@@ -2215,7 +2226,7 @@ Item {
                         }
                         var listHeight = 36 * Math.min(3, optionsCount);
                         var expandedHeight = 48 + 4 + listHeight + 8;
-                        
+
                         var clickY = mouseY + resultsList.contentY;
                         return clickY >= itemY && clickY < itemY + expandedHeight;
                     }
@@ -2235,13 +2246,13 @@ Item {
                             }
                         }
                     }
-                    
+
                     onPressed: mouse => {
                         if (root.deleteMode || (root.expandedItemIndex >= 0 && !isClickInsideExpandedItem(mouse.y))) {
                             mouse.accepted = true;
                         }
                     }
-                    
+
                     onReleased: mouse => {
                         if (root.deleteMode || (root.expandedItemIndex >= 0 && !isClickInsideExpandedItem(mouse.y))) {
                             mouse.accepted = true;

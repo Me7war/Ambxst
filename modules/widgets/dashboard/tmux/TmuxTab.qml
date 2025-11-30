@@ -610,15 +610,16 @@ Item {
         spacing: 8
 
         // Columna izquierda: Search + Lista
-        Column {
+        Item {
             Layout.preferredWidth: root.leftPanelWidth
             Layout.fillHeight: true
-            spacing: 8
 
         // Search input
         SearchInput {
             id: searchInput
             width: parent.width
+            height: 48
+            anchors.top: parent.top
             text: root.searchText
             placeholderText: "Search or create tmux session..."
             iconText: ""
@@ -785,7 +786,9 @@ Item {
         ListView {
             id: resultsList
             width: parent.width
-            height: parent.height - searchInput.height - parent.spacing
+            anchors.top: searchInput.bottom
+            anchors.bottom: parent.bottom
+            anchors.topMargin: 8
             visible: true
             clip: true
             interactive: !root.deleteMode && !root.renameMode && root.expandedItemIndex === -1
