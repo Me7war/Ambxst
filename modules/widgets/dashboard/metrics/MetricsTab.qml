@@ -18,48 +18,12 @@ Rectangle {
     Component.onCompleted: {
         const savedInterval = StateService.get("metricsRefreshInterval", 2000);
         SystemResources.updateInterval = Math.max(100, savedInterval);
-        historyTimer.interval = SystemResources.updateInterval;
     }
 
-    // History data for the chart
-    property var cpuHistory: []
-    property var ramHistory: []
-    property var gpuHistory: []
-    property int maxHistoryPoints: 50
-
-    // Timer to update history
-    Timer {
-        id: historyTimer
-        interval: SystemResources.updateInterval
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: {
-            // Create new arrays with new data points
-            let newCpuHistory = root.cpuHistory.slice();
-            newCpuHistory.push(SystemResources.cpuUsage / 100);
-            if (newCpuHistory.length > root.maxHistoryPoints) {
-                newCpuHistory.shift();
-            }
-            root.cpuHistory = newCpuHistory;
-
-            let newRamHistory = root.ramHistory.slice();
-            newRamHistory.push(SystemResources.ramUsage / 100);
-            if (newRamHistory.length > root.maxHistoryPoints) {
-                newRamHistory.shift();
-            }
-            root.ramHistory = newRamHistory;
-
-            if (SystemResources.gpuDetected) {
-                let newGpuHistory = root.gpuHistory.slice();
-                newGpuHistory.push(SystemResources.gpuUsage / 100);
-                if (newGpuHistory.length > root.maxHistoryPoints) {
-                    newGpuHistory.shift();
-                }
-                root.gpuHistory = newGpuHistory;
-            }
-
-            // Trigger repaint
+    // Watch for history changes to repaint chart
+    Connections {
+        target: SystemResources
+        function onCpuHistoryChanged() {
             chartCanvas.requestPaint();
         }
     }
@@ -183,21 +147,12 @@ Rectangle {
             }
         }
 
-        // Separator
-        Separator {
-            Layout.fillHeight: true
-            Layout.preferredWidth: 2
-            vert: true
-            gradient: null
-            color: Colors.surface
-        }
-
         // Right panel - Chart
-        Rectangle {
+        StyledRect {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: "transparent"
-            radius: Styling.radius(4)
+            radius: Styling.radius(0)
+            variant: "internalbg"
 
             ColumnLayout {
                 anchors.fill: parent
@@ -220,7 +175,7 @@ Rectangle {
 
                         // Draw background grid lines
                         ctx.strokeStyle = Colors.surfaceBright;
-                        ctx.lineWidth = 2;
+                        ctx.lineWidth = 1;
                         ctx.setLineDash([4, 4]);
 
                         // Horizontal grid lines (25%, 50%, 75%)
@@ -234,10 +189,10 @@ Rectangle {
 
                         ctx.setLineDash([]);
 
-                        if (root.cpuHistory.length < 2)
+                        if (SystemResources.cpuHistory.length < 2)
                             return;
 
-                        const pointSpacing = w / (root.maxHistoryPoints - 1);
+                        const pointSpacing = w / (SystemResources.maxHistoryPoints - 1);
 
                         // Helper function to draw a line chart
                         function drawLine(history, color) {
@@ -250,7 +205,7 @@ Rectangle {
                             ctx.lineJoin = "round";
                             ctx.beginPath();
 
-                            const startIndex = Math.max(0, root.maxHistoryPoints - history.length);
+                            const startIndex = Math.max(0, SystemResources.maxHistoryPoints - history.length);
 
                             for (let i = 0; i < history.length; i++) {
                                 const x = (startIndex + i) * pointSpacing;
@@ -267,14 +222,14 @@ Rectangle {
                         }
 
                         // Draw CPU line (red)
-                        drawLine(root.cpuHistory, Colors.red);
+                        drawLine(SystemResources.cpuHistory, Colors.red);
 
                         // Draw RAM line (blue)
-                        drawLine(root.ramHistory, Colors.blue);
+                        drawLine(SystemResources.ramHistory, Colors.blue);
 
                         // Draw GPU line (green) if available
-                        if (SystemResources.gpuDetected && root.gpuHistory.length > 0) {
-                            drawLine(root.gpuHistory, Colors.green);
+                        if (SystemResources.gpuDetected && SystemResources.gpuHistory.length > 0) {
+                            drawLine(SystemResources.gpuHistory, Colors.green);
                         }
                     }
                 }
@@ -283,16 +238,14 @@ Rectangle {
                 RowLayout {
                     Layout.alignment: Qt.AlignRight | Qt.AlignBottom
                     Layout.margins: 8
-                    spacing: 12
+                    spacing: 8
 
                     // Decrease interval button
-                    Rectangle {
+                    StyledRect {
                         Layout.preferredWidth: 32
                         Layout.preferredHeight: 32
-                        color: Colors.surface
-                        radius: Styling.radius(3)
-                        border.width: 1
-                        border.color: Colors.surfaceBright
+                        radius: Styling.radius(-4)
+                        variant: "pane"
 
                         Text {
                             anchors.centerIn: parent
@@ -308,7 +261,6 @@ Rectangle {
                             onClicked: {
                                 const newInterval = Math.max(100, SystemResources.updateInterval - 100);
                                 SystemResources.updateInterval = newInterval;
-                                historyTimer.interval = newInterval;
                                 StateService.set("metricsRefreshInterval", newInterval);
                             }
                         }
@@ -326,19 +278,17 @@ Rectangle {
                     Text {
                         text: `${SystemResources.updateInterval}ms`
                         font.family: Config.theme.font
-                        font.pixelSize: 16
+                        font.pixelSize: Config.theme.fontSize
                         font.weight: Font.Bold
                         color: Colors.overBackground
                     }
 
                     // Increase interval button
-                    Rectangle {
+                    StyledRect {
                         Layout.preferredWidth: 32
                         Layout.preferredHeight: 32
-                        color: Colors.surface
-                        radius: Styling.radius(3)
-                        border.width: 1
-                        border.color: Colors.surfaceBright
+                        radius: Styling.radius(-4)
+                        variant: "pane"
 
                         Text {
                             anchors.centerIn: parent
@@ -354,7 +304,6 @@ Rectangle {
                             onClicked: {
                                 const newInterval = SystemResources.updateInterval + 100;
                                 SystemResources.updateInterval = newInterval;
-                                historyTimer.interval = newInterval;
                                 StateService.set("metricsRefreshInterval", newInterval);
                             }
                         }

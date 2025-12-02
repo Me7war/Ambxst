@@ -37,6 +37,12 @@ Singleton {
     // Update interval in milliseconds
     property int updateInterval: 2000
 
+    // History data for charts (max 50 points)
+    property var cpuHistory: []
+    property var ramHistory: []
+    property var gpuHistory: []
+    property int maxHistoryPoints: 50
+
     Component.onCompleted: {
         validateDisks();
         detectGPU();
@@ -66,6 +72,35 @@ Singleton {
         }
     }
 
+    // Update history arrays with current values
+    function updateHistory() {
+        // Add CPU history
+        let newCpuHistory = cpuHistory.slice();
+        newCpuHistory.push(cpuUsage / 100);
+        if (newCpuHistory.length > maxHistoryPoints) {
+            newCpuHistory.shift();
+        }
+        cpuHistory = newCpuHistory;
+
+        // Add RAM history
+        let newRamHistory = ramHistory.slice();
+        newRamHistory.push(ramUsage / 100);
+        if (newRamHistory.length > maxHistoryPoints) {
+            newRamHistory.shift();
+        }
+        ramHistory = newRamHistory;
+
+        // Add GPU history if detected
+        if (gpuDetected) {
+            let newGpuHistory = gpuHistory.slice();
+            newGpuHistory.push(gpuUsage / 100);
+            if (newGpuHistory.length > maxHistoryPoints) {
+                newGpuHistory.shift();
+            }
+            gpuHistory = newGpuHistory;
+        }
+    }
+
     Timer {
         interval: root.updateInterval
         running: true
@@ -86,6 +121,9 @@ Singleton {
                     gpuReaderIntel.running = true;
                 }
             }
+
+            // Update history after collecting metrics
+            root.updateHistory();
         }
     }
 
