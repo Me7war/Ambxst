@@ -16,11 +16,25 @@ Rectangle {
     implicitHeight: 400
 
     property string hostname: ""
+    property real chartZoom: 1.0
+
+    // Adjust history points based on zoom and repaint chart
+    onChartZoomChanged: {
+        // Store enough history to support zoom out
+        // Always store maximum (250 points) to allow smooth zooming
+        SystemResources.maxHistoryPoints = 250;
+        
+        // Repaint chart when zoom changes
+        chartCanvas.requestPaint();
+    }
 
     // Load refresh interval from state
     Component.onCompleted: {
         const savedInterval = StateService.get("metricsRefreshInterval", 2000);
         SystemResources.updateInterval = Math.max(100, savedInterval);
+        const savedZoom = StateService.get("metricsChartZoom", 1.0);
+        // Limit zoom range: 0.2 (show all available) to 3.0 (zoom in)
+        chartZoom = Math.max(0.2, Math.min(3.0, savedZoom));
         hostnameReader.running = true;
     }
 
@@ -256,11 +270,24 @@ Rectangle {
                             // Clear canvas
                             ctx.clearRect(0, 0, w, h);
 
-                            // Draw background grid (solid lines)
+                            if (SystemResources.cpuHistory.length < 2)
+                                return;
+
+                            // Apply zoom to visible points
+                            // Zoom is proportional across the entire range
+                            // zoom 0.2 = 250 points (50 / 0.2)
+                            // zoom 0.5 = 100 points (50 / 0.5)
+                            // zoom 1.0 = 50 points
+                            // zoom 2.0 = 25 points (50 / 2.0)
+                            // zoom 3.0 = ~17 points (50 / 3.0)
+                            const basePoints = 50;
+                            const zoomedMaxPoints = Math.max(10, Math.floor(basePoints / root.chartZoom));
+
+                            // Draw background grid (solid lines) - adjust to zoom
                             ctx.strokeStyle = Colors.surface;
                             ctx.lineWidth = 1;
 
-                            // Horizontal grid lines (25%, 50%, 75%)
+                            // Horizontal grid lines (8 lines)
                             for (let i = 1; i < 8; i++) {
                                 const y = h * (i / 8);
                                 ctx.beginPath();
@@ -269,8 +296,11 @@ Rectangle {
                                 ctx.stroke();
                             }
 
-                            // Vertical grid lines (every 10% of width)
-                            const verticalLines = 10;
+                            // Vertical grid lines - adjust density based on zoom
+                            // More zoom (fewer points) = fewer lines
+                            // Less zoom (more points) = more lines
+                            const baseVerticalLines = 10;
+                            const verticalLines = Math.max(5, Math.floor(baseVerticalLines / root.chartZoom));
                             for (let i = 1; i < verticalLines; i++) {
                                 const x = w * (i / verticalLines);
                                 ctx.beginPath();
@@ -279,17 +309,17 @@ Rectangle {
                                 ctx.stroke();
                             }
 
-                            if (SystemResources.cpuHistory.length < 2)
-                                return;
-
-                            const pointSpacing = w / (SystemResources.maxHistoryPoints - 1);
-
                             // Helper function to draw a line chart with gradient fill
                             function drawLine(history, color) {
                                 if (history.length < 2)
                                     return;
 
-                                const startIndex = Math.max(0, SystemResources.maxHistoryPoints - history.length);
+                                // Get most recent data points based on zoom level
+                                const visiblePoints = Math.min(zoomedMaxPoints, history.length);
+                                const recentHistory = history.slice(-visiblePoints);
+                                
+                                // Always use full width - spacing adjusts to fit visible points
+                                const pointSpacing = w / (recentHistory.length - 1);
 
                                 // Create gradient from top to bottom
                                 const gradient = ctx.createLinearGradient(0, 0, 0, h);
@@ -306,22 +336,21 @@ Rectangle {
                                 ctx.beginPath();
 
                                 // Start from bottom left
-                                const firstX = startIndex * pointSpacing;
-                                ctx.moveTo(firstX, h);
+                                ctx.moveTo(0, h);
 
                                 // Draw line to first data point
-                                const firstY = h - (history[0] * h);
-                                ctx.lineTo(firstX, firstY);
+                                const firstY = h - (recentHistory[0] * h);
+                                ctx.lineTo(0, firstY);
 
                                 // Draw through all data points
-                                for (let i = 1; i < history.length; i++) {
-                                    const x = (startIndex + i) * pointSpacing;
-                                    const y = h - (history[i] * h);
+                                for (let i = 1; i < recentHistory.length; i++) {
+                                    const x = i * pointSpacing;
+                                    const y = h - (recentHistory[i] * h);
                                     ctx.lineTo(x, y);
                                 }
 
                                 // Close path along bottom
-                                const lastX = (startIndex + history.length - 1) * pointSpacing;
+                                const lastX = (recentHistory.length - 1) * pointSpacing;
                                 ctx.lineTo(lastX, h);
                                 ctx.closePath();
                                 ctx.fill();
@@ -333,9 +362,9 @@ Rectangle {
                                 ctx.lineJoin = "round";
                                 ctx.beginPath();
 
-                                for (let i = 0; i < history.length; i++) {
-                                    const x = (startIndex + i) * pointSpacing;
-                                    const y = h - (history[i] * h);
+                                for (let i = 0; i < recentHistory.length; i++) {
+                                    const x = i * pointSpacing;
+                                    const y = h - (recentHistory[i] * h);
 
                                     if (i === 0) {
                                         ctx.moveTo(x, y);
@@ -377,10 +406,44 @@ Rectangle {
 
                     // Controls at right
                     RowLayout {
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.rightMargin: 4
+                        anchors.fill: parent
+                        anchors.margins: 4
                         spacing: 8
+
+                        // Zoom label
+                        Text {
+                            Layout.leftMargin: 4
+                            text: "Zoom"
+                            font.family: Config.theme.font
+                            font.pixelSize: Config.theme.fontSize - 1
+                            color: Colors.surfaceBright
+                        }
+
+                        // Zoom slider
+                        StyledSlider {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: parent.height
+                            vertical: false
+                            value: (root.chartZoom - 0.2) / 2.8  // Map 0.2-3.0 to 0-1
+                            progressColor: Colors.primary
+                            backgroundColor: Colors.surface
+                            tooltipText: root.chartZoom ? `${root.chartZoom.toFixed(1)}×` : "1.0×"
+                            thickness: 3
+                            handleSpacing: 2
+                            wavy: false
+                            icon: ""
+                            iconPos: "start"
+                            onValueChanged: {
+                                const newZoom = 0.2 + (value * 2.8);  // Map 0-1 to 0.2-3.0
+                                root.chartZoom = newZoom;
+                                StateService.set("metricsChartZoom", newZoom);
+                            }
+                        }
+
+                        // Spacer
+                        Item {
+                            Layout.preferredWidth: 8
+                        }
 
                         // Decrease interval button
                         StyledRect {
