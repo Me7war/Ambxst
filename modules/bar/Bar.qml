@@ -14,6 +14,7 @@ import qs.modules.widgets.powermenu
 import qs.modules.corners
 import qs.modules.components
 import qs.modules.services
+import qs.modules.globals
 import qs.modules.bar
 import qs.config
 import "." as Bar
@@ -296,6 +297,13 @@ PanelWindow {
                 }
             }
 
+            ToggleButton {
+                id: themeEditorButton
+                buttonIcon: Icons.gear
+                tooltipText: "Theme Editor"
+                onToggle: function() { GlobalStates.themeEditorVisible = !GlobalStates.themeEditorVisible }
+            }
+
             PowerButton {
                 id: powerButton
             }
@@ -461,6 +469,14 @@ PanelWindow {
                     bar: panel
                     layer.enabled: Config.bar.showBackground
                 }
+            }
+
+            ToggleButton {
+                id: themeEditorButtonVert
+                buttonIcon: Icons.gear
+                tooltipText: "Theme Editor"
+                Layout.preferredHeight: 36
+                onToggle: function() { GlobalStates.themeEditorVisible = !GlobalStates.themeEditorVisible }
             }
 
             PowerButton {

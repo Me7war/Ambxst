@@ -73,4 +73,7 @@ Singleton {
 
     // Lockscreen state
     property bool lockscreenVisible: false
+
+    // Theme Editor state
+    property bool themeEditorVisible: false
 }

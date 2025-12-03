@@ -1,0 +1,99 @@
+pragma ComponentBehavior: Bound
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import qs.modules.theme
+import qs.modules.components
+import qs.config
+
+Item {
+    id: root
+
+    required property string variantId
+    required property string variantLabel
+    property bool isSelected: false
+
+    signal clicked()
+
+    implicitWidth: 56
+    implicitHeight: 72
+
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: 4
+
+        // Preview box
+        StyledRect {
+            id: previewRect
+            Layout.preferredWidth: 48
+            Layout.preferredHeight: 48
+            Layout.alignment: Qt.AlignHCenter
+            variant: root.variantId
+            enableBorder: true
+
+            // Selection indicator
+            Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                border.color: Colors.primary
+                border.width: root.isSelected ? 2 : 0
+                radius: parent.radius
+
+                Behavior on border.width {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation { duration: Config.animDuration / 2 }
+                }
+            }
+
+            // Cube icon
+            Text {
+                anchors.centerIn: parent
+                text: Icons.cube
+                font.family: Icons.font
+                font.pixelSize: 24
+                color: previewRect.itemColor
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+
+                onClicked: root.clicked()
+
+                onEntered: hoverOverlay.opacity = 0.1
+                onExited: hoverOverlay.opacity = 0
+            }
+
+            Rectangle {
+                id: hoverOverlay
+                anchors.fill: parent
+                color: Colors.primary
+                radius: parent.radius
+                opacity: 0
+
+                Behavior on opacity {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation { duration: Config.animDuration / 2 }
+                }
+            }
+        }
+
+        // Label
+        Text {
+            text: root.variantLabel
+            font.family: Styling.defaultFont
+            font.pixelSize: 9
+            color: root.isSelected ? Colors.primary : Colors.overBackground
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
+
+            Behavior on color {
+                enabled: Config.animDuration > 0
+                ColorAnimation { duration: Config.animDuration / 2 }
+            }
+        }
+    }
+}
