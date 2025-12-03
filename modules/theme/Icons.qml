@@ -54,6 +54,8 @@ QtObject {
     readonly property string gpu: ""
     readonly property string ram: ""
     readonly property string disk: ""
+    readonly property string ssd: ""
+    readonly property string hdd: ""
     readonly property string temperature: ""
 
     // Wi-Fi

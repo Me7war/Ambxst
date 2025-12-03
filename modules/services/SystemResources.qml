@@ -16,6 +16,7 @@ Singleton {
     property real cpuUsage: 0.0
     property var cpuPrevTotal: 0
     property var cpuPrevIdle: 0
+    property string cpuModel: ""
 
     // RAM metrics
     property real ramUsage: 0.0
@@ -54,6 +55,7 @@ Singleton {
 
     Component.onCompleted: {
         detectGPU();
+        cpuModelReader.running = true;
     }
 
     // Watch for config changes and revalidate disks
@@ -164,6 +166,67 @@ Singleton {
 
             // Update history after collecting metrics
             root.updateHistory();
+        }
+    }
+
+    // CPU model detection
+    Process {
+        id: cpuModelReader
+        running: false
+        command: ["sh", "-c", "grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | sed 's/^[ \\t]*//'"]
+        
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: {
+                let model = text.trim();
+                if (model) {
+                    // Clean up CPU name following fastfetch logic
+                    
+                    // Remove general CPU suffixes
+                    model = model.replace(/ CPU$/i, '');
+                    model = model.replace(/ FPU$/i, '');
+                    model = model.replace(/ APU$/i, '');
+                    model = model.replace(/ Processor$/i, '');
+                    
+                    // Remove core count patterns (word-based)
+                    model = model.replace(/ Dual-Core$/i, '');
+                    model = model.replace(/ Quad-Core$/i, '');
+                    model = model.replace(/ Six-Core$/i, '');
+                    model = model.replace(/ Eight-Core$/i, '');
+                    model = model.replace(/ Ten-Core$/i, '');
+                    
+                    // Remove core count patterns (number-based)
+                    model = model.replace(/ 2-Core$/i, '');
+                    model = model.replace(/ 4-Core$/i, '');
+                    model = model.replace(/ 6-Core$/i, '');
+                    model = model.replace(/ 8-Core$/i, '');
+                    model = model.replace(/ 10-Core$/i, '');
+                    model = model.replace(/ 12-Core$/i, '');
+                    model = model.replace(/ 14-Core$/i, '');
+                    model = model.replace(/ 16-Core$/i, '');
+                    
+                    // Remove integrated GPU mentions (everything after these strings)
+                    const radeonIndex1 = model.indexOf(' w/ Radeon');
+                    if (radeonIndex1 !== -1) {
+                        model = model.substring(0, radeonIndex1);
+                    }
+                    const radeonIndex2 = model.indexOf(' with Radeon');
+                    if (radeonIndex2 !== -1) {
+                        model = model.substring(0, radeonIndex2);
+                    }
+                    
+                    // Remove frequency suffix (everything after @)
+                    const atIndex = model.indexOf('@');
+                    if (atIndex !== -1) {
+                        model = model.substring(0, atIndex);
+                    }
+                    
+                    // Remove trailing spaces and duplicate whitespaces
+                    model = model.trim().replace(/\s+/g, ' ');
+                    
+                    root.cpuModel = model;
+                }
+            }
         }
     }
 

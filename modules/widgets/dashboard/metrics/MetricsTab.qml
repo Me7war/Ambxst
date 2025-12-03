@@ -23,7 +23,7 @@ Rectangle {
         // Store enough history to support zoom out
         // Always store maximum (250 points) to allow smooth zooming
         SystemResources.maxHistoryPoints = 250;
-        
+
         // Repaint chart when zoom changes
         chartCanvas.requestPaint();
     }
@@ -32,7 +32,7 @@ Rectangle {
     Component.onCompleted: {
         // Always store maximum (250 points) to allow smooth zooming
         SystemResources.maxHistoryPoints = 250;
-        
+
         const savedInterval = StateService.get("metricsRefreshInterval", 2000);
         SystemResources.updateInterval = Math.max(100, savedInterval);
         const savedZoom = StateService.get("metricsChartZoom", 1.0);
@@ -172,10 +172,10 @@ Rectangle {
                                 spacing: 8
 
                                 Text {
-                                    text: "CPU"
+                                    text: SystemResources.cpuModel || "CPU"
                                     font.family: Config.theme.font
                                     font.pixelSize: Config.theme.fontSize - 2
-                                    color: Colors.surfaceBright
+                                    color: Colors.overBackground
                                     elide: Text.ElideMiddle
                                 }
 
@@ -191,7 +191,7 @@ Rectangle {
                                     font.family: Config.theme.font
                                     font.pixelSize: Math.max(8, Config.theme.fontSize - 2)
                                     font.weight: Font.Medium
-                                    color: Colors.surfaceBright
+                                    color: Colors.overBackground
                                 }
                             }
                         }
@@ -214,10 +214,14 @@ Rectangle {
                                 spacing: 8
 
                                 Text {
-                                    text: "RAM"
+                                    text: {
+                                        const usedGB = (SystemResources.ramUsed / 1024 / 1024).toFixed(1);
+                                        const totalGB = (SystemResources.ramTotal / 1024 / 1024).toFixed(1);
+                                        return `${usedGB} GB / ${totalGB} GB`;
+                                    }
                                     font.family: Config.theme.font
                                     font.pixelSize: Config.theme.fontSize - 2
-                                    color: Colors.surfaceBright
+                                    color: Colors.overBackground
                                     elide: Text.ElideMiddle
                                 }
 
@@ -233,7 +237,7 @@ Rectangle {
                                     font.family: Config.theme.font
                                     font.pixelSize: Math.max(8, Config.theme.fontSize - 2)
                                     font.weight: Font.Medium
-                                    color: Colors.surfaceBright
+                                    color: Colors.overBackground
                                 }
                             }
                         }
@@ -254,7 +258,7 @@ Rectangle {
                                     label: {
                                         const name = SystemResources.gpuNames[index] || "";
                                         const vendor = SystemResources.gpuVendors[index] || "";
-                                        
+
                                         // If we have a descriptive name, use it
                                         if (name && name !== `${vendor.toUpperCase()} GPU ${index}`) {
                                             return name;
@@ -267,14 +271,14 @@ Rectangle {
                                         // Color based on vendor
                                         const vendor = SystemResources.gpuVendors[index] || "";
                                         switch (vendor.toLowerCase()) {
-                                            case "nvidia":
-                                                return Colors.green;
-                                            case "amd":
-                                                return Colors.red;
-                                            case "intel":
-                                                return Colors.blue;
-                                            default:
-                                                return Colors.magenta;
+                                        case "nvidia":
+                                            return Colors.green;
+                                        case "amd":
+                                            return Colors.red;
+                                        case "intel":
+                                            return Colors.blue;
+                                        default:
+                                            return Colors.magenta;
                                         }
                                     }
                                 }
@@ -284,10 +288,13 @@ Rectangle {
                                     spacing: 8
 
                                     Text {
-                                        text: "GPU"
+                                        text: {
+                                            const name = SystemResources.gpuNames[index] || "";
+                                            return name || "GPU";
+                                        }
                                         font.family: Config.theme.font
                                         font.pixelSize: Config.theme.fontSize - 2
-                                        color: Colors.surfaceBright
+                                        color: Colors.overBackground
                                         elide: Text.ElideMiddle
                                     }
 
@@ -303,7 +310,7 @@ Rectangle {
                                         font.family: Config.theme.font
                                         font.pixelSize: Math.max(8, Config.theme.fontSize - 2)
                                         font.weight: Font.Medium
-                                        color: Colors.surfaceBright
+                                        color: Colors.overBackground
                                     }
                                 }
                             }
@@ -335,7 +342,7 @@ Rectangle {
                                         text: modelData
                                         font.family: Config.theme.font
                                         font.pixelSize: Config.theme.fontSize - 2
-                                        color: Colors.surfaceBright
+                                        color: Colors.overBackground
                                         elide: Text.ElideMiddle
                                     }
 
@@ -351,7 +358,7 @@ Rectangle {
                                         font.family: Config.theme.font
                                         font.pixelSize: Math.max(8, Config.theme.fontSize - 2)
                                         font.weight: Font.Medium
-                                        color: Colors.surfaceBright
+                                        color: Colors.overBackground
                                     }
                                 }
                             }
@@ -402,7 +409,7 @@ Rectangle {
 
                             // Core spacing: each data point gets this many pixels
                             const pointSpacing = w / (zoomedMaxPoints - 1);
-                            
+
                             // Calculate offset to align graph to the right
                             const actualPoints = Math.min(zoomedMaxPoints, SystemResources.cpuHistory.length);
                             const graphOffset = w - ((actualPoints - 1) * pointSpacing);
@@ -424,22 +431,22 @@ Rectangle {
                             // Vertical grid lines every 10 points
                             ctx.strokeStyle = Colors.surface;
                             ctx.lineWidth = 2;
-                            
+
                             // Use the absolute data point counter for infinite scrolling
                             const totalDataPoints = SystemResources.totalDataPoints;
-                            
+
                             // Calculate where the visible window starts in absolute terms
                             const windowStartIndex = totalDataPoints - actualPoints;
-                            
+
                             // Find the first grid line (multiple of 10) that should appear
                             const firstGridLine = Math.floor(windowStartIndex / 10) * 10;
-                            
+
                             // Draw vertical lines every 10 data points
                             // Continue until we pass the right edge of the canvas
                             for (let absoluteIndex = firstGridLine; absoluteIndex <= totalDataPoints + 10; absoluteIndex += 10) {
                                 // Convert absolute index to position within visible window
                                 const visibleIndex = absoluteIndex - windowStartIndex;
-                                
+
                                 // Only draw if within visible range
                                 if (visibleIndex >= 0 && visibleIndex < actualPoints) {
                                     const x = graphOffset + (visibleIndex * pointSpacing);
@@ -459,7 +466,7 @@ Rectangle {
                                 // Get most recent data points based on zoom level
                                 const visiblePoints = Math.min(zoomedMaxPoints, history.length);
                                 const recentHistory = history.slice(-visiblePoints);
-                                
+
                                 // Use same offset as grid for perfect alignment
                                 const dataOffset = graphOffset;
 
@@ -529,18 +536,18 @@ Rectangle {
                                         const vendor = SystemResources.gpuVendors[i] || "";
                                         let color;
                                         switch (vendor.toLowerCase()) {
-                                            case "nvidia":
-                                                color = Colors.green;
-                                                break;
-                                            case "amd":
-                                                color = Colors.red;
-                                                break;
-                                            case "intel":
-                                                color = Colors.blue;
-                                                break;
-                                            default:
-                                                color = Colors.magenta;
-                                                break;
+                                        case "nvidia":
+                                            color = Colors.green;
+                                            break;
+                                        case "amd":
+                                            color = Colors.red;
+                                            break;
+                                        case "intel":
+                                            color = Colors.blue;
+                                            break;
+                                        default:
+                                            color = Colors.magenta;
+                                            break;
                                         }
                                         drawLine(SystemResources.gpuHistories[i], color);
                                     }
@@ -576,7 +583,7 @@ Rectangle {
                             text: "Zoom"
                             font.family: Config.theme.font
                             font.pixelSize: Config.theme.fontSize - 1
-                            color: Colors.surfaceBright
+                            color: Colors.overBackground
                         }
 
                         // Zoom slider
