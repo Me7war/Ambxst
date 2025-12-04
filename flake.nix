@@ -161,7 +161,7 @@
         wireplumber
 
         # Terminal
-        kitty
+        (wrapWithNixGL kitty)
         tmux
 
         # Fonts
