@@ -25,7 +25,7 @@ NotchAnimationBehavior {
         property int currentTab: GlobalStates.dashboardCurrentTab
     }
 
-    readonly property var tabModel: [Icons.widgets, Icons.kanban, Icons.assistant, Icons.heartbeat]
+    readonly property var tabModel: [Icons.widgets, Icons.kanban, Icons.heartbeat, Icons.assistant]
     readonly property int tabCount: tabModel.length
     readonly property int tabSpacing: 8
 
@@ -283,7 +283,7 @@ NotchAnimationBehavior {
                 anchors.fill: parent
 
                 // Array de componentes para cargar dinámicamente
-                property var components: [unifiedLauncherComponent, quickSettingsComponent, assistantComponent, metricsComponent]
+                property var components: [unifiedLauncherComponent, quickSettingsComponent, metricsComponent, assistantComponent]
 
                 // Cargar directamente el componente correcto según GlobalStates
                 initialItem: components[GlobalStates.dashboardCurrentTab]
