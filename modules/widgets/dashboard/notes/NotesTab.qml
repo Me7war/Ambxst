@@ -1742,7 +1742,7 @@ Item {
                         }
 
                         StyledToolTip {
-                            text: "Decrease font size"
+                            text: "Decrease font size (Alt+Down)"
                             visible: minusMouseArea.containsMouse
                         }
                     }
@@ -1825,7 +1825,7 @@ Item {
                         }
 
                         StyledToolTip {
-                            text: "Increase font size"
+                            text: "Increase font size (Alt+Up)"
                             visible: plusMouseArea.containsMouse
                         }
                     }
@@ -2225,6 +2225,20 @@ Item {
                                         toggleUnderline();
                                         event.accepted = true;
                                         break;
+                                }
+                            }
+                            // Alt+Up/Down to increase/decrease font size
+                            if (event.modifiers & Qt.AltModifier) {
+                                if (event.key === Qt.Key_Up) {
+                                    let currentSize = getCurrentFontSize();
+                                    let newSize = Math.min(200, currentSize + 2);
+                                    setFontSize(newSize);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Down) {
+                                    let currentSize = getCurrentFontSize();
+                                    let newSize = Math.max(8, currentSize - 2);
+                                    setFontSize(newSize);
+                                    event.accepted = true;
                                 }
                             }
                         }
