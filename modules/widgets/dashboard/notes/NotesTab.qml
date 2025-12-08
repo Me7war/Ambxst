@@ -124,20 +124,13 @@ Item {
         noteEditor.forceActiveFocus();
     }
 
-    // Set font size character by character to preserve existing styles
+    // Set font size
     function setFontSize(size) {
         if (hasSelection()) {
-            let start = noteEditor.selectionStart;
-            let end = noteEditor.selectionEnd;
-            
-            // Process each character individually to preserve its styles
-            for (let i = start; i < end; i++) {
-                noteEditor.select(i, i + 1);
-                noteEditor.cursorSelection.font.pixelSize = size;
-            }
-            
-            // Restore original selection
-            noteEditor.select(start, end);
+            // Get current font, modify it, and reassign (direct pixelSize assignment doesn't work)
+            let currentFont = noteEditor.cursorSelection.font;
+            currentFont.pixelSize = size;
+            noteEditor.cursorSelection.font = currentFont;
         } else {
             preFormatFontSize = size;
         }
