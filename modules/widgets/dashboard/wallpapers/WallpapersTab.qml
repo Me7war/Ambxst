@@ -16,6 +16,12 @@ FocusScope {
     property string searchText: ""
     property int selectedIndex: GlobalStates.wallpaperSelectedIndex
 
+    // Función para actualizar el índice seleccionado de forma centralizada
+    function setSelectedIndex(newIndex: int) {
+        GlobalStates.wallpaperSelectedIndex = newIndex;
+        selectedIndex = newIndex;
+    }
+
     property var activeFilters: []  // Lista de tipos de archivo seleccionados para filtrar
 
     // Configuración interna del grid
@@ -51,6 +57,12 @@ FocusScope {
     function focusSearch() {
         currentFocusIndex = -1;
         wallpaperSearchInput.focusInput();
+        
+        // Restaurar índice válido si está en -1 y hay wallpapers
+        if (selectedIndex === -1 && filteredWallpapers.length > 0) {
+            const currentIndex = findCurrentWallpaperIndex();
+            setSelectedIndex(currentIndex !== -1 ? currentIndex : 0);
+        }
     }
 
     // Alias para compatibilidad con Dashboard
@@ -93,9 +105,7 @@ FocusScope {
     function centerCurrentWallpaper() {
         const currentIndex = findCurrentWallpaperIndex();
         if (currentIndex !== -1) {
-            GlobalStates.wallpaperSelectedIndex = currentIndex;
-            selectedIndex = currentIndex;
-            wallpaperGrid.currentIndex = currentIndex;
+            setSelectedIndex(currentIndex);
 
             // Calcular la fila del wallpaper actual
             const currentRow = Math.floor(currentIndex / wallpapersTabRoot.gridColumns);
@@ -390,13 +400,9 @@ FocusScope {
                 onSearchTextChanged: text => {
                     searchText = text;
                     if (text.length > 0 && filteredWallpapers.length > 0) {
-                        GlobalStates.wallpaperSelectedIndex = 0;
-                        selectedIndex = 0;
-                        wallpaperGrid.currentIndex = 0;
+                        setSelectedIndex(0);
                     } else {
-                        GlobalStates.wallpaperSelectedIndex = -1;
-                        selectedIndex = -1;
-                        wallpaperGrid.currentIndex = -1;
+                        setSelectedIndex(-1);
                     }
                 }
 
@@ -419,54 +425,36 @@ FocusScope {
                             if (newIndex >= filteredWallpapers.length) {
                                 newIndex = filteredWallpapers.length - 1;
                             }
-                            GlobalStates.wallpaperSelectedIndex = newIndex;
-                            selectedIndex = newIndex;
-                            wallpaperGrid.currentIndex = newIndex;
+                            setSelectedIndex(newIndex);
                         } else if (selectedIndex === -1) {
-                            GlobalStates.wallpaperSelectedIndex = 0;
-                            selectedIndex = 0;
-                            wallpaperGrid.currentIndex = 0;
+                            setSelectedIndex(0);
                         }
                     }
                 }
                 onUpPressed: {
-                    if (filteredWallpapers.length > 0 && selectedIndex > 0) {
-                        let newIndex = selectedIndex - wallpapersTabRoot.gridColumns;
-                        if (newIndex < 0) {
-                            newIndex = 0;
+                    if (filteredWallpapers.length > 0) {
+                        if (selectedIndex === -1) {
+                            setSelectedIndex(0);
+                        } else if (selectedIndex >= wallpapersTabRoot.gridColumns) {
+                            setSelectedIndex(selectedIndex - wallpapersTabRoot.gridColumns);
                         }
-                        GlobalStates.wallpaperSelectedIndex = newIndex;
-                        selectedIndex = newIndex;
-                        wallpaperGrid.currentIndex = newIndex;
-                    } else if (selectedIndex === 0 && searchText.length === 0) {
-                        GlobalStates.wallpaperSelectedIndex = -1;
-                        selectedIndex = -1;
-                        wallpaperGrid.currentIndex = -1;
                     }
                 }
                 onLeftPressed: {
                     if (filteredWallpapers.length > 0) {
-                        if (selectedIndex > 0) {
-                            GlobalStates.wallpaperSelectedIndex = selectedIndex - 1;
-                            selectedIndex = selectedIndex - 1;
-                            wallpaperGrid.currentIndex = selectedIndex;
-                        } else if (selectedIndex === -1) {
-                            GlobalStates.wallpaperSelectedIndex = 0;
-                            selectedIndex = 0;
-                            wallpaperGrid.currentIndex = 0;
+                        if (selectedIndex === -1) {
+                            setSelectedIndex(0);
+                        } else if (selectedIndex > 0) {
+                            setSelectedIndex(selectedIndex - 1);
                         }
                     }
                 }
                 onRightPressed: {
                     if (filteredWallpapers.length > 0) {
                         if (selectedIndex < filteredWallpapers.length - 1) {
-                            GlobalStates.wallpaperSelectedIndex = selectedIndex + 1;
-                            selectedIndex = selectedIndex + 1;
-                            wallpaperGrid.currentIndex = selectedIndex;
+                            setSelectedIndex(selectedIndex + 1);
                         } else if (selectedIndex === -1) {
-                            GlobalStates.wallpaperSelectedIndex = 0;
-                            selectedIndex = 0;
-                            wallpaperGrid.currentIndex = 0;
+                            setSelectedIndex(0);
                         }
                     }
                 }
@@ -559,22 +547,22 @@ FocusScope {
                 flickDeceleration: 5000
                 maximumFlickVelocity: 8000
 
-                // Sincronizar currentIndex con selectedIndex
+                // Sincronizar selectedIndex cuando el GridView cambia su currentIndex
                 onCurrentIndexChanged: {
-                    if (currentIndex !== selectedIndex) {
-                        GlobalStates.wallpaperSelectedIndex = currentIndex;
-                        selectedIndex = currentIndex;
+                    if (currentIndex !== selectedIndex && currentIndex >= 0) {
+                        setSelectedIndex(currentIndex);
                     }
                 }
 
                 // Elemento de realce para el wallpaper seleccionado.
-                    highlight: Item {
-                        width: wallpaperGrid.cellWidth
-                        height: wallpaperGrid.cellHeight
-                        z: 100
+                highlight: Item {
+                    width: wallpaperGrid.cellWidth
+                    height: wallpaperGrid.cellHeight
+                    z: 100
 
+                    // Deshabilitar animaciones durante scroll para evitar saltos
                     Behavior on x {
-                        enabled: Config.animDuration > 0
+                        enabled: Config.animDuration > 0 && !wallpaperGrid.isScrolling
                         NumberAnimation {
                             duration: Config.animDuration / 2
                             easing.type: Easing.OutQuart
@@ -582,7 +570,7 @@ FocusScope {
                     }
 
                     Behavior on y {
-                        enabled: Config.animDuration > 0
+                        enabled: Config.animDuration > 0 && !wallpaperGrid.isScrolling
                         NumberAnimation {
                             duration: Config.animDuration / 2
                             easing.type: Easing.OutQuart
@@ -796,9 +784,7 @@ FocusScope {
                         onEntered: {
                             if (wallpaperGrid.isScrolling) return;
                             parent.isHovered = true;
-                            GlobalStates.wallpaperSelectedIndex = index;
-                            selectedIndex = index;
-                            wallpaperGrid.currentIndex = index;
+                            setSelectedIndex(index);
                         }
                         onExited: {
                             parent.isHovered = false;
