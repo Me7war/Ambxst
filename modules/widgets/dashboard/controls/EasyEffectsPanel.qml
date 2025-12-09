@@ -99,22 +99,67 @@ Item {
 
                                 background: StyledRect {
                                     variant: presetButton.isActive ? "primary" : (presetButton.hovered ? "focus" : "common")
-                                    radius: Styling.radius(4)
+                                    radius: presetButton.isActive ? Styling.radius(-4) : Styling.radius(4)
                                 }
 
-                                contentItem: Text {
-                                    text: presetButton.modelData
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Styling.fontSize(-1)
-                                    color: presetButton.isActive 
-                                        ? Config.resolveColor(Config.theme.srPrimary.itemColor)
-                                        : Colors.overBackground
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
+                                contentItem: Row {
+                                    spacing: presetButton.isActive ? 6 : 0
                                     leftPadding: 12
                                     rightPadding: 12
                                     topPadding: 6
                                     bottomPadding: 6
+
+                                    Behavior on spacing {
+                                        enabled: Config.animDuration > 0
+                                        NumberAnimation {
+                                            duration: Config.animDuration / 3
+                                            easing.type: Easing.OutCubic
+                                        }
+                                    }
+
+                                    // Icon with reveal animation
+                                    Item {
+                                        width: presetButton.isActive ? presetIcon.implicitWidth : 0
+                                        height: presetIcon.implicitHeight
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        clip: true
+
+                                        Behavior on width {
+                                            enabled: Config.animDuration > 0
+                                            NumberAnimation {
+                                                duration: Config.animDuration / 3
+                                                easing.type: Easing.OutCubic
+                                            }
+                                        }
+
+                                        Text {
+                                            id: presetIcon
+                                            text: Icons.sparkle
+                                            font.family: Icons.font
+                                            font.pixelSize: Styling.fontSize(-1)
+                                            color: Config.resolveColor(Config.theme.srPrimary.itemColor)
+                                            opacity: presetButton.isActive ? 1 : 0
+
+                                            Behavior on opacity {
+                                                enabled: Config.animDuration > 0
+                                                NumberAnimation {
+                                                    duration: Config.animDuration / 3
+                                                    easing.type: Easing.OutCubic
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Text {
+                                        text: presetButton.modelData
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(-1)
+                                        font.weight: presetButton.isActive ? Font.Bold : Font.Normal
+                                        color: presetButton.isActive 
+                                            ? Config.resolveColor(Config.theme.srPrimary.itemColor)
+                                            : Colors.overBackground
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
                                 }
 
                                 onClicked: EasyEffectsService.loadOutputPreset(modelData)
@@ -153,22 +198,67 @@ Item {
 
                                 background: StyledRect {
                                     variant: inputPresetButton.isActive ? "primary" : (inputPresetButton.hovered ? "focus" : "common")
-                                    radius: Styling.radius(4)
+                                    radius: inputPresetButton.isActive ? Styling.radius(-4) : Styling.radius(4)
                                 }
 
-                                contentItem: Text {
-                                    text: inputPresetButton.modelData
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Styling.fontSize(-1)
-                                    color: inputPresetButton.isActive 
-                                        ? Config.resolveColor(Config.theme.srPrimary.itemColor)
-                                        : Colors.overBackground
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
+                                contentItem: Row {
+                                    spacing: inputPresetButton.isActive ? 6 : 0
                                     leftPadding: 12
                                     rightPadding: 12
                                     topPadding: 6
                                     bottomPadding: 6
+
+                                    Behavior on spacing {
+                                        enabled: Config.animDuration > 0
+                                        NumberAnimation {
+                                            duration: Config.animDuration / 3
+                                            easing.type: Easing.OutCubic
+                                        }
+                                    }
+
+                                    // Icon with reveal animation
+                                    Item {
+                                        width: inputPresetButton.isActive ? inputPresetIcon.implicitWidth : 0
+                                        height: inputPresetIcon.implicitHeight
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        clip: true
+
+                                        Behavior on width {
+                                            enabled: Config.animDuration > 0
+                                            NumberAnimation {
+                                                duration: Config.animDuration / 3
+                                                easing.type: Easing.OutCubic
+                                            }
+                                        }
+
+                                        Text {
+                                            id: inputPresetIcon
+                                            text: Icons.sparkle
+                                            font.family: Icons.font
+                                            font.pixelSize: Styling.fontSize(-1)
+                                            color: Config.resolveColor(Config.theme.srPrimary.itemColor)
+                                            opacity: inputPresetButton.isActive ? 1 : 0
+
+                                            Behavior on opacity {
+                                                enabled: Config.animDuration > 0
+                                                NumberAnimation {
+                                                    duration: Config.animDuration / 3
+                                                    easing.type: Easing.OutCubic
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Text {
+                                        text: inputPresetButton.modelData
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(-1)
+                                        font.weight: inputPresetButton.isActive ? Font.Bold : Font.Normal
+                                        color: inputPresetButton.isActive 
+                                            ? Config.resolveColor(Config.theme.srPrimary.itemColor)
+                                            : Colors.overBackground
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
                                 }
 
                                 onClicked: EasyEffectsService.loadInputPreset(modelData)

@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Daemon priority script for Ambxst
-# Terminates conflicting notification daemons and hypridle instances
-# to prioritize the Ambxst/flake versions
 
 # Kill notification daemons that may conflict
 for daemon in dunst mako swaync; do
@@ -11,17 +8,30 @@ for daemon in dunst mako swaync; do
   fi
 done
 
-# Kill existing hypridle instances (including system-wide)
+# hypridle
 if pgrep -x "hypridle" >/dev/null; then
   echo "Stopping existing hypridle instances..."
   pkill -x "hypridle"
   sleep 0.5
 fi
 
-# Start hypridle from flake (will be in PATH via the flake)
 if command -v hypridle >/dev/null; then
   echo "Starting hypridle from Ambxst environment..."
   nohup hypridle >/dev/null 2>&1 &
 else
   echo "Warning: hypridle not found in PATH"
+fi
+
+# wl-clip-persist
+if pgrep -x "wl-clip-persist" >/dev/null; then
+  echo "Stopping existing wl-clip-persist instances..."
+  pkill -x "wl-clip-persist"
+  sleep 0.5
+fi
+
+if command -v wl-clip-persist >/dev/null; then
+  echo "Starting wl-clip-persist from Ambxst environment..."
+  nohup wl-clip-persist >/dev/null 2>&1 &
+else
+  echo "Warning: wl-clip-persist not found in PATH"
 fi

@@ -123,7 +123,7 @@
         brightnessctl
         ddcutil
         wl-clipboard
-        cliphist
+        wl-clip-persist
         sqlite
         hypridle
         fontconfig
