@@ -180,7 +180,7 @@ Item {
                                 id: hoverOverlay
                                 anchors.fill: parent
                                 color: Colors.primary
-                                radius: parent.radius
+                                radius: variantTag.radius ?? 0
                                 opacity: variantTag.isHovered ? 0.15 : 0
 
                                 Behavior on opacity {

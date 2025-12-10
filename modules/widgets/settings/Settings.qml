@@ -7,6 +7,7 @@ import Quickshell.Widgets
 import qs.modules.theme
 import qs.modules.components
 import qs.modules.globals
+import qs.modules.widgets.dashboard.controls
 import qs.config
 
 FloatingWindow {
@@ -451,7 +452,7 @@ FloatingWindow {
                     currentIndex: 0
 
                     // Theme tab
-                    ThemeTab {
+                    ThemePanel {
                         id: themeTab
                         onUpdateVariant: (variantId, property, value) => {
                             root.updateConfigVariant(variantId, property, value);

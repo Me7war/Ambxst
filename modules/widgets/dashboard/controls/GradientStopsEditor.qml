@@ -4,7 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import qs.modules.theme
 import qs.config
-import "../../../config/ConfigDefaults.js" as ConfigDefaults
+import "../../../../config/ConfigDefaults.js" as ConfigDefaults
 
 GroupBox {
     id: root

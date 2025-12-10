@@ -14,7 +14,7 @@ Rectangle {
     implicitWidth: 400
     implicitHeight: 300
 
-    property int currentSection: 0  // 0: Network, 1: Bluetooth, 2: Mixer, 3: Effects
+    property int currentSection: 0  // 0: Network, 1: Bluetooth, 2: Mixer, 3: Effects, 4: Theme
 
     RowLayout {
         anchors.fill: parent
@@ -73,7 +73,8 @@ Rectangle {
                             { icon: Icons.wifiHigh, label: "Network", section: 0 },
                             { icon: Icons.bluetooth, label: "Bluetooth", section: 1 },
                             { icon: Icons.faders, label: "Mixer", section: 2 },
-                            { icon: Icons.waveform, label: "Effects", section: 3 }
+                            { icon: Icons.waveform, label: "Effects", section: 3 },
+                            { icon: Icons.paintBrush, label: "Theme", section: 4 }
                         ]
 
                         delegate: Button {
@@ -153,7 +154,7 @@ Rectangle {
                         // Otherwise, navigate sections
                         if (event.angleDelta.y > 0 && root.currentSection > 0) {
                             root.currentSection--;
-                        } else if (event.angleDelta.y < 0 && root.currentSection < 3) {
+                        } else if (event.angleDelta.y < 0 && root.currentSection < 4) {
                             root.currentSection++;
                         }
                     }
@@ -297,6 +298,37 @@ Rectangle {
 
                 transform: Translate {
                     y: root.currentSection === 3 ? 0 : (root.currentSection > 3 ? -20 : 20)
+
+                    Behavior on y {
+                        enabled: Config.animDuration > 0
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                }
+            }
+
+            // Theme Panel
+            ThemePanel {
+                id: themePanel
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: Math.min(parent.width, 480)
+                visible: opacity > 0
+                opacity: root.currentSection === 4 ? 1 : 0
+
+                Behavior on opacity {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                transform: Translate {
+                    y: root.currentSection === 4 ? 0 : (root.currentSection > 4 ? -20 : 20)
 
                     Behavior on y {
                         enabled: Config.animDuration > 0

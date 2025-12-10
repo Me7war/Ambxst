@@ -187,6 +187,15 @@ QtObject {
     readonly property string alignJustify: ""
     readonly property string markdown: ""
     readonly property string faders: ""
+    readonly property string paintBrush: ""
+
+    // Theme editor icons
+    readonly property string arrowRightLine: ""  // Arrow right line icon
+    readonly property string sunFogFill: ""      // Sun with fog/radial icon
+    readonly property string grid: ""            // Grid pattern icon
+    readonly property string circle: ""          // Circle icon
+    readonly property string gradientVertical: "" // Gradient vertical icon
+    readonly property string mousePointer: ""    // Mouse pointer/cursor icon
 
     // Bluetooth device types (TODO: find appropriate Phosphor icons)
     readonly property string headphones: ""      // Headphones/audio headset icon

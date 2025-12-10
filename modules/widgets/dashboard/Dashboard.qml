@@ -517,7 +517,7 @@ NotchAnimationBehavior {
 
     Component {
         id: quickSettingsComponent
-        ControlsTab {}
+        SettingsTab {}
     }
 
     Component {
