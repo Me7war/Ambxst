@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell.Io
 import qs.modules.theme
 import qs.modules.components
 import qs.config
@@ -17,11 +18,28 @@ Item {
     // Current category being viewed
     property string currentCategory: "ambxst"
 
+    // Process for unbinding keybinds
+    Process {
+        id: unbindProcess
+    }
+
+    // Function to unbind a specific keybind
+    function unbindKeybind(bind) {
+        if (!bind) return;
+        const mods = bind.modifiers && bind.modifiers.length > 0 ? bind.modifiers.join(" ") : "";
+        const key = bind.key || "";
+        const command = `hyprctl keyword unbind ${mods},${key}`;
+        console.log("BindsPanel: Unbinding keybind:", command);
+        unbindProcess.command = ["sh", "-c", command];
+        unbindProcess.running = true;
+    }
+
     // Edit mode state
     property bool editMode: false
     property int editingIndex: -1
     property var editingBind: null
     property bool isEditingAmbxst: false
+    property bool isCreatingNew: false
 
     // Edit form state
     property var editModifiers: []
@@ -47,11 +65,15 @@ Item {
         root.editArgument = bindData.argument || "";
         root.editFlags = bindData.flags || "";
 
+        // Reset edit flickable scroll position
+        editFlickable.contentY = 0;
+
         root.editMode = true;
     }
 
     function closeEditDialog() {
         root.editMode = false;
+        root.isCreatingNew = false;
     }
 
     function hasModifier(mod) {
@@ -88,8 +110,23 @@ Item {
                 adapter.ambxst[section][bindName].key = root.editKey;
                 // dispatcher and argument are fixed for ambxst binds
             }
+        } else if (root.isCreatingNew) {
+            // Create new custom bind
+            const customBinds = Config.keybindsLoader.adapter.custom || [];
+            let newBinds = customBinds.slice();
+            const newBind = {
+                "name": root.editName,
+                "modifiers": root.editModifiers,
+                "key": root.editKey,
+                "dispatcher": root.editDispatcher,
+                "argument": root.editArgument,
+                "flags": root.editFlags,
+                "enabled": true
+            };
+            newBinds.push(newBind);
+            Config.keybindsLoader.adapter.custom = newBinds;
         } else {
-            // Save custom bind
+            // Update existing custom bind
             const customBinds = Config.keybindsLoader.adapter.custom;
             if (customBinds && customBinds[root.editingIndex]) {
                 let newBinds = [];
@@ -114,6 +151,7 @@ Item {
         }
 
         root.editMode = false;
+        root.isCreatingNew = false;
     }
 
     readonly property var categories: [
@@ -179,11 +217,192 @@ Item {
         return adapter.custom;
     }
 
-    // Main content - slides left when editing
+    // Add a new custom bind
+    function addNewBind() {
+        const newBind = {
+            "name": "",
+            "modifiers": ["SUPER"],
+            "key": "",
+            "dispatcher": "",
+            "argument": "",
+            "flags": "",
+            "enabled": true
+        };
+
+        // Switch to custom category
+        root.currentCategory = "custom";
+
+        // Scroll to bottom after a brief delay to let the UI update
+        scrollToBottomTimer.start();
+
+        // Open edit dialog for the new bind (mark as creating new)
+        root.isCreatingNew = true;
+        root.openEditDialog(newBind, -1, false);
+    }
+
+    // Delete a custom bind
+    function deleteBind(index) {
+        const customBinds = Config.keybindsLoader.adapter.custom;
+        if (!customBinds || index < 0 || index >= customBinds.length) return;
+
+        // Get the bind to delete and unbind it first
+        const bindToDelete = customBinds[index];
+        unbindKeybind(bindToDelete);
+
+        let newBinds = [];
+        for (let i = 0; i < customBinds.length; i++) {
+            if (i !== index) {
+                newBinds.push(customBinds[i]);
+            }
+        }
+        Config.keybindsLoader.adapter.custom = newBinds;
+        root.editMode = false;
+    }
+
+    Timer {
+        id: scrollToBottomTimer
+        interval: 50
+        onTriggered: {
+            mainFlickable.contentY = mainFlickable.contentHeight - mainFlickable.height;
+        }
+    }
+
+    // Fixed header area (titlebar + category selector)
+    ColumnLayout {
+        id: fixedHeader
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        spacing: 8
+        z: 10
+
+        // Horizontal slide + fade animation
+        opacity: root.editMode ? 0 : 1
+        transform: Translate {
+            x: root.editMode ? -30 : 0
+
+            Behavior on x {
+                enabled: Config.animDuration > 0
+                NumberAnimation {
+                    duration: Config.animDuration / 2
+                    easing.type: Easing.OutQuart
+                }
+            }
+        }
+
+        Behavior on opacity {
+            enabled: Config.animDuration > 0
+            NumberAnimation {
+                duration: Config.animDuration / 2
+                easing.type: Easing.OutQuart
+            }
+        }
+
+        // Header
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: titlebar.height
+
+            PanelTitlebar {
+                id: titlebar
+                width: root.contentWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                title: "Keybinds"
+                statusText: ""
+
+                actions: [
+                    {
+                        icon: Icons.plus,
+                        tooltip: "Add keybind",
+                        onClicked: function() {
+                            root.addNewBind();
+                        }
+                    },
+                    {
+                        icon: Icons.sync,
+                        tooltip: "Reload binds",
+                        onClicked: function() {
+                            Config.keybindsLoader.reload();
+                        }
+                    }
+                ]
+            }
+        }
+
+        // Category selector
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: categoryRow.height
+
+            Row {
+                id: categoryRow
+                width: root.contentWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 4
+
+                Repeater {
+                    model: root.categories
+
+                    delegate: StyledRect {
+                        id: categoryTag
+                        required property var modelData
+                        required property int index
+
+                        property bool isSelected: root.currentCategory === modelData.id
+                        property bool isHovered: false
+
+                        variant: isSelected ? "primary" : (isHovered ? "focus" : "common")
+                        enableShadow: true
+                        width: categoryContent.width + 32
+                        height: 36
+                        radius: Styling.radius(-2)
+
+                        Row {
+                            id: categoryContent
+                            anchors.centerIn: parent
+                            spacing: 6
+
+                            Text {
+                                text: categoryTag.modelData.icon
+                                font.family: Icons.font
+                                font.pixelSize: 14
+                                color: categoryTag.itemColor
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Text {
+                                text: categoryTag.modelData.label
+                                font.family: Config.theme.font
+                                font.pixelSize: Styling.fontSize(0)
+                                font.weight: categoryTag.isSelected ? Font.Bold : Font.Normal
+                                color: categoryTag.itemColor
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: categoryTag.isHovered = true
+                            onExited: categoryTag.isHovered = false
+                            onClicked: root.currentCategory = categoryTag.modelData.id
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Scrollable content area
     Flickable {
         id: mainFlickable
-        anchors.fill: parent
-        contentHeight: mainColumn.implicitHeight
+        anchors.top: fixedHeader.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 8
+        contentHeight: contentColumn.implicitHeight
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         interactive: !root.editMode
@@ -210,109 +429,12 @@ Item {
             }
         }
 
+        // Content area
         ColumnLayout {
-            id: mainColumn
-            width: mainFlickable.width
-            spacing: 8
-
-            // Header
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: titlebar.height
-
-                PanelTitlebar {
-                    id: titlebar
-                    width: root.contentWidth
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    title: "Keybinds"
-                    statusText: ""
-
-                    actions: [
-                        {
-                            icon: Icons.sync,
-                            tooltip: "Reload binds",
-                            onClicked: function() {
-                                Config.keybindsLoader.reload();
-                            }
-                        }
-                    ]
-                }
-            }
-
-            // Category selector
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: categoryRow.height
-
-                Row {
-                    id: categoryRow
-                    width: root.contentWidth
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: 4
-
-                    Repeater {
-                        model: root.categories
-
-                        delegate: StyledRect {
-                            id: categoryTag
-                            required property var modelData
-                            required property int index
-
-                            property bool isSelected: root.currentCategory === modelData.id
-                            property bool isHovered: false
-
-                            variant: isSelected ? "primary" : (isHovered ? "focus" : "common")
-                            enableShadow: true
-                            width: categoryContent.width + 32
-                            height: 36
-                            radius: Styling.radius(-2)
-
-                            Row {
-                                id: categoryContent
-                                anchors.centerIn: parent
-                                spacing: 6
-
-                                Text {
-                                    text: categoryTag.modelData.icon
-                                    font.family: Icons.font
-                                    font.pixelSize: 14
-                                    color: categoryTag.itemColor
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-
-                                Text {
-                                    text: categoryTag.modelData.label
-                                    font.family: Config.theme.font
-                                    font.pixelSize: Styling.fontSize(0)
-                                    font.weight: categoryTag.isSelected ? Font.Bold : Font.Normal
-                                    color: categoryTag.itemColor
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onEntered: categoryTag.isHovered = true
-                                onExited: categoryTag.isHovered = false
-                                onClicked: root.currentCategory = categoryTag.modelData.id
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Content area
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: contentColumn.implicitHeight
-
-                ColumnLayout {
-                    id: contentColumn
-                    width: root.contentWidth
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: 4
+            id: contentColumn
+            width: root.contentWidth
+            x: root.sideMargin
+            spacing: 4
 
                     // Ambxst binds view
                     Repeater {
@@ -389,8 +511,6 @@ Item {
                         color: Colors.overSurfaceVariant
                     }
                 }
-            }
-        }
     }
 
     // Edit view (shown when editMode is true) - slides in from right
@@ -485,12 +605,43 @@ Item {
 
                         // Title
                         Text {
-                            text: "Edit Keybind"
+                            text: root.isCreatingNew ? "New Keybind" : "Edit Keybind"
                             font.family: Config.theme.font
                             font.pixelSize: Styling.fontSize(0)
                             font.weight: Font.Medium
                             color: Colors.overBackground
                             Layout.fillWidth: true
+                        }
+
+                        // Delete button (only for existing custom binds)
+                        StyledRect {
+                            id: deleteButton
+                            visible: !root.isEditingAmbxst && !root.isCreatingNew
+                            variant: deleteButtonArea.containsMouse ? "focus" : "common"
+                            Layout.preferredWidth: 36
+                            Layout.preferredHeight: 36
+                            radius: Styling.radius(-2)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: Icons.trash
+                                font.family: Icons.font
+                                font.pixelSize: 16
+                                color: Colors.error
+                            }
+
+                            MouseArea {
+                                id: deleteButtonArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.deleteBind(root.editingIndex)
+                            }
+
+                            StyledToolTip {
+                                visible: deleteButtonArea.containsMouse
+                                tooltipText: "Delete keybind"
+                            }
                         }
 
                         // Save button
