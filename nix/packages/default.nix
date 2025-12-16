@@ -18,73 +18,30 @@ let
 
   ttf-phosphor-icons = import ./phosphor-icons.nix { inherit pkgs; };
 
-  # Base environment packages
-  baseEnv = with pkgs; [
-    (wrapWithNixGL quickshellPkg)
+  # Import modular package lists
+  corePkgs = import ./core.nix { inherit pkgs wrapWithNixGL quickshellPkg; };
+  toolsPkgs = import ./tools.nix { inherit pkgs; };
+  mediaPkgs = import ./media.nix { inherit pkgs wrapWithNixGL; };
+  appsPkgs = import ./apps.nix { inherit pkgs wrapWithNixGL; };
+  fontsPkgs = import ./fonts.nix { inherit pkgs ttf-phosphor-icons; };
 
-    (wrapWithNixGL gpu-screen-recorder)
-    (wrapWithNixGL mpvpaper)
-
-    brightnessctl
-    ddcutil
-    wl-clipboard
-    wl-clip-persist
-    sqlite
-    hypridle
-    fontconfig
-
-  ] ++ (if isNixOS then [
+  # NixOS-specific packages
+  nixosPkgs = [
     ambxst-auth
-    power-profiles-daemon
-    networkmanager
-  ] else [
-    nixGL
-  ]) ++ (with pkgs; [
-    mesa
-    libglvnd
-    egl-wayland
-    wayland
+    pkgs.power-profiles-daemon
+    pkgs.networkmanager
+  ];
 
-    qt6.qtbase
-    qt6.qtsvg
-    qt6.qttools
-    qt6.qtwayland
-    qt6.qtdeclarative
-    qt6.qtimageformats
+  # Non-NixOS packages
+  nonNixosPkgs = [ nixGL ];
 
-    kdePackages.qtshadertools
-    kdePackages.breeze-icons
-    hicolor-icon-theme
-    fuzzel
-    wtype
-    imagemagick
-    matugen
-    ffmpeg
-    playerctl
-
-    pipewire
-    wireplumber
-
-    # Control packages
-    networkmanagerapplet
-    blueman
-    pwvucontrol
-    easyeffects
-
-    # Terminal
-    (wrapWithNixGL kitty)
-    tmux
-
-    # Fonts
-    roboto
-    barlow
-    terminus_font
-    terminus_font_ttf
-    nerd-fonts.symbols-only
-    noto-fonts
-    noto-fonts-color-emoji
-    ttf-phosphor-icons
-  ]);
+  # Combine all packages
+  baseEnv = corePkgs
+    ++ toolsPkgs
+    ++ mediaPkgs
+    ++ appsPkgs
+    ++ fontsPkgs
+    ++ (if isNixOS then nixosPkgs else nonNixosPkgs);
 
   envAmbxst = pkgs.buildEnv {
     name = "Ambxst-env";
