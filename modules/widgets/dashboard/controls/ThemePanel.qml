@@ -851,6 +851,311 @@ Item {
                         }
                     }
 
+                    // Shadow section
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: shadowContent.implicitHeight
+
+                        ColumnLayout {
+                            id: shadowContent
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            spacing: 8
+
+                            Text {
+                                text: "Shadow"
+                                font.family: Config.theme.font
+                                font.pixelSize: Styling.fontSize(-1)
+                                font.weight: Font.Medium
+                                color: Colors.overSurfaceVariant
+                                Layout.bottomMargin: -4
+                            }
+
+                            // Opacity row
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Opacity"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.preferredWidth: 80
+                                }
+
+                                StyledSlider {
+                                    id: shadowOpacitySlider
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 20
+                                    progressColor: Colors.primary
+                                    tooltipText: `${Math.round(value * 100)}%`
+                                    scroll: true
+
+                                    readonly property real configValue: Config.theme.shadowOpacity
+
+                                    onConfigValueChanged: {
+                                        if (Math.abs(value - configValue) > 0.001) {
+                                            value = configValue;
+                                        }
+                                    }
+
+                                    Component.onCompleted: value = configValue
+
+                                    onValueChanged: {
+                                        if (Math.abs(value - Config.theme.shadowOpacity) > 0.001) {
+                                            GlobalStates.markThemeChanged();
+                                            Config.theme.shadowOpacity = value;
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    text: Math.round(shadowOpacitySlider.value * 100) + "%"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    horizontalAlignment: Text.AlignRight
+                                    Layout.preferredWidth: 40
+                                }
+                            }
+
+                            // Blur row
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Blur"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.preferredWidth: 80
+                                }
+
+                                StyledSlider {
+                                    id: shadowBlurSlider
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 20
+                                    progressColor: Colors.primary
+                                    tooltipText: `${(value * 4).toFixed(1)}`
+                                    scroll: true
+
+                                    readonly property real configValue: Config.theme.shadowBlur / 4
+
+                                    onConfigValueChanged: {
+                                        if (Math.abs(value - configValue) > 0.001) {
+                                            value = configValue;
+                                        }
+                                    }
+
+                                    Component.onCompleted: value = configValue
+
+                                    onValueChanged: {
+                                        let newBlur = value * 4;
+                                        if (Math.abs(newBlur - Config.theme.shadowBlur) > 0.01) {
+                                            GlobalStates.markThemeChanged();
+                                            Config.theme.shadowBlur = newBlur;
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    text: Config.theme.shadowBlur.toFixed(1)
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    horizontalAlignment: Text.AlignRight
+                                    Layout.preferredWidth: 40
+                                }
+                            }
+
+                            // Offset row (X and Y)
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Offset X"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.preferredWidth: 80
+                                }
+
+                                StyledSlider {
+                                    id: shadowXOffsetSlider
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 20
+                                    progressColor: Colors.primary
+                                    tooltipText: `${Math.round((value - 0.5) * 40)}`
+                                    scroll: true
+
+                                    readonly property real configValue: (Config.theme.shadowXOffset + 20) / 40
+
+                                    onConfigValueChanged: {
+                                        if (Math.abs(value - configValue) > 0.001) {
+                                            value = configValue;
+                                        }
+                                    }
+
+                                    Component.onCompleted: value = configValue
+
+                                    onValueChanged: {
+                                        let newOffset = Math.round((value - 0.5) * 40);
+                                        if (newOffset !== Config.theme.shadowXOffset) {
+                                            GlobalStates.markThemeChanged();
+                                            Config.theme.shadowXOffset = newOffset;
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    text: Config.theme.shadowXOffset
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    horizontalAlignment: Text.AlignRight
+                                    Layout.preferredWidth: 40
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Offset Y"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.preferredWidth: 80
+                                }
+
+                                StyledSlider {
+                                    id: shadowYOffsetSlider
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 20
+                                    progressColor: Colors.primary
+                                    tooltipText: `${Math.round((value - 0.5) * 40)}`
+                                    scroll: true
+
+                                    readonly property real configValue: (Config.theme.shadowYOffset + 20) / 40
+
+                                    onConfigValueChanged: {
+                                        if (Math.abs(value - configValue) > 0.001) {
+                                            value = configValue;
+                                        }
+                                    }
+
+                                    Component.onCompleted: value = configValue
+
+                                    onValueChanged: {
+                                        let newOffset = Math.round((value - 0.5) * 40);
+                                        if (newOffset !== Config.theme.shadowYOffset) {
+                                            GlobalStates.markThemeChanged();
+                                            Config.theme.shadowYOffset = newOffset;
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    text: Config.theme.shadowYOffset
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    horizontalAlignment: Text.AlignRight
+                                    Layout.preferredWidth: 40
+                                }
+                            }
+
+                            // Color row
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Color"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.preferredWidth: 80
+                                }
+
+                                StyledRect {
+                                    id: shadowColorButton
+                                    variant: "common"
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 32
+                                    radius: Styling.radius(-2)
+
+                                    property bool isHovered: false
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 8
+                                        spacing: 8
+
+                                        Rectangle {
+                                            Layout.preferredWidth: 16
+                                            Layout.preferredHeight: 16
+                                            radius: 4
+                                            color: Config.resolveColor(Config.theme.shadowColor)
+                                            border.width: 1
+                                            border.color: Colors.outline
+                                        }
+
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: Config.theme.shadowColor
+                                            font.family: Config.theme.font
+                                            font.pixelSize: Styling.fontSize(0)
+                                            color: shadowColorButton.itemColor
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        color: Colors.primary
+                                        radius: parent.radius
+                                        opacity: shadowColorButton.isHovered ? 0.15 : 0
+
+                                        Behavior on opacity {
+                                            enabled: (Config.animDuration ?? 0) > 0
+                                            NumberAnimation {
+                                                duration: (Config.animDuration ?? 0) / 2
+                                            }
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onEntered: shadowColorButton.isHovered = true
+                                        onExited: shadowColorButton.isHovered = false
+
+                                        onClicked: {
+                                            root.openColorPicker(
+                                                ["background", "surface", "surfaceBright", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest", "surfaceDim", "surfaceTint", "surfaceVariant", "primary", "primaryContainer", "primaryFixed", "primaryFixedDim", "secondary", "secondaryContainer", "secondaryFixed", "secondaryFixedDim", "tertiary", "tertiaryContainer", "tertiaryFixed", "tertiaryFixedDim", "error", "errorContainer", "overBackground", "overSurface", "overSurfaceVariant", "overPrimary", "overPrimaryContainer", "overPrimaryFixed", "overPrimaryFixedVariant", "overSecondary", "overSecondaryContainer", "overSecondaryFixed", "overSecondaryFixedVariant", "overTertiary", "overTertiaryContainer", "overTertiaryFixed", "overTertiaryFixedVariant", "overError", "overErrorContainer", "outline", "outlineVariant", "inversePrimary", "inverseSurface", "inverseOnSurface", "shadow", "scrim", "blue", "blueContainer", "overBlue", "overBlueContainer", "cyan", "cyanContainer", "overCyan", "overCyanContainer", "green", "greenContainer", "overGreen", "overGreenContainer", "magenta", "magentaContainer", "overMagenta", "overMagentaContainer", "red", "redContainer", "overRed", "overRedContainer", "yellow", "yellowContainer", "overYellow", "overYellowContainer", "white", "whiteContainer", "overWhite", "overWhiteContainer"],
+                                                Config.theme.shadowColor,
+                                                "Select Shadow Color",
+                                                function(color) {
+                                                    GlobalStates.markThemeChanged();
+                                                    Config.theme.shadowColor = color;
+                                                }
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Editor section
                     Item {
                         Layout.fillWidth: true

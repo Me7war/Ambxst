@@ -89,8 +89,8 @@ Button {
                 anchors.fill: parent
 
                 // App icon
-                IconImage {
-                    id: appIcon
+                Item {
+                    id: appIconContainer
                     anchors.centerIn: parent
                     // Offset for indicators: icon shifts away from indicator edge
                     // bottom: shift up (-), left: shift right (+), right: shift left (-)
@@ -99,21 +99,42 @@ Button {
                         ? (root.showIndicators ? (root.isLeft ? 4 : -4) : 0) 
                         : 0
                     
-                    source: {
-                        if (root.desktopEntry && root.desktopEntry.icon) {
-                            return Quickshell.iconPath(root.desktopEntry.icon, "application-x-executable");
-                        }
-                        return Quickshell.iconPath(AppSearch.guessIcon(root.appToplevel.appId), "application-x-executable");
-                    }
-                    implicitSize: root.iconSize
+                    width: root.iconSize
+                    height: root.iconSize
 
-                    // Monochrome effect
-                    layer.enabled: Config.dock?.monochromeIcons ?? false
-                    layer.effect: MultiEffect {
-                        saturation: 0
-                        brightness: 0.1
-                        colorization: 0.8
-                        colorizationColor: Colors.primary
+                    readonly property string iconName: {
+                        if (root.desktopEntry && root.desktopEntry.icon) {
+                            return root.desktopEntry.icon;
+                        }
+                        return AppSearch.guessIcon(root.appToplevel.appId);
+                    }
+
+                    Image {
+                        id: appIcon
+                        anchors.fill: parent
+                        source: "image://icon/" + appIconContainer.iconName
+                        sourceSize.width: root.iconSize * 2
+                        sourceSize.height: root.iconSize * 2
+                        fillMode: Image.PreserveAspectFit
+                        visible: !(Config.dock?.monochromeIcons ?? false)
+                    }
+
+                    // Monochrome version with effect
+                    Image {
+                        id: appIconMono
+                        anchors.fill: parent
+                        source: "image://icon/" + appIconContainer.iconName
+                        sourceSize.width: root.iconSize * 2
+                        sourceSize.height: root.iconSize * 2
+                        fillMode: Image.PreserveAspectFit
+                        visible: Config.dock?.monochromeIcons ?? false
+                        layer.enabled: true
+                        layer.effect: MultiEffect {
+                            saturation: 0
+                            brightness: 0.1
+                            colorization: 0.8
+                            colorizationColor: Colors.primary
+                        }
                     }
                     
                     Behavior on anchors.verticalCenterOffset {
