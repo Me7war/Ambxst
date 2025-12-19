@@ -1,22 +1,20 @@
 .pragma library
 
 var data = {
-    "enabled": false,
+    "enabled": true,
     "theme": "default",
     "position": "bottom",
-    "height": 56,
-    "iconSize": 40,
+    "height": 48,
+    "iconSize": 24,
     "spacing": 4,
-    "margin": 8,
-    "hoverRegionHeight": 4,
+    "margin": 4,
+    "hoverRegionHeight": 16,
     "pinnedOnStartup": false,
     "hoverToReveal": true,
     "showRunningIndicators": true,
     "showPinButton": true,
     "showOverviewButton": true,
     "pinnedApps": [
-        "org.gnome.Nautilus",
-        "firefox",
         "kitty"
     ],
     "ignoredAppRegexes": [
