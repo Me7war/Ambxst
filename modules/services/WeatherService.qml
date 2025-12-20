@@ -18,6 +18,9 @@ QtObject {
     property bool isLoading: false
     property bool hasFailed: false
 
+    // 7-day forecast data
+    property var forecast: []
+
     // Sun position data
     property string sunrise: ""  // HH:MM format
     property string sunset: ""   // HH:MM format
@@ -320,6 +323,24 @@ QtObject {
                             if (daily.sunset && daily.sunset.length > 0) {
                                 root.sunset = daily.sunset[0].split("T")[1];
                             }
+
+                            // Parse 7-day forecast
+                            var forecastData = [];
+                            var dayCount = Math.min(7, daily.time ? daily.time.length : 0);
+                            for (var i = 0; i < dayCount; i++) {
+                                var dayDate = new Date(daily.time[i]);
+                                var rawDayName = i === 0 ? "Today" : dayDate.toLocaleDateString(Qt.locale(), "ddd");
+                                var dayName = rawDayName.charAt(0).toUpperCase() + rawDayName.slice(1);
+                                forecastData.push({
+                                    date: daily.time[i],
+                                    dayName: dayName,
+                                    weatherCode: daily.weathercode ? daily.weathercode[i] : 0,
+                                    emoji: getWeatherCodeEmoji(daily.weathercode ? daily.weathercode[i] : 0),
+                                    maxTemp: convertTemp(daily.temperature_2m_max ? daily.temperature_2m_max[i] : 0),
+                                    minTemp: convertTemp(daily.temperature_2m_min ? daily.temperature_2m_min[i] : 0)
+                                });
+                            }
+                            root.forecast = forecastData;
 
                             root.weatherSymbol = getWeatherCodeEmoji(root.weatherCode);
                             root.weatherDescription = getWeatherDescription(root.weatherCode);

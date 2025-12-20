@@ -178,8 +178,100 @@ Item {
             WeatherWidget {
                 id: weatherWidget
                 width: 300
-                height: 100
+                height: 140
                 showDebugControls: true
+            }
+
+            // 7-day forecast panel (below weather widget)
+            Item {
+                id: forecastPanel
+                width: weatherWidget.width
+                height: WeatherService.dataAvailable && WeatherService.forecast.length > 0 ? forecastContent.implicitHeight : 0
+                clip: true
+                visible: height > 0
+
+                Behavior on height {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                StyledRect {
+                    id: forecastContent
+                    variant: "pane"
+                    anchors.fill: parent
+                    implicitHeight: forecastRow.implicitHeight + 16
+
+                    Row {
+                        id: forecastRow
+                        anchors.centerIn: parent
+                        spacing: 4
+
+                        Repeater {
+                            model: WeatherService.forecast.slice(0, 5)
+
+                            Row {
+                                id: forecastDayRow
+                                required property var modelData
+                                required property int index
+                                spacing: 4
+
+                                Column {
+                                    id: forecastDay
+                                    spacing: 2
+                                    width: (weatherWidget.width - 16 - (4 * 4) - (4 * 6)) / 5
+
+                                    // Day name
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: forecastDayRow.modelData.dayName
+                                        color: Colors.overBackground
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(0)
+                                        font.weight: Font.Medium
+                                    }
+
+                                    // Weather emoji
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: forecastDayRow.modelData.emoji
+                                        font.pixelSize: Styling.fontSize(4)
+                                    }
+
+                                    // Max temperature
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: (Math.round(forecastDayRow.modelData.maxTemp) >= 0 ? "+" : "") + Math.round(forecastDayRow.modelData.maxTemp) + "\u00B0"
+                                        color: Colors.overBackground
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(0)
+                                        font.weight: Font.Bold
+                                    }
+
+                                    // Min temperature
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: (Math.round(forecastDayRow.modelData.minTemp) >= 0 ? "+" : "") + Math.round(forecastDayRow.modelData.minTemp) + "\u00B0"
+                                        color: Colors.outline
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(0)
+                                        font.weight: Font.Normal
+                                    }
+                                }
+
+                                // Separator between days (not after last)
+                                Separator {
+                                    vert: true
+                                    visible: forecastDayRow.index < 4
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: forecastDay.height - 16
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // Debug panel (below weather widget)
@@ -235,18 +327,66 @@ Item {
                         readonly property int buttonSpacing: 2
 
                         readonly property var weatherTypes: [
-                            { code: 0, icon: "☀️", name: "Clear" },
-                            { code: 1, icon: "🌤️", name: "Mainly clear" },
-                            { code: 2, icon: "⛅", name: "Partly cloudy" },
-                            { code: 3, icon: "☁️", name: "Overcast" },
-                            { code: 45, icon: "🌫️", name: "Fog" },
-                            { code: 51, icon: "🌦️", name: "Drizzle" },
-                            { code: 61, icon: "🌧️", name: "Rain" },
-                            { code: 65, icon: "🌧️", name: "Heavy rain" },
-                            { code: 71, icon: "❄️", name: "Snow" },
-                            { code: 75, icon: "❄️", name: "Heavy snow" },
-                            { code: 95, icon: "⛈️", name: "Thunder" },
-                            { code: 96, icon: "🌩️", name: "Hail" }
+                            {
+                                code: 0,
+                                icon: "☀️",
+                                name: "Clear"
+                            },
+                            {
+                                code: 1,
+                                icon: "🌤️",
+                                name: "Mainly clear"
+                            },
+                            {
+                                code: 2,
+                                icon: "⛅",
+                                name: "Partly cloudy"
+                            },
+                            {
+                                code: 3,
+                                icon: "☁️",
+                                name: "Overcast"
+                            },
+                            {
+                                code: 45,
+                                icon: "🌫️",
+                                name: "Fog"
+                            },
+                            {
+                                code: 51,
+                                icon: "🌦️",
+                                name: "Drizzle"
+                            },
+                            {
+                                code: 61,
+                                icon: "🌧️",
+                                name: "Rain"
+                            },
+                            {
+                                code: 65,
+                                icon: "🌧️",
+                                name: "Heavy rain"
+                            },
+                            {
+                                code: 71,
+                                icon: "❄️",
+                                name: "Snow"
+                            },
+                            {
+                                code: 75,
+                                icon: "❄️",
+                                name: "Heavy snow"
+                            },
+                            {
+                                code: 95,
+                                icon: "⛈️",
+                                name: "Thunder"
+                            },
+                            {
+                                code: 96,
+                                icon: "🌩️",
+                                name: "Hail"
+                            }
                         ]
 
                         readonly property int columns: 6
