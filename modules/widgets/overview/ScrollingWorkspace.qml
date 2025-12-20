@@ -98,6 +98,14 @@ Item {
     // Horizontal scroll state
     property real horizontalScrollOffset: 0
     property bool isScrollDragging: false  // Track if any right-click drag is active
+    property bool isWheelScrolling: false  // Track if wheel is being used
+
+    // Timer to reset wheel scrolling state after a brief pause
+    Timer {
+        id: wheelScrollTimer
+        interval: 150
+        onTriggered: root.isWheelScrolling = false
+    }
 
     // Reset scroll when windows change (added, removed, or moved)
     onWorkspaceWindowsChanged: resetScroll()
@@ -113,7 +121,7 @@ Item {
     }
 
     Behavior on horizontalScrollOffset {
-        enabled: Config.animDuration > 0 && !root.isScrollDragging
+        enabled: Config.animDuration > 0 && !root.isScrollDragging && !root.isWheelScrolling
         NumberAnimation {
             duration: Config.animDuration / 2
             easing.type: Easing.OutQuart
@@ -239,6 +247,9 @@ Item {
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 onWheel: event => {
                     if (!root.contentBounds.hasOverflow) return;
+                    // Mark as wheel scrolling to disable animation
+                    root.isWheelScrolling = true;
+                    wheelScrollTimer.restart();
                     // Use vertical scroll delta for horizontal movement
                     const delta = event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x;
                     root.horizontalScrollOffset = root.clampHorizontalScroll(root.horizontalScrollOffset + delta);
