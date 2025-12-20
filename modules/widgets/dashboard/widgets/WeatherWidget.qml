@@ -354,45 +354,57 @@ Rectangle {
         visible: root.weatherEffect === "rain" || root.weatherEffect === "drizzle"
         
         property int dropCount: Math.round(20 * root.weatherIntensity)
+        property real angle: 15  // degrees from vertical
+        property real angleRad: angle * Math.PI / 180
 
         Repeater {
             model: rainEffect.dropCount
 
             Rectangle {
                 id: rainDrop
-                property real startX: Math.random() * rainEffect.width
-                property real startY: -10
+                property real initialX: Math.random() * (rainEffect.width + 50) - 25
+                property real fallDistance: rainEffect.height + 40
+                property real horizontalDrift: fallDistance * Math.tan(rainEffect.angleRad)
                 property real fallSpeed: 800 + Math.random() * 400
+                property real delay: Math.random() * fallSpeed
 
-                x: startX
-                y: startY
+                x: initialX
+                y: -20
                 width: root.weatherEffect === "drizzle" ? 1 : 2
                 height: root.weatherEffect === "drizzle" ? 8 : 12
                 radius: 1
                 color: Qt.rgba(0.7, 0.85, 1, 0.6)
-                rotation: -15
+                rotation: -rainEffect.angle
 
-                SequentialAnimation on y {
+                SequentialAnimation {
                     loops: Animation.Infinite
                     running: rainEffect.visible
 
-                    PropertyAction { value: -10 - Math.random() * 20 }
-                    NumberAnimation {
-                        to: rainEffect.height + 10
-                        duration: rainDrop.fallSpeed
-                        easing.type: Easing.Linear
+                    PauseAnimation { duration: rainDrop.delay }
+
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: rainDrop
+                            property: "y"
+                            from: -20
+                            to: rainDrop.fallDistance - 20
+                            duration: rainDrop.fallSpeed
+                            easing.type: Easing.Linear
+                        }
+                        NumberAnimation {
+                            target: rainDrop
+                            property: "x"
+                            from: rainDrop.initialX
+                            to: rainDrop.initialX + rainDrop.horizontalDrift
+                            duration: rainDrop.fallSpeed
+                            easing.type: Easing.Linear
+                        }
                     }
-                }
 
-                SequentialAnimation on x {
-                    loops: Animation.Infinite
-                    running: rainEffect.visible
-
-                    PropertyAction { value: Math.random() * rainEffect.width }
-                    NumberAnimation {
-                        to: rainDrop.x + 20
-                        duration: rainDrop.fallSpeed
-                        easing.type: Easing.Linear
+                    ScriptAction {
+                        script: {
+                            rainDrop.initialX = Math.random() * (rainEffect.width + 50) - 25;
+                        }
                     }
                 }
             }
@@ -462,44 +474,58 @@ Rectangle {
         anchors.fill: parent
         visible: root.weatherEffect === "thunderstorm"
 
+        property real angle: 20  // degrees from vertical (stronger wind)
+        property real angleRad: angle * Math.PI / 180
+
         // Rain component
         Repeater {
             model: 25
 
             Rectangle {
                 id: stormRainDrop
-                property real startX: Math.random() * thunderstormEffect.width
+                property real initialX: Math.random() * (thunderstormEffect.width + 60) - 30
+                property real fallDistance: thunderstormEffect.height + 50
+                property real horizontalDrift: fallDistance * Math.tan(thunderstormEffect.angleRad)
                 property real fallSpeed: 500 + Math.random() * 300
+                property real delay: Math.random() * fallSpeed
 
-                x: startX
-                y: -10
+                x: initialX
+                y: -25
                 width: 2
                 height: 15
                 radius: 1
                 color: Qt.rgba(0.7, 0.85, 1, 0.7)
-                rotation: -20
+                rotation: -thunderstormEffect.angle
 
-                SequentialAnimation on y {
+                SequentialAnimation {
                     loops: Animation.Infinite
                     running: thunderstormEffect.visible
 
-                    PropertyAction { value: -15 - Math.random() * 20 }
-                    NumberAnimation {
-                        to: thunderstormEffect.height + 15
-                        duration: stormRainDrop.fallSpeed
-                        easing.type: Easing.Linear
+                    PauseAnimation { duration: stormRainDrop.delay }
+
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: stormRainDrop
+                            property: "y"
+                            from: -25
+                            to: stormRainDrop.fallDistance - 25
+                            duration: stormRainDrop.fallSpeed
+                            easing.type: Easing.Linear
+                        }
+                        NumberAnimation {
+                            target: stormRainDrop
+                            property: "x"
+                            from: stormRainDrop.initialX
+                            to: stormRainDrop.initialX + stormRainDrop.horizontalDrift
+                            duration: stormRainDrop.fallSpeed
+                            easing.type: Easing.Linear
+                        }
                     }
-                }
 
-                SequentialAnimation on x {
-                    loops: Animation.Infinite
-                    running: thunderstormEffect.visible
-
-                    PropertyAction { value: Math.random() * thunderstormEffect.width }
-                    NumberAnimation {
-                        to: stormRainDrop.x + 30
-                        duration: stormRainDrop.fallSpeed
-                        easing.type: Easing.Linear
+                    ScriptAction {
+                        script: {
+                            stormRainDrop.initialX = Math.random() * (thunderstormEffect.width + 60) - 30;
+                        }
                     }
                 }
             }
