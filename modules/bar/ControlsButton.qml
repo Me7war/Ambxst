@@ -30,14 +30,14 @@ Item {
     // Main button
     StyledRect {
         id: buttonBg
-        variant: "bg"
+        variant: root.popupOpen ? "primary" : "bg"
         anchors.fill: parent
         enableShadow: root.layerEnabled
 
         Rectangle {
             anchors.fill: parent
             color: Colors.primary
-            opacity: root.popupOpen ? 0.5 : (root.isHovered ? 0.25 : 0)
+            opacity: root.popupOpen ? 0 : (root.isHovered ? 0.25 : 0)
             radius: parent.radius ?? 0
 
             Behavior on opacity {
@@ -53,7 +53,7 @@ Item {
             text: Icons.faders
             font.family: Icons.font
             font.pixelSize: 18
-            color: root.popupOpen ? Colors.background : Colors.overBackground
+            color: root.popupOpen ? buttonBg.itemColor : Config.resolveColor(Config.theme.srOverPrimary.itemColor)
         }
 
         MouseArea {

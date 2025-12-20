@@ -207,10 +207,6 @@ PanelWindow {
                                     }
                                     layer.enabled: false
                                 }
-                                OverviewButton {
-                                    id: overviewButton
-                                    enableShadow: false
-                                }
                                 LayoutSelectorButton {
                                     id: layoutSelectorButton
                                     bar: panel
@@ -374,11 +370,6 @@ PanelWindow {
                                 property var screen: panel.screen
                             }
                             layer.enabled: false
-                        }
-                        OverviewButton {
-                            id: overviewButtonVert
-                            Layout.preferredHeight: 36
-                            enableShadow: false
                         }
                         LayoutSelectorButton {
                             id: layoutSelectorButtonVert
