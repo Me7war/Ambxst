@@ -58,7 +58,7 @@ Item {
             height: 32
             visible: Battery.available
 
-            property real angle: Battery.percentage * (360 - 2 * gapAngle)
+            property real angle: (Battery.percentage / 100) * (360 - 2 * gapAngle)
             property real radius: 12
             property real lineWidth: 3
             property real gapAngle: 45
