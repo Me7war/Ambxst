@@ -413,7 +413,11 @@ Singleton {
                 let newChat = Array.from(root.currentChat);
                 
                 if (reply.content) {
-                    newChat.push({ role: "assistant", content: reply.content });
+                    newChat.push({ 
+                        role: "assistant", 
+                        content: reply.content,
+                        model: root.currentModel ? root.currentModel.name : "Unknown"
+                    });
                 }
                 
                 if (reply.functionCall) {

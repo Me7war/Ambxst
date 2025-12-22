@@ -236,4 +236,5 @@ QtObject {
     readonly property string shield: ""
 
     readonly property string list: ""
+    readonly property string paperPlane: ""
 }

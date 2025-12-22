@@ -10,6 +10,8 @@ import qs.modules.components
 Popup {
     id: root
     
+    signal modelSelected(string modelName)
+    
     width: 400
     // Height: Header (48) + Spacing (12) + List (5 * 48 = 240) + Padding (8*2)
     height: contentItem.implicitHeight + padding * 2
@@ -114,6 +116,7 @@ Popup {
                     if (root.filteredModels.length > 0 && root.selectedIndex >= 0) {
                          let m = root.filteredModels[root.selectedIndex];
                          Ai.setModel(m.name);
+                         root.modelSelected(m.name);
                          root.close();
                     }
                 }
@@ -406,19 +409,15 @@ Popup {
                 
                 onClicked: {
                     Ai.setModel(modelData.name);
+                    root.modelSelected(modelData.name);
                     root.close();
                 }
                 
-                // Mouse hover updates selection
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onEntered: {
+                onHoveredChanged: {
+                    if (hovered) {
                         root.selectedIndex = index;
                         modelList.currentIndex = index;
                     }
-                    propagateComposedEvents: true
-                    onClicked: mouse => mouse.accepted = false // Pass to Button
                 }
             }
         }

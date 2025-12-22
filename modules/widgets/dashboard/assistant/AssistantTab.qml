@@ -308,6 +308,7 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             
+            property int retryIndex: -1 // Track which message is being retried
             property string username: ""
 
             Process {
@@ -403,6 +404,7 @@ Item {
                         property bool isUser: modelData.role === "user"
                         property bool isSystem: modelData.role === "system" || modelData.role === "function"
                         property bool isEditing: false
+                        property bool retryMode: false // Toggle for retry UI
 
                         width: ListView.view.width
                         height: bubbleArea.height + 8
@@ -470,7 +472,7 @@ Item {
                             MouseArea {
                                 id: bubbleArea
                                 width: parent.width
-                                height: Math.max(bubble.height, 32)
+                                height: Math.max(bubble.height, 32) + (modelIndicator.visible ? modelIndicator.implicitHeight + 4 : 0)
                                 hoverEnabled: true
                                 acceptedButtons: Qt.NoButton // Passthrough clicks unless explicitly handled
 
@@ -699,6 +701,43 @@ Item {
                                         }
                                     }
                                 }
+                                
+                                // Model Indicator (Assistant Only)
+                                Text {
+                                    id: modelIndicator
+                                    visible: !isUser && !isSystem && (modelData.model ? true : false)
+                                    text: retryMode ? "Retry with another model " + Icons.caretRight : (modelData.model || "")
+                                    color: Colors.outline
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-2)
+                                    font.weight: Font.Medium
+                                    
+                                    anchors.top: bubble.bottom
+                                    anchors.topMargin: 4
+                                    anchors.left: bubble.left
+                                    anchors.leftMargin: 4
+                                    
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (retryMode) {
+                                                mainChatArea.retryIndex = index;
+                                                modelSelector.open();
+                                                retryMode = false;
+                                            } else {
+                                                retryMode = true;
+                                                retryTimer.start();
+                                            }
+                                        }
+                                    }
+                                    
+                                    Timer {
+                                        id: retryTimer
+                                        interval: 5000
+                                        onTriggered: retryMode = false
+                                    }
+                                }
                             }
                         }
                     }
@@ -742,6 +781,13 @@ Item {
             ModelSelectorPopup {
                 id: modelSelector
                 parent: mainChatArea
+                
+                onModelSelected: {
+                    if (mainChatArea.retryIndex > -1) {
+                         Ai.regenerateResponse(mainChatArea.retryIndex);
+                         mainChatArea.retryIndex = -1;
+                    }
+                }
             }
             
             Connections {
@@ -929,7 +975,7 @@ Item {
                             visible: inputField.text.length > 0
                             
                             contentItem: Text {
-                                text: Icons.arrowRight
+                                text: Icons.paperPlane
                                 font.family: Icons.font
                                 font.pixelSize: 20
                                 color: Colors.primary
@@ -951,6 +997,31 @@ Item {
                         }
                     }
                 }
+            }
+            
+            // Model Name Indicator (Below Input, Welcome Screen Only)
+            Text {
+                anchors.top: inputContainer.bottom
+                anchors.topMargin: 8
+                anchors.horizontalCenter: inputContainer.horizontalCenter
+                
+                text: Ai.currentModel.name
+                color: Colors.outline
+                font.family: Config.theme.font
+                font.pixelSize: Styling.fontSize(-2)
+                font.weight: Font.Medium
+                
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -4 // Increase touch area slightly
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: modelSelector.open()
+                }
+                
+                visible: mainChatArea.isWelcome
+                
+                Behavior on opacity { NumberAnimation { duration: 200 } }
+                opacity: visible ? 1 : 0
             }
         }
     }
