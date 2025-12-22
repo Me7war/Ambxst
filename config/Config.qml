@@ -19,6 +19,7 @@ import "defaults/lockscreen.js" as LockscreenDefaults
 import "defaults/prefix.js" as PrefixDefaults
 import "defaults/system.js" as SystemDefaults
 import "defaults/dock.js" as DockDefaults
+import "defaults/ai.js" as AiDefaults
 import "ConfigValidator.js" as ConfigValidator
 
 Singleton {
@@ -43,9 +44,10 @@ Singleton {
     property bool prefixReady: false
     property bool systemReady: false
     property bool dockReady: false
+    property bool aiReady: false
     property bool keybindsInitialLoadComplete: false
 
-    property bool initialLoadComplete: themeReady && barReady && workspacesReady && overviewReady && notchReady && hyprlandReady && performanceReady && weatherReady && desktopReady && lockscreenReady && prefixReady && systemReady && dockReady
+    property bool initialLoadComplete: themeReady && barReady && workspacesReady && overviewReady && notchReady && hyprlandReady && performanceReady && weatherReady && desktopReady && lockscreenReady && prefixReady && systemReady && dockReady && aiReady
 
     // Aliases for backward compatibility
     property alias loader: themeLoader
@@ -1146,6 +1148,59 @@ Singleton {
     }
 
     // ============================================
+    // AI MODULE
+    // ============================================
+    FileView {
+        id: aiRawLoader
+        path: root.configDir + "/ai.json"
+        onLoaded: {
+            if (!root.aiReady) {
+                validateModule("ai", aiRawLoader, AiDefaults.data, () => {
+                    root.aiReady = true;
+                });
+            }
+        }
+    }
+
+    Process {
+        id: checkAiFile
+        running: true
+        command: ["sh", "-c", "test -f \"" + root.configDir + "/ai.json\""]
+        onExited: exitCode => {
+            if (exitCode !== 0) {
+                console.log("ai.json not found, creating with default values...");
+                aiRawLoader.setText(JSON.stringify(AiDefaults.data, null, 4));
+                root.aiReady = true;
+            }
+        }
+    }
+
+    FileView {
+        id: aiLoader
+        path: root.configDir + "/ai.json"
+        atomicWrites: true
+        watchChanges: true
+        onFileChanged: {
+            root.pauseAutoSave = true;
+            reload();
+            root.pauseAutoSave = false;
+        }
+        onPathChanged: reload()
+        onAdapterUpdated: {
+            if (root.aiReady && !root.pauseAutoSave) {
+                aiLoader.writeAdapter();
+            }
+        }
+
+        adapter: JsonAdapter {
+            property string systemPrompt: "You are a helpful assistant running on a Linux system. You have access to some tools to control the system."
+            property string tool: "none"
+            property list<var> extraModels: []
+            property string defaultModel: "gemini-pro"
+        }
+    }
+
+    // ============================================
     // KEYBINDS (kept separate as binds.json)
     // ============================================
     Process {
@@ -1962,6 +2017,9 @@ Singleton {
 
     // Dock configuration
     property QtObject dock: dockLoader.adapter
+
+    // AI configuration
+    property QtObject ai: aiLoader.adapter
 
     // Helper functions for color handling (HEX or named colors)
     function isHexColor(colorValue) {
