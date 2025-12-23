@@ -685,6 +685,14 @@ QtObject {
         var prevItem = items[currentIdx - 1];
         if (prevItem.pinned !== item.pinned) return;
         
+        // Optimistic update: Swap in local array
+        var temp = items[currentIdx];
+        items[currentIdx] = items[currentIdx - 1];
+        items[currentIdx - 1] = temp;
+        
+        // Notify UI to update immediately
+        listCompleted();
+        
         // Swap indices with previous item
         swapItems(itemId, prevItem.id);
     }
@@ -710,6 +718,14 @@ QtObject {
         var nextItem = items[currentIdx + 1];
         if (nextItem.pinned !== item.pinned) return;
         
+        // Optimistic update: Swap in local array
+        var temp = items[currentIdx];
+        items[currentIdx] = items[currentIdx + 1];
+        items[currentIdx + 1] = temp;
+        
+        // Notify UI to update immediately
+        listCompleted();
+        
         // Swap indices with next item
         swapItems(itemId, nextItem.id);
     }
@@ -718,8 +734,7 @@ QtObject {
     function swapItems(itemId1, itemId2) {
         if (!_initialized) return;
         
-        swapProcess.command = ["sh", "-c", 
-            "sqlite3 '" + dbPath + "' <<'EOSQL'\n" +
+        var cmd = "sqlite3 '" + dbPath + "' <<'EOSQL'\n" +
             ".timeout 5000\n" +
             "BEGIN TRANSACTION;\n" +
             "-- Create temp variables for the swap\n" +
@@ -735,29 +750,24 @@ QtObject {
             "-- Clean up\n" +
             "DELETE FROM swap_temp;\n" +
             "COMMIT;\n" +
-            "EOSQL"
-        ];
-        swapProcess.running = true;
+            "EOSQL";
+            
+        var proc = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+        proc.command = ["sh", "-c", cmd];
+        
+        proc.onExited.connect(function(code) {
+             if (code === 0) {
+                 Qt.callLater(root.list);
+             } else {
+                 console.warn("ClipboardService: dynamic swapProcess failed with code:", code);
+             }
+             proc.destroy();
+        });
+        
+        proc.running = true;
     }
     
-    property Process swapProcess: Process {
-        running: false
-        
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.length > 0) {
-                    console.warn("ClipboardService: swapProcess stderr:", text);
-                }
-            }
-        }
-        
-        onExited: function(code) {
-            if (code === 0) {
-                Qt.callLater(root.list);
-            }
-        }
-    }
-    
+
     property Process reorderProcess: Process {
         running: false
         

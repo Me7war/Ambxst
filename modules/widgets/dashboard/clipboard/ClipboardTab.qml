@@ -397,6 +397,12 @@ Item {
     }
 
     function updateFilteredItems() {
+        // Capture current selection to restore it if possible (handling double updates)
+        var currentIdToKeep = "";
+        if (selectedIndex >= 0 && selectedIndex < allItems.length) {
+            currentIdToKeep = allItems[selectedIndex].id;
+        }
+
         var newItems = [];
 
         for (var i = 0; i < ClipboardService.items.length; i++) {
@@ -411,20 +417,76 @@ Item {
         }
 
         allItems = newItems;
-        resultsList.enableScrollAnimation = false;
-        resultsList.contentY = 0;
+        // Don't reset scroll or animation state here to prevent jumps during rapid updates
 
-        itemsModel.clear();
-        for (var i = 0; i < newItems.length; i++) {
-            itemsModel.append({
-                itemId: newItems[i].id,
-                itemData: newItems[i]
-            });
+        // Smart sync itemsModel to minimize delegate destruction/creation
+        var modelIndex = 0;
+        var newIndex = 0;
+
+        while (newIndex < newItems.length) {
+            var newItem = newItems[newIndex];
+            var newItemId = newItem.id;
+
+            if (modelIndex < itemsModel.count) {
+                var currentModelItem = itemsModel.get(modelIndex);
+
+                if (currentModelItem.itemId === newItemId) {
+                    // Match found: update data if needed and advance
+                    if (currentModelItem.itemData !== newItem) {
+                        itemsModel.set(modelIndex, {
+                            itemData: newItem
+                        });
+                    }
+                    modelIndex++;
+                    newIndex++;
+                } else {
+                    // Mismatch: check if newItem exists later (move) or is new (insert)
+                    var foundLaterIndex = -1;
+                    // Limit lookahead to avoid performance hit on large lists, though clipboard is usually small
+                    for (var j = modelIndex + 1; j < itemsModel.count; j++) {
+                        if (itemsModel.get(j).itemId === newItemId) {
+                            foundLaterIndex = j;
+                            break;
+                        }
+                    }
+
+                    if (foundLaterIndex !== -1) {
+                        // Found later: move it here
+                        itemsModel.move(foundLaterIndex, modelIndex, 1);
+                        itemsModel.set(modelIndex, {
+                            itemData: newItem
+                        });
+                        modelIndex++;
+                        newIndex++;
+                    } else {
+                        // Not found later: insert here
+                        itemsModel.insert(modelIndex, {
+                            itemId: newItemId,
+                            itemData: newItem
+                        });
+                        modelIndex++;
+                        newIndex++;
+                    }
+                }
+            } else {
+                // End of model: append
+                itemsModel.append({
+                    itemId: newItemId,
+                    itemData: newItem
+                });
+                modelIndex++;
+                newIndex++;
+            }
         }
 
-        Qt.callLater(() => {
-            resultsList.enableScrollAnimation = true;
-        });
+        // Remove excess items at the end
+        if (modelIndex < itemsModel.count) {
+            var itemsToRemove = itemsModel.count - modelIndex;
+            itemsModel.remove(modelIndex, itemsToRemove);
+        }
+        
+        // Only trigger later scroll animation enable if strictly needed, 
+        // but since we aren't clearing, we might not need to toggle it at all.
 
         // If we have a pending item to select (after pin/alias operations), find it
         if (pendingItemIdToSelect !== "") {
@@ -440,10 +502,24 @@ Item {
             pendingItemIdToSelect = "";
         }
 
+        // Try to maintain current selection if no pending item was forced
+        if (currentIdToKeep !== "") {
+            for (var i = 0; i < newItems.length; i++) {
+                if (newItems[i].id === currentIdToKeep) {
+                    selectedIndex = i;
+                    resultsList.currentIndex = i;
+                    return;
+                }
+            }
+        }
+
         // Default behavior when no pending item
         if (searchText.length > 0 && allItems.length > 0) {
-            selectedIndex = 0;
-            resultsList.currentIndex = 0;
+             // Only force selection to 0 if we were previously unselected or invalid
+             if (selectedIndex < 0 || selectedIndex >= allItems.length) {
+                selectedIndex = 0;
+                resultsList.currentIndex = 0;
+             }
         } else if (searchText.length === 0) {
             // When clearing search, only reset if we haven't navigated or if list is empty
             if (!hasNavigatedFromSearch || allItems.length === 0) {
@@ -2612,6 +2688,7 @@ Item {
 
                                     // Video thumbnail with play overlay
                                     ClippingRectangle {
+                                        id: videoThumbnailContainer
                                         width: parent.width
                                         height: width * 9 / 16  // 16:9 aspect ratio
                                         color: Colors.surfaceBright
@@ -2631,7 +2708,7 @@ Item {
                                             Rectangle {
                                                 anchors.fill: parent
                                                 color: "#40000000"
-                                                radius: parent.parent.radius
+                                                radius: videoThumbnailContainer.radius
                                             }
 
                                             // Play button overlay
@@ -2658,7 +2735,7 @@ Item {
                                                 id: imageLoadingRect
                                                 anchors.fill: parent
                                                 color: Colors.surfaceBright
-                                                radius: parent.parent ? parent.parent.radius : 0
+                                                radius: videoThumbnailContainer.radius
                                                 visible: parent.status === Image.Loading
 
                                                 Text {
@@ -2810,6 +2887,7 @@ Item {
 
                                     // Preview image (thumbnail)
                                     Rectangle {
+                                        id: linkThumbnailContainer
                                         width: 100
                                         height: 100
                                         color: Colors.surfaceBright
@@ -2828,7 +2906,7 @@ Item {
                                             Rectangle {
                                                 anchors.fill: parent
                                                 color: Colors.surfaceBright
-                                                radius: parent.parent.radius
+                                                radius: linkThumbnailContainer.radius
                                                 visible: parent.status === Image.Loading
 
                                                 Text {
