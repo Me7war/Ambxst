@@ -71,7 +71,9 @@ QtObject {
 
         // Determinar colores activos
         let activeColorFormatted = "";
-        const borderColors = Config.hyprland.activeBorderColor;
+        // Si syncBorderColor está activado, forzamos el uso de hyprlandBorderColor
+        // Si no, usamos la lista de colores configurada (que permite gradientes)
+        const borderColors = Config.hyprland.syncBorderColor ? null : Config.hyprland.activeBorderColor;
 
         if (borderColors && borderColors.length > 1) {
             // Gradiente con múltiples colores
@@ -82,7 +84,9 @@ QtObject {
             activeColorFormatted = `${formattedColors} ${Config.hyprland.borderAngle}deg`;
         } else {
             // Color único
-            const singleColorName = (borderColors && borderColors.length === 1) ? borderColors[0] : (Config.theme.currentTheme === "sticker" ? "overBackground" : Config.hyprlandBorderColor);
+            // Si borderColors es null (sync activado) o vacío, usamos Config.hyprlandBorderColor
+            // Si borderColors tiene 1 elemento, lo usamos
+            const singleColorName = (borderColors && borderColors.length === 1) ? borderColors[0] : Config.hyprlandBorderColor;
             const activeColor = getColorValue(singleColorName);
             activeColorFormatted = formatColorForHyprland(activeColor);
         }
