@@ -69,10 +69,8 @@ Singleton {
 
         onIsIdleChanged: {
             if (isIdle) {
-                console.log("System entered idle state. Starting event timer.");
                 idleTimer.start();
             } else {
-                console.log("System resumed from idle. Resetting state.");
                 idleTimer.stop();
                 root.resetIdleState();
             }
