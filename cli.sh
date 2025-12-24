@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ambxst CLI - Main entry point for Ambxst desktop environment
+# Ambxst CLI - It was needed, so here it is. lol
 
 set -euo pipefail
 
@@ -9,15 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 QS_BIN="${AMBXST_QS:-qs}"
 NIXGL_BIN="${AMBXST_NIXGL:-}"
 
-# Ensure QML modules are found when running in dev mode or manually
-# This handles the case where QML2_IMPORT_PATH isn't set by the wrapper
 if [ -z "${QML2_IMPORT_PATH:-}" ]; then
-  # Try to find nix store path if we are in a dev shell that has the env loaded but not exported
-  # (This is a fallback heuristic)
   if command -v qs >/dev/null 2>&1; then
-     # In a dev shell, qs might be in the path. We rely on the user having set up the shell correctly.
-     # But if they run ./cli.sh directly without the wrapper, we warn them if syntax highlighting might fail.
-     true 
+    true
   fi
 fi
 
@@ -33,7 +27,7 @@ Ambxst CLI - Desktop Environment Control
 Usage: ambxst [COMMAND]
 
 Commands:
-    (none)                            Launch Ambxst desktop shell
+    (none)                            Launch Ambxst
     update                            Update Ambxst
     refresh                           Refresh local/dev profile (for developers)
     lock                              Activate lockscreen
@@ -61,24 +55,24 @@ find_ambxst_pid() {
   # First try with full path (production/flake mode)
   local pid
   pid=$(pgrep -f "quickshell.*${SCRIPT_DIR}/shell.qml" 2>/dev/null | head -1)
-  
+
   # If not found, try with relative path (development mode)
   if [ -z "$pid" ]; then
     pid=$(pgrep -f "quickshell.*shell.qml" 2>/dev/null | head -1)
   fi
-  
+
   # Last resort: find any quickshell process in this directory
   if [ -z "$pid" ]; then
     pid=$(pgrep -a quickshell 2>/dev/null | grep -F "$SCRIPT_DIR" | awk '{print $1}' | head -1)
   fi
-  
+
   echo "$pid"
 }
 
 case "${1:-}" in
 update)
   echo "Updating Ambxst..."
-  exec curl -fsSL get.axeni.de/ambxst | bash
+  exec curl -fsSL get.axeni.de/ambxst | sh
   ;;
 refresh)
   echo "Refreshing Ambxst profile..."
@@ -102,18 +96,18 @@ brightness)
     echo "Error: Ambxst is not running"
     exit 1
   fi
-  
+
   BRIGHTNESS_SAVE_FILE="/tmp/ambxst_brightness_saved.txt"
-  
+
   # Parse arguments
   ARG2="${2:-}"
   ARG3="${3:-}"
   ARG4="${4:-}"
-  
+
   # Handle list flag
   if [ "$ARG2" = "-l" ] || [ "$ARG2" = "--list" ]; then
     echo "Monitors:"
-    if command -v hyprctl &> /dev/null; then
+    if command -v hyprctl &>/dev/null; then
       hyprctl monitors -j 2>/dev/null | jq -r '.[] | "  \(.name)"' || {
         echo "Error: Could not list monitors"
         exit 1
@@ -124,16 +118,16 @@ brightness)
     fi
     exit 0
   fi
-  
+
   # Handle restore flag
   if [ "$ARG2" = "-r" ] || [ "$ARG2" = "--restore" ]; then
     if [ ! -f "$BRIGHTNESS_SAVE_FILE" ]; then
       echo "Error: No saved brightness found. Use -s to save first."
       exit 1
     fi
-    
+
     MONITOR="${ARG3:-}"
-    
+
     if [ -z "$MONITOR" ]; then
       # Restore all monitors
       while IFS=: read -r name value; do
@@ -143,7 +137,7 @@ brightness)
             echo "Warning: Could not restore brightness for $name"
           }
         fi
-      done < "$BRIGHTNESS_SAVE_FILE"
+      done <"$BRIGHTNESS_SAVE_FILE"
       echo "Restored brightness for all monitors"
     else
       # Restore specific monitor
@@ -161,14 +155,14 @@ brightness)
     fi
     exit 0
   fi
-  
+
   # Parse value and monitor/flags
   VALUE=""
   MONITOR=""
   SAVE_FLAG=false
   RELATIVE_MODE=false
   RELATIVE_DELTA=0
-  
+
   if [[ "$ARG2" =~ ^[0-9]+$ ]]; then
     VALUE="$ARG2"
     if [ "$ARG3" = "-s" ] || [ "$ARG3" = "--save" ]; then
@@ -196,7 +190,7 @@ brightness)
     MONITOR="${ARG3:-}"
     if [ -z "$MONITOR" ]; then
       # Save all monitors
-      bash "${SCRIPT_DIR}/scripts/brightness_list.sh" > "${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || {
+      bash "${SCRIPT_DIR}/scripts/brightness_list.sh" >"${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || {
         echo "Warning: Could not query current brightness"
       }
       if [ -f "${BRIGHTNESS_SAVE_FILE}.tmp" ]; then
@@ -204,7 +198,7 @@ brightness)
           if [ -n "$name" ] && [ -n "$bright" ]; then
             echo "${name}:${bright}"
           fi
-        done < "${BRIGHTNESS_SAVE_FILE}.tmp" > "$BRIGHTNESS_SAVE_FILE"
+        done <"${BRIGHTNESS_SAVE_FILE}.tmp" >"$BRIGHTNESS_SAVE_FILE"
         rm -f "${BRIGHTNESS_SAVE_FILE}.tmp"
         echo "Saved current brightness for all monitors"
       fi
@@ -217,11 +211,11 @@ brightness)
       fi
       CURRENT=$(echo "$CURRENT_LINE" | cut -d: -f2)
       if [ -f "$BRIGHTNESS_SAVE_FILE" ]; then
-        grep -v "^${MONITOR}:" "$BRIGHTNESS_SAVE_FILE" > "${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || true
-        echo "${MONITOR}:${CURRENT}" >> "${BRIGHTNESS_SAVE_FILE}.tmp"
+        grep -v "^${MONITOR}:" "$BRIGHTNESS_SAVE_FILE" >"${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || true
+        echo "${MONITOR}:${CURRENT}" >>"${BRIGHTNESS_SAVE_FILE}.tmp"
         mv "${BRIGHTNESS_SAVE_FILE}.tmp" "$BRIGHTNESS_SAVE_FILE"
       else
-        echo "${MONITOR}:${CURRENT}" > "$BRIGHTNESS_SAVE_FILE"
+        echo "${MONITOR}:${CURRENT}" >"$BRIGHTNESS_SAVE_FILE"
       fi
       echo "Saved current brightness for $MONITOR (${CURRENT}%)"
     fi
@@ -231,12 +225,12 @@ brightness)
     echo "Run 'ambxst help' for usage information"
     exit 1
   fi
-  
+
   # Handle relative mode - use IPC adjust function directly
   if [ "$RELATIVE_MODE" = true ]; then
     # Convert delta to 0-1 range
     NORMALIZED_DELTA=$(awk "BEGIN {printf \"%.2f\", $RELATIVE_DELTA / 100}")
-    
+
     if [ -z "$MONITOR" ]; then
       qs ipc --pid "$PID" call brightness adjust "$NORMALIZED_DELTA" "" 2>/dev/null || {
         echo "Error: Could not adjust brightness"
@@ -252,19 +246,19 @@ brightness)
     fi
     exit 0
   fi
-  
+
   # Validate brightness range
   if [ "$VALUE" -lt 0 ] || [ "$VALUE" -gt 100 ]; then
     echo "Error: Brightness must be between 0 and 100"
     exit 1
   fi
-  
+
   # Save current brightness if requested
   if [ "$SAVE_FLAG" = true ]; then
     if [ -z "$MONITOR" ]; then
       # Save all monitors - we need to get current brightness
       # For simplicity, we'll use a helper script to query current brightness
-      bash "${SCRIPT_DIR}/scripts/brightness_list.sh" > "${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || {
+      bash "${SCRIPT_DIR}/scripts/brightness_list.sh" >"${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || {
         echo "Warning: Could not query current brightness"
       }
       # Convert format from name:brightness:method to name:brightness
@@ -273,7 +267,7 @@ brightness)
           if [ -n "$name" ] && [ -n "$bright" ]; then
             echo "${name}:${bright}"
           fi
-        done < "${BRIGHTNESS_SAVE_FILE}.tmp" > "$BRIGHTNESS_SAVE_FILE"
+        done <"${BRIGHTNESS_SAVE_FILE}.tmp" >"$BRIGHTNESS_SAVE_FILE"
         rm -f "${BRIGHTNESS_SAVE_FILE}.tmp"
         echo "Saved current brightness for all monitors"
       fi
@@ -287,19 +281,19 @@ brightness)
       CURRENT=$(echo "$CURRENT_LINE" | cut -d: -f2)
       # Update or append to save file
       if [ -f "$BRIGHTNESS_SAVE_FILE" ]; then
-        grep -v "^${MONITOR}:" "$BRIGHTNESS_SAVE_FILE" > "${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || true
-        echo "${MONITOR}:${CURRENT}" >> "${BRIGHTNESS_SAVE_FILE}.tmp"
+        grep -v "^${MONITOR}:" "$BRIGHTNESS_SAVE_FILE" >"${BRIGHTNESS_SAVE_FILE}.tmp" 2>/dev/null || true
+        echo "${MONITOR}:${CURRENT}" >>"${BRIGHTNESS_SAVE_FILE}.tmp"
         mv "${BRIGHTNESS_SAVE_FILE}.tmp" "$BRIGHTNESS_SAVE_FILE"
       else
-        echo "${MONITOR}:${CURRENT}" > "$BRIGHTNESS_SAVE_FILE"
+        echo "${MONITOR}:${CURRENT}" >"$BRIGHTNESS_SAVE_FILE"
       fi
       echo "Saved current brightness for $MONITOR (${CURRENT}%)"
     fi
   fi
-  
+
   # Set brightness
   NORMALIZED=$(awk "BEGIN {printf \"%.2f\", $VALUE / 100}")
-  
+
   if [ -z "$MONITOR" ]; then
     # Set all monitors
     qs ipc --pid "$PID" call brightness set "$NORMALIZED" "" 2>/dev/null || {
@@ -322,11 +316,11 @@ help | --help | -h)
 "")
   # Run daemon priority script to kill conflicting processes and start hypridle
   bash "${SCRIPT_DIR}/scripts/daemon_priority.sh"
-  
+
   # Kill any existing easyeffects and start it as a service
   pkill -x easyeffects 2>/dev/null || true
   nohup easyeffects --gapplication-service >/dev/null 2>&1 &
-  
+
   # Launch QuickShell with the main shell.qml
   if [ -n "$NIXGL_BIN" ]; then
     exec "$NIXGL_BIN" "$QS_BIN" -p "${SCRIPT_DIR}/shell.qml"
