@@ -14,7 +14,7 @@ Singleton {
     property string lockCmd: Config.system.idle.general.lock_cmd ?? "ambxst lock"
     property string beforeSleepCmd: Config.system.idle.general.before_sleep_cmd ?? "loginctl lock-session"
     property string afterSleepCmd: Config.system.idle.general.after_sleep_cmd ?? "ambxst screen on"
-    
+
     // Login Lock Daemon
     // Helper script that listens to Lock signal and executes lockCmd from config
     Process {
@@ -24,11 +24,11 @@ Singleton {
         onExited: exitCode => {
             if (exitCode !== 0) {
                 console.warn("loginlock.sh exited with code " + exitCode + ". Restarting...");
-                loginLockRestartTimer.start()
+                loginLockRestartTimer.start();
             }
         }
     }
-    
+
     Timer {
         id: loginLockRestartTimer
         interval: 1000
@@ -45,7 +45,7 @@ Singleton {
         onExited: exitCode => {
             if (exitCode !== 0) {
                 console.warn("sleep_monitor.sh exited with code " + exitCode + ". Restarting...");
-                sleepMonitorRestartTimer.start()
+                sleepMonitorRestartTimer.start();
             }
         }
     }
@@ -57,43 +57,79 @@ Singleton {
         onTriggered: sleepMonitorProc.running = true
     }
 
-    // Dynamic Listeners
-    Instantiator {
-        model: Config.system.idle.listeners
-        
-        delegate: QtObject {
-            id: listenerObject
-            required property var modelData
-            
-            property int timeoutVal: modelData.timeout || 60
-            property string onTimeoutCmd: modelData.onTimeout || ""
-            property string onResumeCmd: modelData.onResume || ""
+    // Master Idle Logic
+    property int elapsedIdleTime: 0
+    property var triggeredListeners: [] // Keeps track of indices that have fired
 
-            property var monitor: IdleMonitor {
-                timeout: listenerObject.timeoutVal * 1000 // Convert seconds to ms
-                
-                onIsIdleChanged: {
-                    if (isIdle) {
-                        if (listenerObject.onTimeoutCmd) {
-                            console.log("Idle timeout reached (" + listenerObject.timeoutVal + "s): executing " + listenerObject.onTimeoutCmd);
-                            timeoutProc.running = true;
-                        }
-                    } else {
-                        if (listenerObject.onResumeCmd) {
-                            console.log("Idle resume (" + listenerObject.timeoutVal + "s): executing " + listenerObject.onResumeCmd);
-                            resumeProc.running = true;
-                        }
-                    }
-                }
-            }
-            
-            property var timeoutProc: Process {
-                command: ["sh", "-c", listenerObject.onTimeoutCmd]
-            }
+    // Master Monitor: Detects "absence of activity" almost immediately
+    IdleMonitor {
+        id: masterMonitor
+        timeout: 1 // 1 second threshold to consider the session "idle"
+        respectInhibitors: true
 
-            property var resumeProc: Process {
-                command: ["sh", "-c", listenerObject.onResumeCmd]
+        onIsIdleChanged: {
+            if (isIdle) {
+                console.log("System entered idle state. Starting event timer.");
+                idleTimer.start();
+            } else {
+                console.log("System resumed from idle. Resetting state.");
+                idleTimer.stop();
+                root.resetIdleState();
             }
         }
+    }
+
+    Timer {
+        id: idleTimer
+        interval: 1000 // 1 second tick
+        repeat: true
+        onTriggered: {
+            root.elapsedIdleTime += 1;
+            root.checkListeners();
+        }
+    }
+
+    function checkListeners() {
+        let listeners = Config.system.idle.listeners;
+        for (let i = 0; i < listeners.length; i++) {
+            let listener = listeners[i];
+            let tVal = listener.timeout || 60;
+
+            // If time matches and hasn't been triggered yet
+            if (root.elapsedIdleTime >= tVal && !root.triggeredListeners.includes(i)) {
+                if (listener.onTimeout) {
+                    console.log("Idle timer " + tVal + "s reached: " + listener.onTimeout);
+                    executionProc.command = ["sh", "-c", listener.onTimeout];
+                    executionProc.running = true;
+                }
+                root.triggeredListeners.push(i);
+            }
+        }
+    }
+
+    function resetIdleState() {
+        let listeners = Config.system.idle.listeners;
+
+        // Execute resume commands for all triggered listeners
+        // We iterate backwards to undo latest states first (optional preference)
+        for (let i = root.triggeredListeners.length - 1; i >= 0; i--) {
+            let idx = root.triggeredListeners[i];
+            let listener = listeners[idx];
+
+            if (listener && listener.onResume) {
+                console.log("Idle resuming (undoing " + (listener.timeout || 0) + "s): " + listener.onResume);
+                executionProc.command = ["sh", "-c", listener.onResume];
+                executionProc.running = true;
+            }
+        }
+
+        // Reset counters
+        root.elapsedIdleTime = 0;
+        root.triggeredListeners = [];
+    }
+
+    // Shared process for command execution to avoid garbage collection issues
+    Process {
+        id: executionProc
     }
 }
