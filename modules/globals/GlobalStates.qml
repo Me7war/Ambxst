@@ -160,22 +160,47 @@ Singleton {
     function _copySrVariant(src) {
         var copy = {};
         for (var i = 0; i < _srVariantProps.length; i++) {
-            copy[_srVariantProps[i]] = src[_srVariantProps[i]];
+            if (src[_srVariantProps[i]] !== undefined) {
+                copy[_srVariantProps[i]] = src[_srVariantProps[i]];
+            }
         }
-        // Deep copy arrays
-        copy.gradient = JSON.parse(JSON.stringify(src.gradient));
-        copy.border = JSON.parse(JSON.stringify(src.border));
+        // Deep copy arrays with safety checks
+        try {
+            copy.gradient = (src.gradient !== undefined) ? JSON.parse(JSON.stringify(src.gradient)) : [];
+        } catch (e) {
+            console.warn("GlobalStates: Error cloning gradient: " + e);
+            copy.gradient = [];
+        }
+        
+        try {
+            copy.border = (src.border !== undefined) ? JSON.parse(JSON.stringify(src.border)) : [];
+        } catch (e) {
+            console.warn("GlobalStates: Error cloning border: " + e);
+            copy.border = [];
+        }
+        
         return copy;
     }
 
     // Restore a single SR variant from source to destination
     function _restoreSrVariant(src, dest) {
         for (var i = 0; i < _srVariantProps.length; i++) {
-            dest[_srVariantProps[i]] = src[_srVariantProps[i]];
+            if (src[_srVariantProps[i]] !== undefined) {
+                dest[_srVariantProps[i]] = src[_srVariantProps[i]];
+            }
         }
-        // Deep copy arrays
-        dest.gradient = JSON.parse(JSON.stringify(src.gradient));
-        dest.border = JSON.parse(JSON.stringify(src.border));
+        // Deep copy arrays with safety checks
+        if (src.gradient !== undefined) {
+            try {
+                dest.gradient = JSON.parse(JSON.stringify(src.gradient));
+            } catch (e) { console.warn("GlobalStates: Error restoring gradient: " + e); }
+        }
+        
+        if (src.border !== undefined) {
+            try {
+                dest.border = JSON.parse(JSON.stringify(src.border));
+            } catch (e) { console.warn("GlobalStates: Error restoring border: " + e); }
+        }
     }
 
     // Create a deep copy of the current theme config
