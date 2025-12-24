@@ -5,7 +5,6 @@ with pkgs; [
   brightnessctl
   ddcutil
   fontconfig
-  hypridle
   imagemagick
   jq
   litellm

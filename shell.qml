@@ -181,6 +181,7 @@ ShellRoot {
             _ = CaffeineService.inhibit
             _ = WeatherService.dataAvailable
             _ = SystemResources.cpuUsage
+            _ = IdleService.lockCmd // Force init
         }
     }
 }

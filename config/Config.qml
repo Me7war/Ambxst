@@ -1079,6 +1079,33 @@ Singleton {
 
         adapter: JsonAdapter {
             property list<string> disks: ["/"]
+            property JsonObject idle: JsonObject {
+                property JsonObject general: JsonObject {
+                    property string lock_cmd: "ambxst lock"
+                    property string before_sleep_cmd: "loginctl lock-session"
+                    property string after_sleep_cmd: "ambxst screen on"
+                }
+                property list<var> listeners: [
+                    {
+                        "timeout": 150,
+                        "onTimeout": "ambxst brightness 10 -s",
+                        "onResume": "ambxst brightness -r"
+                    },
+                    {
+                        "timeout": 300,
+                        "onTimeout": "loginctl lock-session"
+                    },
+                    {
+                        "timeout": 330,
+                        "onTimeout": "ambxst screen off",
+                        "onResume": "ambxst screen on"
+                    },
+                    {
+                        "timeout": 1800,
+                        "onTimeout": "ambxst suspend"
+                    }
+                ]
+            }
         }
     }
 
