@@ -60,21 +60,96 @@ Item {
                         }
                     ]
 
-                    // Output/Input segmented switch
-                    SegmentedSwitch {
-                        currentIndex: root.showOutput ? 0 : 1
-                        options: [
-                            {
-                                icon: Icons.speakerHigh,
-                                tooltip: "Output"
-                            },
-                            {
-                                icon: Icons.mic,
-                                tooltip: "Input"
+                    // Output/Input toggle buttons
+                    RowLayout {
+                        spacing: 4
+
+                        // Output Button
+                        StyledRect {
+                            id: outputBtn
+                            property bool isSelected: root.showOutput
+                            property bool isHovered: false
+                            
+                            variant: isSelected ? "primary" : (isHovered ? "focus" : "common")
+                            Layout.preferredHeight: 32
+                            Layout.preferredWidth: outputContent.width + 24
+                            radius: isSelected ? Styling.radius(-4) : Styling.radius(0)
+                            
+                            Row {
+                                id: outputContent
+                                anchors.centerIn: parent
+                                spacing: 8
+                                
+                                Text {
+                                    text: Icons.speakerHigh
+                                    font.family: Icons.font
+                                    font.pixelSize: 14
+                                    color: outputBtn.itemColor
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                
+                                Text {
+                                    text: "Output"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-1)
+                                    font.weight: Font.Medium
+                                    color: outputBtn.itemColor
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
                             }
-                        ]
-                        onIndexChanged: index => {
-                            root.showOutput = (index === 0);
+                            
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: outputBtn.isHovered = true
+                                onExited: outputBtn.isHovered = false
+                                onClicked: root.showOutput = true
+                            }
+                        }
+
+                        // Input Button
+                        StyledRect {
+                            id: inputBtn
+                            property bool isSelected: !root.showOutput
+                            property bool isHovered: false
+                            
+                            variant: isSelected ? "primary" : (isHovered ? "focus" : "common")
+                            Layout.preferredHeight: 32
+                            Layout.preferredWidth: inputContent.width + 24
+                            radius: isSelected ? Styling.radius(-4) : Styling.radius(0)
+                            
+                            Row {
+                                id: inputContent
+                                anchors.centerIn: parent
+                                spacing: 8
+                                
+                                Text {
+                                    text: Icons.mic
+                                    font.family: Icons.font
+                                    font.pixelSize: 14
+                                    color: inputBtn.itemColor
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                
+                                Text {
+                                    text: "Input"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-1)
+                                    font.weight: Font.Medium
+                                    color: inputBtn.itemColor
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+                            
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: inputBtn.isHovered = true
+                                onExited: inputBtn.isHovered = false
+                                onClicked: root.showOutput = false
+                            }
                         }
                     }
                 }
