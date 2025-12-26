@@ -15,6 +15,7 @@ FocusScope {
     property int iconSize: 20
     property int spacing: 4
     property int columns: 3 // para layout grid
+    property int textSpacing: 8
 
     signal actionTriggered(var action)
 
@@ -90,7 +91,9 @@ FocusScope {
 
         // Highlight que se desplaza entre botones
         StyledRect {
-            variant: "primary"
+            variant: (repeater.count > 0 && repeater.itemAt(root.currentIndex) && repeater.itemAt(root.currentIndex).actionModel.variant) 
+                     ? repeater.itemAt(root.currentIndex).actionModel.variant 
+                     : "primary"
             id: highlight
             radius: Styling.radius(4)
             z: 0 // Por debajo de los botones
@@ -147,10 +150,25 @@ FocusScope {
                 delegate: Item {
                     id: delegateWrapper
                     readonly property bool isSeparator: (modelData.type === "separator")
+                    property var actionModel: modelData
                     
-                    implicitWidth: isSeparator ? (root.layout === "row" ? 2 : root.buttonSize) : root.buttonSize
+                    implicitWidth: isSeparator ? (root.layout === "row" ? 2 : root.buttonSize) : (root.buttonSize + (hasText ? textMetrics.width + root.textSpacing : 0))
                     implicitHeight: isSeparator ? (root.layout === "row" ? root.buttonSize : 2) : root.buttonSize
                     z: 1
+
+                    readonly property bool hasText: {
+                        if (!modelData) return false;
+                        if (typeof modelData.text === "string") return modelData.text.length > 0;
+                        return false;
+                    }
+
+                    TextMetrics {
+                        id: textMetrics
+                        text: delegateWrapper.hasText ? modelData.text : ""
+                        font.family: Config.defaultFont
+                        font.pixelSize: root.iconSize * 0.7
+                        font.weight: Font.DemiBold
+                    }
 
                     function triggerAction() {
                         if (!isSeparator) actionButton.triggerAction()
@@ -180,20 +198,51 @@ FocusScope {
                             radius: Styling.radius(4)
                         }
 
-                        contentItem: Text {
-                            text: modelData.icon || ""
-                            textFormat: Text.RichText
-                            font.family: Icons.font
-                            font.pixelSize: root.iconSize
-                            color: actionButton.pressed ? Colors.primary : (index === root.currentIndex ? Config.resolveColor(Config.theme.srPrimary.itemColor) : Colors.overBackground)
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        contentItem: Item {
+                            anchors.fill: parent
 
-                            Behavior on color {
-                                enabled: Config.animDuration > 0
-                                ColorAnimation {
-                                    duration: Config.animDuration / 2
-                                    easing.type: Easing.OutQuart
+                            // 1. Icono centrado en el área base del botón (siempre fijo a la izquierda)
+                            Text {
+                                width: root.buttonSize
+                                height: parent.height
+                                anchors.left: parent.left
+                                text: modelData.icon || ""
+                                textFormat: Text.RichText
+                                font.family: Icons.font
+                                font.pixelSize: root.iconSize
+                                color: actionButton.pressed ? Colors.primary : (index === root.currentIndex ? (highlight.targetItem ? highlight.itemColor : Config.resolveColor(Config.theme.srPrimary.itemColor)) : Colors.overBackground)
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+
+                                Behavior on color {
+                                    enabled: Config.animDuration > 0
+                                    ColorAnimation {
+                                        duration: Config.animDuration / 2
+                                        easing.type: Easing.OutQuart
+                                    }
+                                }
+                            }
+
+                            // 2. Texto alineado a la derecha del área base del botón
+                            Text {
+                                visible: delegateWrapper.hasText
+                                text: visible ? modelData.text : ""
+                                anchors.left: parent.left
+                                anchors.leftMargin: root.buttonSize // Empieza justo después del área del icono
+                                anchors.verticalCenter: parent.verticalCenter
+                                
+                                font.family: Config.defaultFont
+                                font.pixelSize: root.iconSize * 0.7
+                                font.weight: Font.DemiBold
+                                color: actionButton.pressed ? Colors.primary : (index === root.currentIndex ? (highlight.targetItem ? highlight.itemColor : Config.resolveColor(Config.theme.srPrimary.itemColor)) : Colors.overBackground)
+                                verticalAlignment: Text.AlignVCenter
+                                
+                                Behavior on color {
+                                    enabled: Config.animDuration > 0
+                                    ColorAnimation {
+                                        duration: Config.animDuration / 2
+                                        easing.type: Easing.OutQuart
+                                    }
                                 }
                             }
                         }

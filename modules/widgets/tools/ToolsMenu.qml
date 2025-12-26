@@ -4,10 +4,22 @@ import qs.modules.theme
 import qs.modules.globals
 import Quickshell.Io
 
+import qs.modules.services
+
 ActionGrid {
     id: root
 
     signal itemSelected
+
+    QtObject {
+        id: recordAction
+        property string icon: ScreenRecorder.isRecording ? Icons.stop : Icons.recordScreen
+        property string text: ScreenRecorder.isRecording ? ScreenRecorder.duration : ""
+        property string tooltip: "Record Screen"
+        property string command: ""
+        property string variant: ScreenRecorder.isRecording ? "error" : "primary"
+        property string type: "button"
+    }
 
     layout: "row"
     buttonSize: 48
@@ -28,11 +40,7 @@ ActionGrid {
         {
             type: "separator"
         },
-        {
-            icon: Icons.recordScreen,
-            tooltip: "Record Screen",
-            command: ""
-        },
+        recordAction,
         {
             icon: Icons.recordings,
             tooltip: "Open Recordings",
@@ -68,6 +76,8 @@ ActionGrid {
         
         if (action.tooltip === "Screenshot") {
             GlobalStates.screenshotToolVisible = true
+        } else if (action.tooltip === "Record Screen") {
+            ScreenRecorder.toggleRecording()
         }
         
         root.itemSelected();
