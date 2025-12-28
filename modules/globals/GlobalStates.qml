@@ -294,7 +294,7 @@ Singleton {
         "dock": ["enabled", "theme", "position", "height", "iconSize", "spacing", "margin", "hoverRegionHeight", "pinnedOnStartup", "hoverToReveal", "showRunningIndicators", "showPinButton", "showOverviewButton", "screenList"],
         "lockscreen": ["position"],
         "desktop": ["enabled", "iconSize", "spacingVertical", "textColor"],
-        "system": ["idle"]
+        "system": ["idle", "ocr"]
     }
 
     // Create a deep copy of the current shell config

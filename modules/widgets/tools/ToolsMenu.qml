@@ -5,6 +5,7 @@ import qs.modules.globals
 import Quickshell.Io
 
 import qs.modules.services
+import qs.config
 
 ActionGrid {
     id: root
@@ -97,7 +98,27 @@ ActionGrid {
             colorPickerProc.running = true;
         } else if (action.tooltip === "OCR") {
             var scriptPath = Qt.resolvedUrl("../../../scripts/ocr.sh").toString().replace("file://", "");
-            ocrProc.command = ["bash", "-c", "nohup \"" + scriptPath + "\" > /dev/null 2>&1 &"];
+            
+            // Build languages string from Config
+            var ocrConfig = Config.system.ocr;
+            var langs = [];
+            
+            if (ocrConfig) {
+                if (ocrConfig.eng !== false) langs.push("eng"); // Default true
+                if (ocrConfig.spa !== false) langs.push("spa"); // Default true
+                if (ocrConfig.lat === true) langs.push("lat");
+                if (ocrConfig.jpn === true) langs.push("jpn");
+                if (ocrConfig.chi_sim === true) langs.push("chi_sim");
+                if (ocrConfig.chi_tra === true) langs.push("chi_tra");
+                if (ocrConfig.kor === true) langs.push("kor");
+            } else {
+                langs = ["eng", "spa"];
+            }
+            
+            if (langs.length === 0) langs.push("eng");
+            var langString = langs.join("+");
+
+            ocrProc.command = ["bash", "-c", "nohup \"" + scriptPath + "\" \"" + langString + "\" > /dev/null 2>&1 &"];
             ocrProc.running = true;
         }
 

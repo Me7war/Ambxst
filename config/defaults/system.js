@@ -28,5 +28,14 @@ var data = {
                 "onTimeout": "ambxst suspend"
             }
         ]
+    },
+    "ocr": {
+        "eng": true,
+        "spa": true,
+        "lat": false,
+        "jpn": false,
+        "chi_sim": false,
+        "chi_tra": false,
+        "kor": false
     }
 }

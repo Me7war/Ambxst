@@ -569,6 +569,7 @@ Item {
                         SectionButton { text: "Dock"; sectionId: "dock" }
                         SectionButton { text: "Lockscreen"; sectionId: "lockscreen" }
                         SectionButton { text: "Desktop"; sectionId: "desktop" }
+                        SectionButton { text: "System"; sectionId: "system" }
                     }
 
                     // ═══════════════════════════════════════════════════════════════
@@ -1244,12 +1245,118 @@ Item {
                                             Config.desktop.textColor = color;
                                         }
                                     });
+                        }
+                    }
+
+                    Separator { Layout.fillWidth: true; visible: false }
+
+                    // ═══════════════════════════════════════════════════════════════
+                    // SYSTEM SECTION
+                    // ═══════════════════════════════════════════════════════════════
+                    ColumnLayout {
+                        visible: root.currentSection === "system"
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            text: "System"
+                            font.family: Config.theme.font
+                            font.pixelSize: Styling.fontSize(-1)
+                            font.weight: Font.Medium
+                            color: Colors.overSurfaceVariant
+                            Layout.bottomMargin: -4
+                        }
+
+                        Text {
+                            text: "OCR Languages"
+                            font.family: Config.theme.font
+                            font.pixelSize: Styling.fontSize(-2)
+                            color: Colors.primary
+                            font.bold: true
+                            Layout.topMargin: 8
+                        }
+
+                        ToggleRow {
+                            label: "English"
+                            checked: Config.system.ocr.eng ?? true
+                            onToggled: value => {
+                                if (value !== Config.system.ocr.eng) {
+                                    GlobalStates.markShellChanged();
+                                    Config.system.ocr.eng = value;
+                                }
+                            }
+                        }
+
+                        ToggleRow {
+                            label: "Spanish"
+                            checked: Config.system.ocr.spa ?? true
+                            onToggled: value => {
+                                if (value !== Config.system.ocr.spa) {
+                                    GlobalStates.markShellChanged();
+                                    Config.system.ocr.spa = value;
+                                }
+                            }
+                        }
+
+                        ToggleRow {
+                            label: "Latin"
+                            checked: Config.system.ocr.lat ?? false
+                            onToggled: value => {
+                                if (value !== Config.system.ocr.lat) {
+                                    GlobalStates.markShellChanged();
+                                    Config.system.ocr.lat = value;
+                                }
+                            }
+                        }
+
+                        ToggleRow {
+                            label: "Japanese"
+                            checked: Config.system.ocr.jpn ?? false
+                            onToggled: value => {
+                                if (value !== Config.system.ocr.jpn) {
+                                    GlobalStates.markShellChanged();
+                                    Config.system.ocr.jpn = value;
+                                }
+                            }
+                        }
+
+                        ToggleRow {
+                            label: "Chinese (Simplified)"
+                            checked: Config.system.ocr.chi_sim ?? false
+                            onToggled: value => {
+                                if (value !== Config.system.ocr.chi_sim) {
+                                    GlobalStates.markShellChanged();
+                                    Config.system.ocr.chi_sim = value;
+                                }
+                            }
+                        }
+
+                        ToggleRow {
+                            label: "Chinese (Traditional)"
+                            checked: Config.system.ocr.chi_tra ?? false
+                            onToggled: value => {
+                                if (value !== Config.system.ocr.chi_tra) {
+                                    GlobalStates.markShellChanged();
+                                    Config.system.ocr.chi_tra = value;
+                                }
+                            }
+                        }
+
+                        ToggleRow {
+                            label: "Korean"
+                            checked: Config.system.ocr.kor ?? false
+                            onToggled: value => {
+                                if (value !== Config.system.ocr.kor) {
+                                    GlobalStates.markShellChanged();
+                                    Config.system.ocr.kor = value;
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+    }
         }
     }
 
