@@ -87,9 +87,9 @@ ActionGrid {
                 GlobalStates.screenRecordToolVisible = true;
             }
         } else if (action.tooltip === "Color Picker") {
-            var scriptPath = Qt.resolvedUrl("../../../scripts/color_picker.sh").toString().replace("file://", "");
+            var scriptPath = Qt.resolvedUrl("../../../scripts/colorpicker.py").toString().replace("file://", "");
             // Run detached so it survives when the menu closes
-            colorPickerProc.command = ["bash", "-c", "nohup bash \"" + scriptPath + "\" > /dev/null 2>&1 &"];
+            colorPickerProc.command = ["bash", "-c", "nohup python3 \"" + scriptPath + "\" > /dev/null 2>&1 &"];
             colorPickerProc.running = true;
         }
 
