@@ -20,21 +20,18 @@ PanelWindow {
         right: true
     }
     color: "transparent"
-    
+
     WlrLayershell.layer: WlrLayer.Overlay
     visible: GlobalStates.mirrorWindowVisible
 
-    // Start position
-    property int xPos: 200
-    property int yPos: 200
+    property int xPos: Screen.width - root.currentWidth - 20
+    property int yPos: (Screen.height / 2) - (root.currentHeight / 2)
     property bool isSquare: true
-    property bool isFlipped: true // Espejo horizontal por defecto
+    property bool isFlipped: false
 
-    // Dynamic Size
     property int currentWidth: isSquare ? 300 : 480
     property int currentHeight: 300
 
-    // Region auxiliar para fullscreen
     Item {
         id: fullRegion
         anchors.fill: parent
@@ -59,7 +56,7 @@ PanelWindow {
         // Fondo negro mientras carga, transparente si está activa
         color: camera.cameraStatus === Camera.ActiveStatus ? "transparent" : "black"
         radius: Styling.radius(12)
-        
+
         // Borde
         Rectangle {
             anchors.fill: parent
@@ -84,37 +81,37 @@ PanelWindow {
             anchors.fill: parent
             // Siempre Crop para evitar barras negras
             fillMode: VideoOutput.PreserveAspectCrop
-            
+
             // Transformación de espejo
             transform: Scale {
                 origin.x: videoOutput.width / 2
                 xScale: root.isFlipped ? -1 : 1
             }
         }
-        
+
         // Drag Handler (Mover ventana)
         MouseArea {
             id: dragArea
             anchors.fill: parent
             hoverEnabled: true
-            
-            property point globalStartPoint: Qt.point(0,0)
+
+            property point globalStartPoint: Qt.point(0, 0)
             property int startXPos: 0
             property int startYPos: 0
-            
-            onPressed: (mouse) => {
-                globalStartPoint = mapToItem(null, mouse.x, mouse.y)
-                startXPos = root.xPos
-                startYPos = root.yPos
+
+            onPressed: mouse => {
+                globalStartPoint = mapToItem(null, mouse.x, mouse.y);
+                startXPos = root.xPos;
+                startYPos = root.yPos;
             }
-            
-            onPositionChanged: (mouse) => {
+
+            onPositionChanged: mouse => {
                 if (pressed) {
-                    var p = mapToItem(null, mouse.x, mouse.y)
-                    var dx = p.x - globalStartPoint.x
-                    var dy = p.y - globalStartPoint.y
-                    root.xPos = startXPos + dx
-                    root.yPos = startYPos + dy
+                    var p = mapToItem(null, mouse.x, mouse.y);
+                    var dx = p.x - globalStartPoint.x;
+                    var dy = p.y - globalStartPoint.y;
+                    root.xPos = startXPos + dx;
+                    root.yPos = startYPos + dy;
                 }
             }
 
@@ -125,10 +122,14 @@ PanelWindow {
                 anchors.bottomMargin: 20
                 spacing: 16
                 z: 3 // Encima de todo
-                
+
                 // Show only on hover or when buttons are pressed
                 opacity: (dragArea.containsMouse || controlHover.containsMouse) ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 200 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 200
+                    }
+                }
 
                 HoverHandler {
                     id: controlHover
@@ -142,7 +143,7 @@ PanelWindow {
                     color: Styling.surface
                     border.color: Styling.surfaceVariant
                     border.width: 1
-                    
+
                     Text {
                         anchors.centerIn: parent
                         text: root.isSquare ? Icons.arrowsOut : Icons.crop
@@ -150,19 +151,19 @@ PanelWindow {
                         color: Styling.text
                         font.pixelSize: 20
                     }
-                    
+
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.isSquare = !root.isSquare
+                            root.isSquare = !root.isSquare;
                             // Reset size logic
                             if (root.isSquare) {
-                                root.currentHeight = 300
-                                root.currentWidth = 300
+                                root.currentHeight = 300;
+                                root.currentWidth = 300;
                             } else {
-                                root.currentHeight = 300
-                                root.currentWidth = 480 // Reset to default wide
+                                root.currentHeight = 300;
+                                root.currentWidth = 480; // Reset to default wide
                             }
                         }
                     }
@@ -176,7 +177,7 @@ PanelWindow {
                     color: Styling.surface
                     border.color: Styling.surfaceVariant
                     border.width: 1
-                    
+
                     Text {
                         anchors.centerIn: parent
                         text: Icons.flipX
@@ -184,7 +185,7 @@ PanelWindow {
                         color: Styling.text
                         font.pixelSize: 20
                     }
-                    
+
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
@@ -198,7 +199,7 @@ PanelWindow {
                     height: 40
                     radius: 20
                     color: Colors.red
-                    
+
                     Text {
                         anchors.centerIn: parent
                         text: Icons.cancel
@@ -206,7 +207,7 @@ PanelWindow {
                         color: "white" // Always white on red
                         font.pixelSize: 20
                     }
-                    
+
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
@@ -224,21 +225,21 @@ PanelWindow {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
         }
-        
+
         ResizeHandle {
             id: resizeBL
             mode: 1
             anchors.bottom: parent.bottom
             anchors.left: parent.left
         }
-        
+
         ResizeHandle {
             id: resizeTR
             mode: 2
             anchors.top: parent.top
             anchors.right: parent.right
         }
-        
+
         ResizeHandle {
             id: resizeTL
             mode: 3
@@ -246,9 +247,9 @@ PanelWindow {
             anchors.left: parent.left
         }
     }
-    
+
     // --- Resize Handle Component Definition ---
-    component ResizeHandle : MouseArea {
+    component ResizeHandle: MouseArea {
         property int mode: 0 // 0:BR, 1:BL, 2:TR, 3:TL
         width: 20
         height: 20
@@ -257,80 +258,84 @@ PanelWindow {
         cursorShape: (mode == 0 || mode == 3) ? Qt.SizeFDiagCursor : Qt.SizeBDiagCursor
         z: 4
 
-        property point startPoint: Qt.point(0,0)
+        property point startPoint: Qt.point(0, 0)
         property int startW: 0
         property int startH: 0
         property int startX: 0
         property int startY: 0
 
-        onPressed: (mouse) => {
-            startPoint = mapToItem(null, mouse.x, mouse.y)
-            startW = root.currentWidth
-            startH = root.currentHeight
-            startX = root.xPos
-            startY = root.yPos
-            mouse.accepted = true
+        onPressed: mouse => {
+            startPoint = mapToItem(null, mouse.x, mouse.y);
+            startW = root.currentWidth;
+            startH = root.currentHeight;
+            startX = root.xPos;
+            startY = root.yPos;
+            mouse.accepted = true;
         }
 
-        onPositionChanged: (mouse) => {
+        onPositionChanged: mouse => {
             if (pressed) {
-                var p = mapToItem(null, mouse.x, mouse.y)
-                var dx = p.x - startPoint.x
-                var dy = p.y - startPoint.y
+                var p = mapToItem(null, mouse.x, mouse.y);
+                var dx = p.x - startPoint.x;
+                var dy = p.y - startPoint.y;
 
-                var newW = startW
-                var newH = startH
-                var newX = startX
-                var newY = startY
+                var newW = startW;
+                var newH = startH;
+                var newX = startX;
+                var newY = startY;
 
                 // Bottom-Right
                 if (mode === 0) {
-                    newW = Math.max(150, startW + dx)
+                    newW = Math.max(150, startW + dx);
                     if (root.isSquare) {
-                        newH = newW
+                        newH = newW;
                     } else {
-                        if (startH > 0) newH = newW / (startW / startH)
+                        if (startH > 0)
+                            newH = newW / (startW / startH);
                     }
-                }
+                } else
                 // Bottom-Left
-                else if (mode === 1) {
-                    newW = Math.max(150, startW - dx)
+                if (mode === 1) {
+                    newW = Math.max(150, startW - dx);
                     if (root.isSquare) {
-                        newH = newW
+                        newH = newW;
                     } else {
-                        if (startH > 0) newH = newW / (startW / startH)
+                        if (startH > 0)
+                            newH = newW / (startW / startH);
                     }
-                    newX = startX + (startW - newW)
-                }
+                    newX = startX + (startW - newW);
+                } else
                 // Top-Right
-                else if (mode === 2) {
-                    newW = Math.max(150, startW + dx)
+                if (mode === 2) {
+                    newW = Math.max(150, startW + dx);
                     if (root.isSquare) {
-                        newH = newW
+                        newH = newW;
                     } else {
-                        if (startH > 0) newH = newW / (startW / startH)
+                        if (startH > 0)
+                            newH = newW / (startW / startH);
                     }
-                    newY = startY + (startH - newH)
-                }
+                    newY = startY + (startH - newH);
+                } else
                 // Top-Left
-                else if (mode === 3) {
-                    newW = Math.max(150, startW - dx)
+                if (mode === 3) {
+                    newW = Math.max(150, startW - dx);
                     if (root.isSquare) {
-                        newH = newW
+                        newH = newW;
                     } else {
-                        if (startH > 0) newH = newW / (startW / startH)
+                        if (startH > 0)
+                            newH = newW / (startW / startH);
                     }
-                    newX = startX + (startW - newW)
-                    newY = startY + (startH - newH)
+                    newX = startX + (startW - newW);
+                    newY = startY + (startH - newH);
                 }
 
-                root.currentWidth = newW
-                root.currentHeight = newH
-                root.xPos = newX
-                root.yPos = newY
+                root.currentWidth = newW;
+                root.currentHeight = newH;
+                root.xPos = newX;
+                root.yPos = newY;
             }
         }
-        
+
         Text {
             anchors.centerIn: parent
             text: mode == 0 || mode == 3 ? Icons.caretDoubleDown : Icons.caretDoubleUp
