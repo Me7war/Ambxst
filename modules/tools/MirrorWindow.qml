@@ -22,12 +22,13 @@ PanelWindow {
     color: "transparent"
 
     WlrLayershell.layer: WlrLayer.Overlay
+    exclusionMode: ExclusionMode.Ignore
     visible: GlobalStates.mirrorWindowVisible
 
     property int xPos: Screen.width - root.currentWidth - 20
     property int yPos: (Screen.height / 2) - (root.currentHeight / 2)
     property bool isSquare: true
-    property bool isFlipped: false
+    property bool isFlipped: true
 
     property int currentWidth: isSquare ? 300 : 480
     property int currentHeight: 300
@@ -38,11 +39,8 @@ PanelWindow {
         visible: false
     }
 
-    // Propiedad para saber si estamos interactuando (arrastrando/redimensionando)
     readonly property bool isInteracting: dragArea.pressed || resizeBR.pressed || resizeBL.pressed || resizeTR.pressed || resizeTL.pressed
 
-    // Si interactuamos, la máscara cubre toda la pantalla para no perder el foco.
-    // Si no, solo cubre el widget para permitir click-through.
     mask: Region {
         item: isInteracting ? fullRegion : container
     }
@@ -53,19 +51,8 @@ PanelWindow {
         y: yPos
         width: currentWidth
         height: currentHeight
-        // Fondo negro mientras carga, transparente si está activa
         color: camera.cameraStatus === Camera.ActiveStatus ? "transparent" : "black"
-        radius: Styling.radius(12)
-
-        // Borde
-        Rectangle {
-            anchors.fill: parent
-            color: "transparent"
-            border.color: Styling.primary
-            border.width: 1
-            radius: parent.radius
-            z: 2 // Encima del video
-        }
+        radius: Styling.radius(8)
 
         CaptureSession {
             id: captureSession
