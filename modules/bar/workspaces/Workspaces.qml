@@ -454,13 +454,13 @@ Item {
                         }
                     }
                     Rectangle {
-                        opacity: (Config.workspaces.showNumbers || Config.workspaces.alwaysShowNumbers || (Config.workspaces.showAppIcons && workspaceButtonBackground.focusedWindow)) ? 0 : 1
+                        opacity: (Config.workspaces.showNumbers || Config.workspaces.alwaysShowNumbers || (Config.workspaces.showAppIcons && workspaceButtonBackground.focusedWindow)) ? 0 : ((monitor?.activeWorkspace?.id == button.workspaceValue) || workspaceOccupied[index] ? 1 : 0.5)
                         visible: opacity > 0
                         anchors.centerIn: parent
                         width: workspaceButtonWidth * 0.2
                         height: width
                         radius: width / 2
-                        color: (monitor?.activeWorkspace?.id == button.workspaceValue) ? Styling.styledRectItem("primary") : (workspaceOccupied[index] ? Colors.overBackground : Colors.overSecondaryFixedVariant)
+                        color: (monitor?.activeWorkspace?.id == button.workspaceValue) ? Styling.styledRectItem("primary") : Colors.overBackground
 
                         Behavior on opacity {
                             enabled: Config.animDuration > 0
@@ -585,13 +585,13 @@ Item {
                         }
                     }
                     Rectangle {
-                        opacity: (Config.workspaces.showNumbers || Config.workspaces.alwaysShowNumbers || (Config.workspaces.showAppIcons && workspaceButtonBackgroundVert.focusedWindow)) ? 0 : 1
+                        opacity: (Config.workspaces.showNumbers || Config.workspaces.alwaysShowNumbers || (Config.workspaces.showAppIcons && workspaceButtonBackgroundVert.focusedWindow)) ? 0 : ((monitor?.activeWorkspace?.id == buttonVert.workspaceValue) || workspaceOccupied[index] ? 1 : 0.5)
                         visible: opacity > 0
                         anchors.centerIn: parent
                         width: workspaceButtonWidth * 0.2
                         height: width
                         radius: width / 2
-                        color: (monitor?.activeWorkspace?.id == buttonVert.workspaceValue) ? Styling.styledRectItem("primary") : (workspaceOccupied[index] ? Colors.overBackground : Colors.overSecondaryFixedVariant)
+                        color: (monitor?.activeWorkspace?.id == buttonVert.workspaceValue) ? Styling.styledRectItem("primary") : Colors.overBackground
 
                         Behavior on opacity {
                             enabled: Config.animDuration > 0
