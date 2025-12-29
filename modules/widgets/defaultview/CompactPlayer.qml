@@ -105,13 +105,23 @@ Item {
             MultiEffect {
                 anchors.fill: parent
                 source: backgroundArt
-                brightness: -0.25
-                contrast: -0.75
-                saturation: -0.5
                 blurEnabled: true
                 blurMax: 32
                 blur: 0.75
                 opacity: hasArtwork ? 1.0 : 0.0
+                Behavior on opacity {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutQuart
+                    }
+                }
+            }
+
+            StyledRect {
+                anchors.fill: parent
+                variant: "internalbg"
+                opacity: hasArtwork ? 0.5 : 0.0
                 Behavior on opacity {
                     enabled: Config.animDuration > 0
                     NumberAnimation {
@@ -166,9 +176,6 @@ Item {
                     MultiEffect {
                         anchors.fill: parent
                         source: artworkImage
-                        brightness: -0.15
-                        contrast: -0.5
-                        saturation: -0.25
                         blurMax: 32
                         blur: 0.75
                         opacity: hasArtwork ? 1.0 : 0.0 // Simplificado
@@ -179,6 +186,12 @@ Item {
                                 easing.type: Easing.OutQuart
                             }
                         }
+                    }
+
+                    StyledRect {
+                        anchors.fill: parent
+                        variant: "internalbg"
+                        opacity: hasArtwork ? 0.5 : 0.0
                     }
                     Text {
                         id: playPauseBtn
@@ -234,7 +247,7 @@ Item {
                 id: previousBtn
                 text: Icons.previous
                 textFormat: Text.RichText
-                color: previousHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                color: previousHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                 font.pixelSize: 16
                 font.family: Icons.font
                 opacity: compactPlayer.player?.canGoPrevious ?? false ? 1.0 : 0.3
@@ -302,7 +315,7 @@ Item {
                 id: nextBtn
                 text: Icons.next
                 textFormat: Text.RichText
-                color: nextHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                color: nextHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                 font.pixelSize: 16
                 font.family: Icons.font
                 opacity: compactPlayer.player?.canGoNext ?? false ? 1.0 : 0.3
@@ -369,7 +382,7 @@ Item {
                     }
                 }
                 textFormat: Text.RichText
-                color: modeHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                color: modeHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                 font.pixelSize: 16
                 font.family: Icons.font
                 opacity: {
@@ -440,7 +453,7 @@ Item {
                 id: playerIcon
                 text: compactPlayer.getPlayerIcon(compactPlayer.player)
                 textFormat: Text.RichText
-                color: playerIconHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                color: playerIconHover.hovered ? (hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                 font.pixelSize: 20
                 font.family: Icons.font
                 verticalAlignment: Text.AlignVCenter

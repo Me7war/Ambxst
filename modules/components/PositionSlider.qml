@@ -23,7 +23,7 @@ Item {
 
     // Propiedades opcionales para sobrescribir colores
     property color customProgressColor: Styling.styledRectItem("overprimary")
-    property color customBackgroundColor: PlayerColors.shadow
+    property color customBackgroundColor: Colors.shadow
     property bool useCustomColors: false
 
     StyledSlider {
@@ -32,7 +32,7 @@ Item {
 
         value: root.length > 0 ? Math.min(1.0, root.position / root.length) : 0
         progressColor: root.useCustomColors ? root.customProgressColor : Styling.styledRectItem("overprimary")
-        backgroundColor: root.useCustomColors ? root.customBackgroundColor : PlayerColors.shadow
+        backgroundColor: root.useCustomColors ? root.customBackgroundColor : Colors.shadow
         wavy: true
         wavyAmplitude: root.isPlaying ? 1 : 0.0
         wavyFrequency: root.isPlaying ? 8 : 0

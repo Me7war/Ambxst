@@ -1,8 +1,0 @@
-{
-  "background": "{{colors.background.default.hex | set_lightness: -2.5}}",
-  "overBackground": "{{colors.on_background.default.hex}}",
-  "overPrimary": "{{colors.on_primary.default.hex}}",
-  "primary": "{{colors.primary.default.hex}}",
-  "shadow": "{{colors.shadow.default.hex}}",
-  "sourceColor": "{{colors.source_color.default.hex}}"
-}

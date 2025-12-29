@@ -108,38 +108,25 @@ StyledRect {
                 MultiEffect {
                     anchors.fill: parent
                     source: albumArt
-                    brightness: playPauseHover.hovered ? -0.15 : 0
-                    contrast: playPauseHover.hovered ? -0.5 : 0
-                    saturation: playPauseHover.hovered ? -0.25 : 0
                     blurEnabled: true
                     blurMax: 32
                     blur: playPauseHover.hovered ? 0.75 : 0
 
-                    Behavior on brightness {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutQuart
-                        }
-                    }
-
-                    Behavior on contrast {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutQuart
-                        }
-                    }
-
-                    Behavior on saturation {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutQuart
-                        }
-                    }
-
                     Behavior on blur {
+                        enabled: Config.animDuration > 0
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutQuart
+                        }
+                    }
+                }
+
+                StyledRect {
+                    anchors.fill: parent
+                    variant: "internalbg"
+                    opacity: playPauseHover.hovered ? 0.5 : 0.0
+
+                    Behavior on opacity {
                         enabled: Config.animDuration > 0
                         NumberAnimation {
                             duration: Config.animDuration
@@ -448,13 +435,12 @@ StyledRect {
                             for (let i = 0; i < players.length; i++) {
                                 const player = players[i];
                                 const isActive = player === MprisController.activePlayer;
-                                const playerColors = PlayerColors;
 
                                 menuItems.push({
                                     text: player.trackTitle || player.identity || "Unknown Player",
                                     icon: getPlayerIcon(player),
-                                    highlightColor: playerStyling.styledRectItem("overprimary"),
-                                    textColor: playerColors.overPrimary,
+                                    highlightColor: Styling.styledRectItem("overprimary"),
+                                    textColor: Colors.overPrimary,
                                     onTriggered: () => {
                                         MprisController.setActivePlayer(player);
                                         playersMenu.close();

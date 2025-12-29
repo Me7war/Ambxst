@@ -84,12 +84,23 @@ StyledRect {
             id: backgroundEffect
             anchors.fill: parent
             source: backgroundArt
-            brightness: -0.15
-            contrast: -0.5
-            saturation: -0.25
             blurMax: 32
             blur: 0.75
             opacity: (MprisController.activePlayer?.trackArtUrl ?? "") !== "" ? 1.0 : 0.0
+
+            Behavior on opacity {
+                enabled: Config.animDuration > 0
+                NumberAnimation {
+                    duration: Config.animDuration
+                    easing.type: Easing.OutQuart
+                }
+            }
+        }
+
+        StyledRect {
+            anchors.fill: parent
+            variant: "internalbg"
+            opacity: (MprisController.activePlayer?.trackArtUrl ?? "") !== "" ? 0.5 : 0.0
 
             Behavior on opacity {
                 enabled: Config.animDuration > 0
@@ -177,7 +188,7 @@ StyledRect {
                             Layout.fillWidth: true
                             text: MprisController.activePlayer?.trackTitle ?? "No hay reproducción activa"
                             textFormat: Text.PlainText
-                            color: player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground
+                            color: player.hasArtwork ? Colors.overBackground : Colors.overBackground
                             font.pixelSize: Config.theme.fontSize
                             font.weight: Font.Bold
                             font.family: Config.theme.font
@@ -190,7 +201,7 @@ StyledRect {
                             Layout.fillWidth: true
                             text: MprisController.activePlayer?.trackArtist ?? ""
                             textFormat: Text.PlainText
-                            color: player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground
+                            color: player.hasArtwork ? Colors.overBackground : Colors.overBackground
                             font.pixelSize: Config.theme.fontSize
                             font.family: Config.theme.font
                             elide: Text.ElideRight
@@ -206,7 +217,7 @@ StyledRect {
                             Text {
                                 text: player.formatTime(player.position)
                                 textFormat: Text.PlainText
-                                color: player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground
+                                color: player.hasArtwork ? Colors.overBackground : Colors.overBackground
                                 font.pixelSize: Config.theme.fontSize
                                 font.family: Config.theme.font
                                 visible: MprisController.activePlayer !== null
@@ -215,7 +226,7 @@ StyledRect {
                             Text {
                                 text: "/ " + player.formatTime(player.length)
                                 textFormat: Text.PlainText
-                                color: player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground
+                                color: player.hasArtwork ? Colors.overBackground : Colors.overBackground
                                 font.pixelSize: Config.theme.fontSize
                                 font.family: Config.theme.font
                                 opacity: 0.5
@@ -227,7 +238,7 @@ StyledRect {
                     Rectangle {
                         Layout.preferredWidth: 40
                         Layout.preferredHeight: 40
-                        color: playPauseHover.hovered ? (player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground) : (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary"))
+                        color: playPauseHover.hovered ? Colors.overBackground : (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary"))
                         radius: player.isPlaying ? Styling.radius(-4) : Styling.radius(4)
                         opacity: MprisController.canTogglePlaying ? 1.0 : 0.3
 
@@ -253,7 +264,7 @@ StyledRect {
                             anchors.centerIn: parent
                             text: player.isPlaying ? Icons.pause : Icons.play
                             textFormat: Text.RichText
-                            color: Colors.shadow
+                            color: Styling.styledRectItem("primary")
                             font.pixelSize: 20
                             font.family: Icons.font
                         }
@@ -280,7 +291,7 @@ StyledRect {
                         id: previousBtn
                         text: Icons.previous
                         textFormat: Text.RichText
-                        color: previousHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                        color: previousHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                         font.pixelSize: 20
                         font.family: Icons.font
                         opacity: MprisController.canGoPrevious ? 1.0 : 0.3
@@ -317,7 +328,7 @@ StyledRect {
                         id: nextBtn
                         text: Icons.next
                         textFormat: Text.RichText
-                        color: nextHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                        color: nextHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                         font.pixelSize: 20
                         font.family: Icons.font
                         opacity: MprisController.canGoNext ? 1.0 : 0.3
@@ -357,7 +368,7 @@ StyledRect {
                             }
                         }
                         textFormat: Text.RichText
-                        color: modeHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                        color: modeHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                         font.pixelSize: 20
                         font.family: Icons.font
                         opacity: {
@@ -407,7 +418,7 @@ StyledRect {
                             return player.getPlayerIcon(MprisController.activePlayer);
                         }
                         textFormat: Text.RichText
-                        color: playerIconHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : (player.hasArtwork ? PlayerColors.overBackground : Colors.overBackground)
+                        color: playerIconHover.hovered ? (player.hasArtwork ? Styling.styledRectItem("overprimary") : Styling.styledRectItem("overprimary")) : Colors.overBackground
                         font.pixelSize: 20
                         font.family: Icons.font
                         opacity: MprisController.activePlayer ? 1.0 : 0.3
@@ -545,7 +556,7 @@ StyledRect {
                                     Text {
                                         text: playersListView.getPlayerIcon(modelData)
                                         textFormat: Text.RichText
-                                        color: playersListView.currentIndex === index ? PlayerColors.overPrimary : Colors.overSurface
+                                        color: playersListView.currentIndex === index ? Colors.overPrimary : Colors.overSurface
                                         font.pixelSize: 20
                                         font.family: Icons.font
 
@@ -562,7 +573,7 @@ StyledRect {
                                         Layout.fillWidth: true
                                         text: modelData.trackTitle || modelData.identity || "Unknown Player"
                                         textFormat: Text.PlainText
-                                        color: playersListView.currentIndex === index ? PlayerColors.overPrimary : Colors.overSurface
+                                        color: playersListView.currentIndex === index ? Colors.overPrimary : Colors.overSurface
                                         font.pixelSize: Config.theme.fontSize
                                         font.weight: playersListView.currentIndex === index ? Font.Bold : Font.Normal
                                         font.family: Config.theme.font
