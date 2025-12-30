@@ -203,6 +203,7 @@ Item {
 
                 Image {
                     source: Qt.resolvedUrl("../../../../assets/ambxst-logo.svg")
+                    opacity: 0.25
                     sourceSize.width: 64
                     sourceSize.height: 64
                     fillMode: Image.PreserveAspectFit
@@ -211,7 +212,7 @@ Item {
                     layer.effect: MultiEffect {
                         brightness: 1.0
                         colorization: 1.0
-                        colorizationColor: Colors.surfaceBright
+                        colorizationColor: Styling.styledRectItem("pane")
                     }
                 }
             }

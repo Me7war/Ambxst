@@ -20,11 +20,11 @@ Rectangle {
     color: "transparent"
     radius: Styling.radius(-2)
 
-    Rectangle {
+    StyledRect {
         anchors.centerIn: parent
         width: Math.min(parent.width, parent.height)
         height: width
-        color: (isToday === 1) ? Styling.styledRectItem("overprimary") : "transparent"
+        variant: (isToday === 1) ? "primary" : "transparent"
         radius: parent.radius
 
         Text {
@@ -37,7 +37,7 @@ Rectangle {
             font.family: Config.defaultFont
             color: {
                 if (isToday === 1)
-                    return Colors.overPrimary;
+                    return Styling.styledRectItem("primary");
                 if (bold) {
                     return isCurrentDayOfWeek ? Colors.overBackground : Colors.outline;
                 }

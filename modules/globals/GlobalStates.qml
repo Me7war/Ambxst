@@ -418,7 +418,8 @@ Singleton {
         "shadowOpacity", "shadowSharp", "shadowIgnoreWindow",
         "blurEnabled", "blurSize", "blurPasses", "blurXray",
         "blurNewOptimizations", "blurIgnoreOpacity",
-        "blurNoise", "blurContrast", "blurBrightness", "blurVibrancy"
+        "blurNoise", "blurContrast", "blurBrightness", "blurVibrancy",
+        "quickshellIgnoreAlpha"
     ]
 
     // Create a deep copy of the current compositor config

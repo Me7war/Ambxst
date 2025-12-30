@@ -147,22 +147,21 @@ Item {
                             }
                         }
 
-                        Rectangle {
+                        Separator {
                             Layout.fillWidth: true
                             Layout.leftMargin: 8
                             Layout.rightMargin: 8
                             Layout.preferredHeight: 2
-                            color: Colors.surface
-                            radius: Styling.radius(0)
+                            vert: false
                         }
 
                         Repeater {
                             model: 6
-                            delegate: Rectangle {
+                            delegate: StyledRect {
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignHCenter
                                 Layout.preferredHeight: 28
-                                color: (rowIndex === root.currentWeekRow) ? Colors.surface : "transparent"
+                                variant: (rowIndex === root.currentWeekRow) ? "pane" : "transparent"
                                 radius: Styling.radius(-4)
 
                                 required property int index
