@@ -61,9 +61,6 @@ Singleton {
     // Trigger update when toplevels change
     Connections {
         target: ToplevelManager.toplevels
-        function onCountChanged() {
-            updateTimer.restart();
-        }
         function onObjectInsertedPost() {
             updateTimer.restart();
         }

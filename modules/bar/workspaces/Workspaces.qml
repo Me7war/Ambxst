@@ -290,15 +290,6 @@ Item {
             return currentWorkspaceHasWindows ? Config.roundness > 0 ? Math.max(Config.roundness - parent.widgetPadding - activeWorkspaceMargin, 0) : 0 : implicitHeight / 2;
         }
 
-        Behavior on radius {
-
-            enabled: Config.animDuration > 0
-
-            NumberAnimation {
-                duration: Math.max(0, Config.animDuration - 100)
-                easing.type: Easing.OutQuad
-            }
-        }
         anchors.verticalCenter: parent.verticalCenter
 
         x: Math.min(idx1, idx2) * workspaceButtonWidth + activeWorkspaceMargin + widgetPadding
@@ -354,15 +345,6 @@ Item {
             return currentWorkspaceHasWindows ? Config.roundness > 0 ? Math.max(Config.roundness - parent.widgetPadding - activeWorkspaceMargin, 0) : 0 : implicitWidth / 2;
         }
 
-        Behavior on radius {
-
-            enabled: Config.animDuration > 0
-
-            NumberAnimation {
-                duration: Math.max(0, Config.animDuration - 100)
-                easing.type: Easing.OutQuad
-            }
-        }
         anchors.horizontalCenter: parent.horizontalCenter
 
         x: parent.width / 2 - implicitWidth / 2

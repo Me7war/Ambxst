@@ -200,6 +200,10 @@ PanelWindow {
         directoryWatcher.path = wallpaperDir;
         scanWallpapers.running = true;
         scanSubfolders();
+        
+        // Regenerate thumbnails for the new directory (delayed)
+        if (delayedThumbnailGen.running) delayedThumbnailGen.restart();
+        else delayedThumbnailGen.start();
     }
 
     onCurrentWallpaperChanged:
@@ -297,12 +301,12 @@ PanelWindow {
         // Verificar si existe wallpapers.json, si no, crear con fallback
         checkWallpapersJson.running = true;
 
-        // Ejecutar script de generación de thumbnails
-        thumbnailGeneratorScript.running = true;
+        // Ejecutar script de generación de thumbnails (delayed)
+        delayedThumbnailGen.start();
 
         // Initial scans
-        scanWallpapers.running = true;
-        scanSubfolders();
+        // scanWallpapers.running = true; // Handled by onWallpaperDirChanged
+        // scanSubfolders(); // Handled by onWallpaperDirChanged
         scanColorPresets();
         // Start directory monitoring
         directoryWatcher.reload();
@@ -356,6 +360,11 @@ PanelWindow {
                 // Siempre actualizar si es diferente al actual
                 if (currentWall && currentWall !== wallpaper.currentWallpaper) {
                     console.log("Loading wallpaper from JSON:", currentWall);
+                    // If paths are not loaded yet, wait for scanWallpapers to finish
+                    if (wallpaper.wallpaperPaths.length === 0) {
+                        return;
+                    }
+
                     var pathIndex = wallpaper.wallpaperPaths.indexOf(currentWall);
                     if (pathIndex !== -1) {
                         wallpaper.currentIndex = pathIndex;
@@ -370,12 +379,9 @@ PanelWindow {
             }
 
             onWallPathChanged: {
-                // Rescan wallpapers when wallPath changes
+                // Only log change, logic moved to onWallpaperDirChanged
                 if (wallPath) {
-                    console.log("Wallpaper directory changed to:", wallPath);
-                    scanWallpapers.running = true;
-                    // Regenerar thumbnails para el nuevo directorio
-                    thumbnailGeneratorScript.running = true;
+                    console.log("Config wallPath updated:", wallPath);
                 }
             }
         }
@@ -479,6 +485,13 @@ PanelWindow {
         }
     }
 
+    Timer {
+        id: delayedThumbnailGen
+        interval: 2000 // Delay 2 seconds after startup
+        repeat: false
+        onTriggered: thumbnailGeneratorScript.running = true
+    }
+
     // Proceso para generar frame de lockscreen con el script de Python
     Process {
         id: lockscreenWallpaperScript
@@ -559,8 +572,9 @@ PanelWindow {
         onFileChanged: {
             console.log("Wallpaper directory changed, rescanning...");
             scanWallpapers.running = true;
-            // Regenerar thumbnails si hay nuevos videos
-            thumbnailGeneratorScript.running = true;
+            // Regenerar thumbnails si hay nuevos videos (delayed)
+            if (delayedThumbnailGen.running) delayedThumbnailGen.restart();
+            else delayedThumbnailGen.start();
         }
 
         // Remove onLoadFailed to prevent premature fallback activation

@@ -54,12 +54,108 @@ Singleton {
     property alias keybindsLoader: keybindsLoader
 
     // ============================================
-    // DIRECTORY SETUP
+    // BATCH INITIALIZATION
     // ============================================
+    // Single process to check environment and all config files at once
     Process {
-        id: setupConfigDir
+        id: initConfigs
         running: true
-        command: ["mkdir", "-p", root.configDir]
+        command: ["bash", "-c", `
+            mkdir -p "${root.configDir}"
+            cd "${root.configDir}"
+            MISSING=""
+            [ ! -f theme.json ] && MISSING="$MISSING theme"
+            [ ! -f bar.json ] && MISSING="$MISSING bar"
+            [ ! -f workspaces.json ] && MISSING="$MISSING workspaces"
+            [ ! -f overview.json ] && MISSING="$MISSING overview"
+            [ ! -f notch.json ] && MISSING="$MISSING notch"
+            [ ! -f hyprland.json ] && MISSING="$MISSING hyprland"
+            [ ! -f performance.json ] && MISSING="$MISSING performance"
+            [ ! -f weather.json ] && MISSING="$MISSING weather"
+            [ ! -f desktop.json ] && MISSING="$MISSING desktop"
+            [ ! -f lockscreen.json ] && MISSING="$MISSING lockscreen"
+            [ ! -f prefix.json ] && MISSING="$MISSING prefix"
+            [ ! -f system.json ] && MISSING="$MISSING system"
+            [ ! -f dock.json ] && MISSING="$MISSING dock"
+            [ ! -f ai.json ] && MISSING="$MISSING ai"
+            echo "$MISSING"
+        `]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const missing = text.trim().split(" ");
+                if (missing.includes("theme")) {
+                    console.log("theme.json missing, creating default...");
+                    themeRawLoader.setText(JSON.stringify(ThemeDefaults.data, null, 4));
+                    root.themeReady = true;
+                }
+                if (missing.includes("bar")) {
+                    console.log("bar.json missing, creating default...");
+                    barRawLoader.setText(JSON.stringify(BarDefaults.data, null, 4));
+                    root.barReady = true;
+                }
+                if (missing.includes("workspaces")) {
+                    console.log("workspaces.json missing, creating default...");
+                    workspacesRawLoader.setText(JSON.stringify(WorkspacesDefaults.data, null, 4));
+                    root.workspacesReady = true;
+                }
+                if (missing.includes("overview")) {
+                    console.log("overview.json missing, creating default...");
+                    overviewRawLoader.setText(JSON.stringify(OverviewDefaults.data, null, 4));
+                    root.overviewReady = true;
+                }
+                if (missing.includes("notch")) {
+                    console.log("notch.json missing, creating default...");
+                    notchRawLoader.setText(JSON.stringify(NotchDefaults.data, null, 4));
+                    root.notchReady = true;
+                }
+                if (missing.includes("hyprland")) {
+                    console.log("hyprland.json missing, creating default...");
+                    hyprlandRawLoader.setText(JSON.stringify(HyprlandDefaults.data, null, 4));
+                    root.hyprlandReady = true;
+                }
+                if (missing.includes("performance")) {
+                    console.log("performance.json missing, creating default...");
+                    performanceRawLoader.setText(JSON.stringify(PerformanceDefaults.data, null, 4));
+                    root.performanceReady = true;
+                }
+                if (missing.includes("weather")) {
+                    console.log("weather.json missing, creating default...");
+                    weatherRawLoader.setText(JSON.stringify(WeatherDefaults.data, null, 4));
+                    root.weatherReady = true;
+                }
+                if (missing.includes("desktop")) {
+                    console.log("desktop.json missing, creating default...");
+                    desktopRawLoader.setText(JSON.stringify(DesktopDefaults.data, null, 4));
+                    root.desktopReady = true;
+                }
+                if (missing.includes("lockscreen")) {
+                    console.log("lockscreen.json missing, creating default...");
+                    lockscreenRawLoader.setText(JSON.stringify(LockscreenDefaults.data, null, 4));
+                    root.lockscreenReady = true;
+                }
+                if (missing.includes("prefix")) {
+                    console.log("prefix.json missing, creating default...");
+                    prefixRawLoader.setText(JSON.stringify(PrefixDefaults.data, null, 4));
+                    root.prefixReady = true;
+                }
+                if (missing.includes("system")) {
+                    console.log("system.json missing, creating default...");
+                    systemRawLoader.setText(JSON.stringify(SystemDefaults.data, null, 4));
+                    root.systemReady = true;
+                }
+                if (missing.includes("dock")) {
+                    console.log("dock.json missing, creating default...");
+                    dockRawLoader.setText(JSON.stringify(DockDefaults.data, null, 4));
+                    root.dockReady = true;
+                }
+                if (missing.includes("ai")) {
+                    console.log("ai.json missing, creating default...");
+                    aiRawLoader.setText(JSON.stringify(AiDefaults.data, null, 4));
+                    root.aiReady = true;
+                }
+            }
+        }
     }
 
     // ============================================
@@ -73,19 +169,6 @@ Singleton {
                 validateModule("theme", themeRawLoader, ThemeDefaults.data, () => {
                     root.themeReady = true;
                 });
-            }
-        }
-    }
-
-    Process {
-        id: checkThemeFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/theme.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("theme.json not found, creating with default values...");
-                themeRawLoader.setText(JSON.stringify(ThemeDefaults.data, null, 4));
-                root.themeReady = true;
             }
         }
     }
@@ -483,19 +566,6 @@ Singleton {
         }
     }
 
-    Process {
-        id: checkBarFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/bar.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("bar.json not found, creating with default values...");
-                barRawLoader.setText(JSON.stringify(BarDefaults.data, null, 4));
-                root.barReady = true;
-            }
-        }
-    }
-
     FileView {
         id: barLoader
         path: root.configDir + "/bar.json"
@@ -536,19 +606,6 @@ Singleton {
                 validateModule("workspaces", workspacesRawLoader, WorkspacesDefaults.data, () => {
                     root.workspacesReady = true;
                 });
-            }
-        }
-    }
-
-    Process {
-        id: checkWorkspacesFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/workspaces.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("workspaces.json not found, creating with default values...");
-                workspacesRawLoader.setText(JSON.stringify(WorkspacesDefaults.data, null, 4));
-                root.workspacesReady = true;
             }
         }
     }
@@ -594,19 +651,6 @@ Singleton {
         }
     }
 
-    Process {
-        id: checkOverviewFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/overview.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("overview.json not found, creating with default values...");
-                overviewRawLoader.setText(JSON.stringify(OverviewDefaults.data, null, 4));
-                root.overviewReady = true;
-            }
-        }
-    }
-
     FileView {
         id: overviewLoader
         path: root.configDir + "/overview.json"
@@ -647,19 +691,6 @@ Singleton {
         }
     }
 
-    Process {
-        id: checkNotchFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/notch.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("notch.json not found, creating with default values...");
-                notchRawLoader.setText(JSON.stringify(NotchDefaults.data, null, 4));
-                root.notchReady = true;
-            }
-        }
-    }
-
     FileView {
         id: notchLoader
         path: root.configDir + "/notch.json"
@@ -694,19 +725,6 @@ Singleton {
                 validateModule("hyprland", hyprlandRawLoader, HyprlandDefaults.data, () => {
                     root.hyprlandReady = true;
                 });
-            }
-        }
-    }
-
-    Process {
-        id: checkHyprlandFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/hyprland.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("hyprland.json not found, creating with default values...");
-                hyprlandRawLoader.setText(JSON.stringify(HyprlandDefaults.data, null, 4));
-                root.hyprlandReady = true;
             }
         }
     }
@@ -787,19 +805,6 @@ Singleton {
         }
     }
 
-    Process {
-        id: checkPerformanceFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/performance.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("performance.json not found, creating with default values...");
-                performanceRawLoader.setText(JSON.stringify(PerformanceDefaults.data, null, 4));
-                root.performanceReady = true;
-            }
-        }
-    }
-
     FileView {
         id: performanceLoader
         path: root.configDir + "/performance.json"
@@ -839,19 +844,6 @@ Singleton {
         }
     }
 
-    Process {
-        id: checkWeatherFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/weather.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("weather.json not found, creating with default values...");
-                weatherRawLoader.setText(JSON.stringify(WeatherDefaults.data, null, 4));
-                root.weatherReady = true;
-            }
-        }
-    }
-
     FileView {
         id: weatherLoader
         path: root.configDir + "/weather.json"
@@ -886,19 +878,6 @@ Singleton {
                 validateModule("desktop", desktopRawLoader, DesktopDefaults.data, () => {
                     root.desktopReady = true;
                 });
-            }
-        }
-    }
-
-    Process {
-        id: checkDesktopFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/desktop.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("desktop.json not found, creating with default values...");
-                desktopRawLoader.setText(JSON.stringify(DesktopDefaults.data, null, 4));
-                root.desktopReady = true;
             }
         }
     }
@@ -943,19 +922,6 @@ Singleton {
         }
     }
 
-    Process {
-        id: checkLockscreenFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/lockscreen.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("lockscreen.json not found, creating with default values...");
-                lockscreenRawLoader.setText(JSON.stringify(LockscreenDefaults.data, null, 4));
-                root.lockscreenReady = true;
-            }
-        }
-    }
-
     FileView {
         id: lockscreenLoader
         path: root.configDir + "/lockscreen.json"
@@ -989,19 +955,6 @@ Singleton {
                 validateModule("prefix", prefixRawLoader, PrefixDefaults.data, () => {
                     root.prefixReady = true;
                 });
-            }
-        }
-    }
-
-    Process {
-        id: checkPrefixFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/prefix.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("prefix.json not found, creating with default values...");
-                prefixRawLoader.setText(JSON.stringify(PrefixDefaults.data, null, 4));
-                root.prefixReady = true;
             }
         }
     }
@@ -1043,19 +996,6 @@ Singleton {
                 validateModule("system", systemRawLoader, SystemDefaults.data, () => {
                     root.systemReady = true;
                 });
-            }
-        }
-    }
-
-    Process {
-        id: checkSystemFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/system.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("system.json not found, creating with default values...");
-                systemRawLoader.setText(JSON.stringify(SystemDefaults.data, null, 4));
-                root.systemReady = true;
             }
         }
     }
@@ -1133,19 +1073,6 @@ Singleton {
         }
     }
 
-    Process {
-        id: checkDockFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/dock.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("dock.json not found, creating with default values...");
-                dockRawLoader.setText(JSON.stringify(DockDefaults.data, null, 4));
-                root.dockReady = true;
-            }
-        }
-    }
-
     FileView {
         id: dockLoader
         path: root.configDir + "/dock.json"
@@ -1194,19 +1121,6 @@ Singleton {
                 validateModule("ai", aiRawLoader, AiDefaults.data, () => {
                     root.aiReady = true;
                 });
-            }
-        }
-    }
-
-    Process {
-        id: checkAiFile
-        running: true
-        command: ["sh", "-c", "test -f \"" + root.configDir + "/ai.json\""]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.log("ai.json not found, creating with default values...");
-                aiRawLoader.setText(JSON.stringify(AiDefaults.data, null, 4));
-                root.aiReady = true;
             }
         }
     }
@@ -3276,21 +3190,29 @@ Singleton {
 
     // Helper functions for color handling (HEX or named colors)
     function isHexColor(colorValue) {
-        if (typeof colorValue !== 'string')
+        if (!colorValue || typeof colorValue !== 'string')
             return false;
         const normalized = colorValue.toLowerCase().trim();
         return normalized.startsWith('#') || normalized.startsWith('rgb');
     }
 
     function resolveColor(colorValue) {
+        if (!colorValue) return "transparent"; // Fallback safe color
+        
         if (isHexColor(colorValue)) {
             return colorValue;
         }
-        return Colors[colorValue] || Styling.styledRectItem("overprimary");
+        
+        // Check if Colors singleton is ready
+        if (typeof Colors === 'undefined' || !Colors) return "transparent";
+        
+        return Colors[colorValue] || "transparent"; 
     }
 
     function resolveColorWithOpacity(colorValue, opacity) {
-        const color = isHexColor(colorValue) ? Qt.color(colorValue) : (Colors[colorValue] || Styling.styledRectItem("overprimary"));
+        if (!colorValue) return Qt.rgba(0,0,0,0);
+        
+        const color = isHexColor(colorValue) ? Qt.color(colorValue) : (Colors[colorValue] || Qt.color("transparent"));
         return Qt.rgba(color.r, color.g, color.b, opacity);
     }
 }

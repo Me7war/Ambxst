@@ -243,15 +243,6 @@ StyledRect {
                         radius: player.isPlaying ? Styling.radius(-4) : Styling.radius(4)
                         opacity: MprisController.canTogglePlaying ? 1.0 : 0.3
 
-                        Behavior on radius {
-                            enabled: Config.animDuration > 0
-                            NumberAnimation {
-                                duration: Config.animDuration
-                                easing.type: Easing.OutBack
-                                easing.overshoot: 1.5
-                            }
-                        }
-
                         Text {
                             id: playPauseBtn
                             anchors.centerIn: parent

@@ -158,14 +158,6 @@ Item {
                     anchors.fill: parent
                     radius: compactPlayer.isPlaying ? Styling.radius(-8) : Styling.radius(-4)
                     color: "transparent"
-                    Behavior on radius {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutBack
-                            easing.overshoot: 1.5
-                        }
-                    }
                     Image {
                         id: artworkImage
                         anchors.fill: parent

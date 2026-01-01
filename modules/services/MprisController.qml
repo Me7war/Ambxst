@@ -26,10 +26,21 @@ Singleton {
     property string cacheFilePath: Quickshell.dataPath("lastPlayer.json")
     property bool isInitializing: true
     property string cachedDbusName: ""
+    property bool cacheFileReady: false
+
+    Process {
+        id: ensureCacheFile
+        running: true
+        command: ["bash", "-c", "mkdir -p \"$(dirname '" + root.cacheFilePath + "')\" && if [ ! -f '" + root.cacheFilePath + "' ]; then echo '{}' > '" + root.cacheFilePath + "'; fi"]
+        onExited: {
+            root.cacheFileReady = true
+            cacheFile.reload()
+        }
+    }
 
     FileView {
         id: cacheFile
-        path: root.cacheFilePath
+        path: root.cacheFileReady ? root.cacheFilePath : ""
         onLoaded: root.loadLastPlayer()
     }
 
