@@ -30,7 +30,7 @@ log_error() { echo -e "${RED}✖  $1${NC}"; }
 detect_distro() {
 	if [ -f /etc/NIXOS ]; then
 		echo "nixos"
-	elif [ -f /etc/arch-release ]; then
+	elif command -v pacman >/dev/null 2>&1; then
 		echo "arch"
 	elif [ -f /etc/fedora-release ]; then
 		echo "fedora"
