@@ -172,6 +172,67 @@ Singleton {
         }
     }
 
+    // Rename a preset
+    function renamePreset(oldName: string, newName: string) {
+        if (oldName === "" || newName === "" || oldName === newName) {
+            console.warn("Invalid rename parameters")
+            return
+        }
+
+        console.log("Renaming preset:", oldName, "to:", newName)
+        root.pendingRename = { oldName: oldName, newName: newName }
+
+        const oldPath = presetsDir + "/" + oldName
+        const newPath = presetsDir + "/" + newName
+        renameProcess.command = ["mv", oldPath, newPath]
+        renameProcess.running = true
+    }
+
+    // Update a preset with current config files
+    function updatePreset(presetName: string, configFiles: var) {
+        if (presetName === "" || configFiles.length === 0) {
+            console.warn("Invalid update parameters")
+            return
+        }
+
+        console.log("Updating preset:", presetName, "with files:", configFiles)
+        root.pendingUpdateName = presetName
+
+        const presetPath = presetsDir + "/" + presetName
+
+        let copyCmd = ""
+        for (const configFile of configFiles) {
+            const jsonFile = configFile.replace('.js', '.json')
+            const srcPath = configDir + "/config/" + jsonFile
+            const dstPath = presetPath + "/" + jsonFile
+            copyCmd += `cp "${srcPath}" "${dstPath}" && `
+        }
+        copyCmd = copyCmd.slice(0, -4) // Remove last " && "
+
+        updateProcess.command = ["sh", "-c", copyCmd]
+        updateProcess.running = true
+    }
+
+    // Delete a preset
+    function deletePreset(presetName: string) {
+        if (presetName === "") {
+            console.warn("Cannot delete preset with empty name")
+            return
+        }
+
+        console.log("Deleting preset:", presetName)
+        root.pendingDeleteName = presetName
+
+        const presetPath = presetsDir + "/" + presetName
+        deleteProcess.command = ["rm", "-rf", presetPath]
+        deleteProcess.running = true
+    }
+
+    // Internal properties
+    property var pendingRename: null
+    property string pendingUpdateName: ""
+    property string pendingDeleteName: ""
+
     // Save process
     Process {
         id: saveProcess
@@ -189,6 +250,77 @@ Singleton {
             }
             root.pendingPresetName = ""
         }
+    }
+
+    // Rename process
+    Process {
+        id: renameProcess
+        running: false
+
+        onExited: function(exitCode) {
+            if (exitCode === 0 && root.pendingRename) {
+                console.log("Preset renamed successfully:", root.pendingRename.oldName, "->", root.pendingRename.newName)
+                Quickshell.execDetached(["notify-send", "Preset Renamed", `Preset renamed to "${root.pendingRename.newName}".`])
+                // Update active preset if it was the renamed one
+                if (root.activePreset === root.pendingRename.oldName) {
+                    root.activePreset = root.pendingRename.newName
+                    // Update active preset file
+                    updateActivePresetFileProcess.command = ["sh", "-c", `echo "${root.pendingRename.newName}" > "${activePresetFile}"`]
+                    updateActivePresetFileProcess.running = true
+                }
+                root.scanProcess.running = true
+            } else {
+                console.warn("Failed to rename preset")
+                Quickshell.execDetached(["notify-send", "Error", "Failed to rename preset."])
+            }
+            root.pendingRename = null
+        }
+    }
+
+    // Update process
+    Process {
+        id: updateProcess
+        running: false
+
+        onExited: function(exitCode) {
+            if (exitCode === 0) {
+                console.log("Preset updated successfully:", root.pendingUpdateName)
+                Quickshell.execDetached(["notify-send", "Preset Updated", `Preset "${root.pendingUpdateName}" updated successfully.`])
+                root.scanProcess.running = true
+            } else {
+                console.warn("Failed to update preset:", root.pendingUpdateName)
+                Quickshell.execDetached(["notify-send", "Error", `Failed to update preset "${root.pendingUpdateName}".`])
+            }
+            root.pendingUpdateName = ""
+        }
+    }
+
+    // Delete process
+    Process {
+        id: deleteProcess
+        running: false
+
+        onExited: function(exitCode) {
+            if (exitCode === 0) {
+                console.log("Preset deleted successfully:", root.pendingDeleteName)
+                Quickshell.execDetached(["notify-send", "Preset Deleted", `Preset "${root.pendingDeleteName}" deleted.`])
+                // Clear active preset if it was the deleted one
+                if (root.activePreset === root.pendingDeleteName) {
+                    root.activePreset = ""
+                }
+                root.scanProcess.running = true
+            } else {
+                console.warn("Failed to delete preset:", root.pendingDeleteName)
+                Quickshell.execDetached(["notify-send", "Error", `Failed to delete preset "${root.pendingDeleteName}".`])
+            }
+            root.pendingDeleteName = ""
+        }
+    }
+
+    // Update active preset file process
+    Process {
+        id: updateActivePresetFileProcess
+        running: false
     }
 
     // Load process
