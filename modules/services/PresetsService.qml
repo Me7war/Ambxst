@@ -183,12 +183,11 @@ Singleton {
 
                 // Convert map to array
                 const newPresets = Object.values(presetsMap)
-                // Sort by name
+                // Sort: Official first (alphabetical), then Custom (alphabetical)
                 newPresets.sort((a, b) => {
-                     // Sort official first? Or just alphabetical?
-                     // Let's keep alphabetical for now, maybe official ones could be grouped?
-                     // User didn't specify, just alphabetical is standard.
-                     return a.name.localeCompare(b.name)
+                    if (a.isOfficial && !b.isOfficial) return -1;
+                    if (!a.isOfficial && b.isOfficial) return 1;
+                    return a.name.localeCompare(b.name);
                 })
 
                 root.presets = newPresets
