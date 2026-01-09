@@ -74,7 +74,8 @@ QtObject {
                 lockscreen: cloneKeybind(ambxst.system.lockscreen),
                 tools: cloneKeybind(ambxst.system.tools),
                 screenshot: cloneKeybind(ambxst.system.screenshot),
-                screenrecord: cloneKeybind(ambxst.system.screenrecord)
+                screenrecord: cloneKeybind(ambxst.system.screenrecord),
+                lens: cloneKeybind(ambxst.system.lens)
             }
         };
 
@@ -194,6 +195,7 @@ QtObject {
                 unbindCommands.push(createUnbindCommand(previousAmbxstBinds.system.tools));
                 unbindCommands.push(createUnbindCommand(previousAmbxstBinds.system.screenshot));
                 unbindCommands.push(createUnbindCommand(previousAmbxstBinds.system.screenrecord));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.system.lens));
             }
 
             // Unbind previous custom keybinds
@@ -239,6 +241,7 @@ QtObject {
         unbindCommands.push(createUnbindCommand(system.tools));
         unbindCommands.push(createUnbindCommand(system.screenshot));
         unbindCommands.push(createUnbindCommand(system.screenrecord));
+        unbindCommands.push(createUnbindCommand(system.lens));
 
         batchCommands.push(createBindCommand(system.overview));
         batchCommands.push(createBindCommand(system.powermenu));
@@ -247,6 +250,7 @@ QtObject {
         batchCommands.push(createBindCommand(system.tools));
         batchCommands.push(createBindCommand(system.screenshot));
         batchCommands.push(createBindCommand(system.screenrecord));
+        batchCommands.push(createBindCommand(system.lens));
 
         // Procesar custom keybinds (new format with keys[] and actions[])
         const customBinds = Config.keybindsLoader.adapter.custom;

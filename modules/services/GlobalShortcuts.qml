@@ -130,6 +130,17 @@ Item {
         onPressed: GlobalStates.screenRecordToolVisible = true
     }
 
+    GlobalShortcut {
+        appid: root.appId
+        name: "lens"
+        description: "Open Google Lens (screenshot)"
+
+        onPressed: {
+            Screenshot.captureMode = "lens";
+            GlobalStates.screenshotToolVisible = true;
+        }
+    }
+
     // Dashboard tab shortcuts
     GlobalShortcut {
         appid: root.appId
