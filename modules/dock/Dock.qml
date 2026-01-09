@@ -106,7 +106,9 @@ Scope {
             implicitHeight: root.isVertical ? dockContent.implicitHeight + shadowSpace * 2 : dockSize + totalMargin + shadowSpace * 2
 
             WlrLayershell.namespace: "quickshell"
+            WlrLayershell.layer: WlrLayer.Overlay
             color: "transparent"
+            exclusionMode: ExclusionMode.Ignore
 
             mask: Region {
                 item: dockMouseArea
