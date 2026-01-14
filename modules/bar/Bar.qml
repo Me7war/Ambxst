@@ -141,7 +141,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
 
     // Altura implicita incluye espacio extra para animaciones / futuros elementos.
-    implicitHeight: Screen.height
+    implicitHeight: orientation === "horizontal" ? 200 : Screen.height
 
     // La mascara siempre apunta al MouseArea (igual que el Dock)
     mask: Region {
