@@ -70,6 +70,7 @@ QtObject {
         // Command built dynamically
         command: [] 
         onExited: exitCode => {
+            root._freezing = false; // Reset lock flag
             if (exitCode === 0) {
                 // Notify all monitors that their screenshot is ready
                 // We assume if the batch command finished, all are done.
@@ -82,6 +83,7 @@ QtObject {
                 root.screenshotCaptured(root.tempPathBase + "_ALL.png") // Dummy path?
             } else {
                 root.errorOccurred("Failed to capture screen (grim)")
+                root._freezing = false;
             }
         }
     }
@@ -185,14 +187,26 @@ QtObject {
         }
     }
 
+    // Prevent double execution
+    property bool _freezing: false
+
     function freezeScreen() {
+        if (_freezing) return;
+        _freezing = true;
         // Start by fetching monitors, then trigger freeze
         monitorsProcess.running = true
+        
+        // Reset flag after a delay or on completion?
+        // Since processes are async, we rely on them finishing.
+        // But if called simultaneously from 2 screens, we only want one chain.
+        // We can reset _freezing in executeFreezeBatch or onExited.
+        // Let's reset it in freezeProcess.onExited
     }
     
     function executeFreezeBatch() {
         if (root.monitors.length === 0) {
             console.warn("Screenshot: No monitors found to freeze");
+            _freezing = false;
             return;
         }
         
