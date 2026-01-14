@@ -89,6 +89,22 @@ refresh)
 	echo "Refreshing Ambxst profile..."
 	exec nix profile upgrade Ambxst --refresh --impure
 	;;
+run)
+	PID=$(find_ambxst_pid)
+	if [ -z "$PID" ]; then
+		echo "Error: Ambxst is not running"
+		exit 1
+	fi
+	CMD="${2:-}"
+	if [ -z "$CMD" ]; then
+		echo "Error: No command specified for run"
+		exit 1
+	fi
+	qs ipc --pid "$PID" call ambxst run "$CMD" 2>/dev/null || {
+		echo "Error: Could not run command '$CMD'"
+		exit 1
+	}
+	;;
 lock)
 	# Trigger lockscreen via quickshell-ipc
 	PID=$(find_ambxst_pid)

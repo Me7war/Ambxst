@@ -4,11 +4,57 @@ import qs.modules.globals
 import qs.modules.services
 import qs.config
 
+import Quickshell.Io
+
 Item {
     id: root
 
     readonly property string appId: "ambxst"
     readonly property int mediaSeekStepMs: 5000
+
+    IpcHandler {
+        target: "ambxst"
+
+        function run(command: string) {
+            console.log("IPC run command received:", command);
+            switch (command) {
+                // Dashboard
+                case "dashboard-widgets": toggleDashboardTab(0); break;
+                case "dashboard-wallpapers": toggleDashboardTab(1); break;
+                case "dashboard-kanban": toggleDashboardTab(2); break;
+                case "dashboard-assistant": toggleDashboardTab(3); break;
+                case "dashboard-controls": toggleDashboardTab(4); break;
+                case "dashboard-clipboard": toggleDashboardWithPrefix(Config.prefix.clipboard + " "); break;
+                case "dashboard-emoji": toggleDashboardWithPrefix(Config.prefix.emoji + " "); break;
+                case "dashboard-tmux": toggleDashboardWithPrefix(Config.prefix.tmux + " "); break;
+                case "dashboard-notes": toggleDashboardWithPrefix(Config.prefix.notes + " "); break;
+                
+                // System
+                case "overview": toggleSimpleModule("overview"); break;
+                case "powermenu": toggleSimpleModule("powermenu"); break;
+                case "tools": toggleSimpleModule("tools"); break;
+                case "config": GlobalStates.settingsVisible = !GlobalStates.settingsVisible; break;
+                case "screenshot": GlobalStates.screenshotToolVisible = true; break;
+                case "screenrecord": GlobalStates.screenRecordToolVisible = true; break;
+                case "lens": 
+                    Screenshot.captureMode = "lens";
+                    GlobalStates.screenshotToolVisible = true;
+                    break;
+                case "lockscreen": GlobalStates.lockscreenVisible = true; break;
+                
+                // Media
+                case "media-seek-backward": seekActivePlayer(-mediaSeekStepMs); break;
+                case "media-seek-forward": seekActivePlayer(mediaSeekStepMs); break;
+                case "media-play-pause": 
+                    if (MprisController.canTogglePlaying) MprisController.togglePlaying();
+                    break;
+                case "media-next": MprisController.next(); break;
+                case "media-prev": MprisController.previous(); break;
+                    
+                default: console.warn("Unknown IPC command:", command);
+            }
+        }
+    }
 
     function toggleSimpleModule(moduleName) {
         if (Visibilities.currentActiveModule === moduleName) {

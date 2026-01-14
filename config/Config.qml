@@ -1408,44 +1408,44 @@ Singleton {
                     property JsonObject assistant: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "A"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-assistant"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run dashboard-assistant"
                     }
                     property JsonObject clipboard: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "V"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-clipboard"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run dashboard-clipboard"
                     }
                     property JsonObject emoji: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "PERIOD"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-emoji"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run dashboard-emoji"
                     }
                     property JsonObject notes: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "N"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-notes"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run dashboard-notes"
                     }
                     property JsonObject tmux: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "T"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-tmux"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run dashboard-tmux"
                     }
                     property JsonObject wallpapers: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "COMMA"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-wallpapers"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run dashboard-wallpapers"
                     }
                     property JsonObject widgets: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "Super_L"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-widgets"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run dashboard-widgets"
                         property string flags: "r"
                     }
                 }
@@ -1453,8 +1453,8 @@ Singleton {
                     property JsonObject config: JsonObject {
                         property list<string> modifiers: ["SUPER", "SHIFT"]
                         property string key: "C"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:config"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run config"
                         property string flags: ""
                     }
                     property JsonObject lockscreen: JsonObject {
@@ -1467,43 +1467,43 @@ Singleton {
                     property JsonObject overview: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "TAB"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:overview"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run overview"
                         property string flags: ""
                     }
                     property JsonObject powermenu: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "ESCAPE"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:powermenu"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run powermenu"
                         property string flags: ""
                     }
                     property JsonObject tools: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "S"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:tools"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run tools"
                         property string flags: ""
                     }
                     property JsonObject screenshot: JsonObject {
                         property list<string> modifiers: ["SUPER", "SHIFT"]
                         property string key: "S"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:screenshot"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run screenshot"
                         property string flags: ""
                     }
                     property JsonObject screenrecord: JsonObject {
                         property list<string> modifiers: ["SUPER", "SHIFT"]
                         property string key: "R"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:screenrecord"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run screenrecord"
                         property string flags: ""
                     }
                     property JsonObject lens: JsonObject {
                         property list<string> modifiers: ["SUPER", "SHIFT"]
                         property string key: "A"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:lens"
+                        property string dispatcher: "exec"
+                        property string argument: "ambxst run lens"
                         property string flags: ""
                     }
                 }
@@ -1511,23 +1511,23 @@ Singleton {
             // Functions to get defaults
             readonly property var defaultAmbxstBinds: {
                 "dashboard": {
-                    "assistant": { "modifiers": ["SUPER"], "key": "A", "dispatcher": "global", "argument": "ambxst:dashboard-assistant", "flags": "" },
-                    "clipboard": { "modifiers": ["SUPER"], "key": "V", "dispatcher": "global", "argument": "ambxst:dashboard-clipboard", "flags": "" },
-                    "emoji": { "modifiers": ["SUPER"], "key": "PERIOD", "dispatcher": "global", "argument": "ambxst:dashboard-emoji", "flags": "" },
-                    "notes": { "modifiers": ["SUPER"], "key": "N", "dispatcher": "global", "argument": "ambxst:dashboard-notes", "flags": "" },
-                    "tmux": { "modifiers": ["SUPER"], "key": "T", "dispatcher": "global", "argument": "ambxst:dashboard-tmux", "flags": "" },
-                    "wallpapers": { "modifiers": ["SUPER"], "key": "COMMA", "dispatcher": "global", "argument": "ambxst:dashboard-wallpapers", "flags": "" },
-                    "widgets": { "modifiers": ["SUPER"], "key": "Super_L", "dispatcher": "global", "argument": "ambxst:dashboard-widgets", "flags": "r" }
+                    "assistant": { "modifiers": ["SUPER"], "key": "A", "dispatcher": "exec", "argument": "ambxst run dashboard-assistant", "flags": "" },
+                    "clipboard": { "modifiers": ["SUPER"], "key": "V", "dispatcher": "exec", "argument": "ambxst run dashboard-clipboard", "flags": "" },
+                    "emoji": { "modifiers": ["SUPER"], "key": "PERIOD", "dispatcher": "exec", "argument": "ambxst run dashboard-emoji", "flags": "" },
+                    "notes": { "modifiers": ["SUPER"], "key": "N", "dispatcher": "exec", "argument": "ambxst run dashboard-notes", "flags": "" },
+                    "tmux": { "modifiers": ["SUPER"], "key": "T", "dispatcher": "exec", "argument": "ambxst run dashboard-tmux", "flags": "" },
+                    "wallpapers": { "modifiers": ["SUPER"], "key": "COMMA", "dispatcher": "exec", "argument": "ambxst run dashboard-wallpapers", "flags": "" },
+                    "widgets": { "modifiers": ["SUPER"], "key": "Super_L", "dispatcher": "exec", "argument": "ambxst run dashboard-widgets", "flags": "r" }
                 },
                 "system": {
-                    "config": { "modifiers": ["SUPER", "SHIFT"], "key": "C", "dispatcher": "global", "argument": "ambxst:config", "flags": "" },
+                    "config": { "modifiers": ["SUPER", "SHIFT"], "key": "C", "dispatcher": "exec", "argument": "ambxst run config", "flags": "" },
                     "lockscreen": { "modifiers": ["SUPER"], "key": "L", "dispatcher": "exec", "argument": "loginctl lock-session", "flags": "" },
-                    "overview": { "modifiers": ["SUPER"], "key": "TAB", "dispatcher": "global", "argument": "ambxst:overview", "flags": "" },
-                    "powermenu": { "modifiers": ["SUPER"], "key": "ESCAPE", "dispatcher": "global", "argument": "ambxst:powermenu", "flags": "" },
-                    "tools": { "modifiers": ["SUPER"], "key": "S", "dispatcher": "global", "argument": "ambxst:tools", "flags": "" },
-                    "screenshot": { "modifiers": ["SUPER", "SHIFT"], "key": "S", "dispatcher": "global", "argument": "ambxst:screenshot", "flags": "" },
-                    "screenrecord": { "modifiers": ["SUPER", "SHIFT"], "key": "R", "dispatcher": "global", "argument": "ambxst:screenrecord", "flags": "" },
-                    "lens": { "modifiers": ["SUPER", "SHIFT"], "key": "A", "dispatcher": "global", "argument": "ambxst:lens", "flags": "" }
+                    "overview": { "modifiers": ["SUPER"], "key": "TAB", "dispatcher": "exec", "argument": "ambxst run overview", "flags": "" },
+                    "powermenu": { "modifiers": ["SUPER"], "key": "ESCAPE", "dispatcher": "exec", "argument": "ambxst run powermenu", "flags": "" },
+                    "tools": { "modifiers": ["SUPER"], "key": "S", "dispatcher": "exec", "argument": "ambxst run tools", "flags": "" },
+                    "screenshot": { "modifiers": ["SUPER", "SHIFT"], "key": "S", "dispatcher": "exec", "argument": "ambxst run screenshot", "flags": "" },
+                    "screenrecord": { "modifiers": ["SUPER", "SHIFT"], "key": "R", "dispatcher": "exec", "argument": "ambxst run screenrecord", "flags": "" },
+                    "lens": { "modifiers": ["SUPER", "SHIFT"], "key": "A", "dispatcher": "exec", "argument": "ambxst run lens", "flags": "" }
                 }
             }
 
