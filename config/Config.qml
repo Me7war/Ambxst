@@ -1509,14 +1509,37 @@ Singleton {
                 }
             }
             // Functions to get defaults
+            readonly property var defaultAmbxstBinds: {
+                "dashboard": {
+                    "assistant": { "modifiers": ["SUPER"], "key": "A", "dispatcher": "global", "argument": "ambxst:dashboard-assistant", "flags": "" },
+                    "clipboard": { "modifiers": ["SUPER"], "key": "V", "dispatcher": "global", "argument": "ambxst:dashboard-clipboard", "flags": "" },
+                    "emoji": { "modifiers": ["SUPER"], "key": "PERIOD", "dispatcher": "global", "argument": "ambxst:dashboard-emoji", "flags": "" },
+                    "notes": { "modifiers": ["SUPER"], "key": "N", "dispatcher": "global", "argument": "ambxst:dashboard-notes", "flags": "" },
+                    "tmux": { "modifiers": ["SUPER"], "key": "T", "dispatcher": "global", "argument": "ambxst:dashboard-tmux", "flags": "" },
+                    "wallpapers": { "modifiers": ["SUPER"], "key": "COMMA", "dispatcher": "global", "argument": "ambxst:dashboard-wallpapers", "flags": "" },
+                    "widgets": { "modifiers": ["SUPER"], "key": "Super_L", "dispatcher": "global", "argument": "ambxst:dashboard-widgets", "flags": "r" }
+                },
+                "system": {
+                    "config": { "modifiers": ["SUPER", "SHIFT"], "key": "C", "dispatcher": "global", "argument": "ambxst:config", "flags": "" },
+                    "lockscreen": { "modifiers": ["SUPER"], "key": "L", "dispatcher": "exec", "argument": "loginctl lock-session", "flags": "" },
+                    "overview": { "modifiers": ["SUPER"], "key": "TAB", "dispatcher": "global", "argument": "ambxst:overview", "flags": "" },
+                    "powermenu": { "modifiers": ["SUPER"], "key": "ESCAPE", "dispatcher": "global", "argument": "ambxst:powermenu", "flags": "" },
+                    "tools": { "modifiers": ["SUPER"], "key": "S", "dispatcher": "global", "argument": "ambxst:tools", "flags": "" },
+                    "screenshot": { "modifiers": ["SUPER", "SHIFT"], "key": "S", "dispatcher": "global", "argument": "ambxst:screenshot", "flags": "" },
+                    "screenrecord": { "modifiers": ["SUPER", "SHIFT"], "key": "R", "dispatcher": "global", "argument": "ambxst:screenrecord", "flags": "" },
+                    "lens": { "modifiers": ["SUPER", "SHIFT"], "key": "A", "dispatcher": "global", "argument": "ambxst:lens", "flags": "" }
+                }
+            }
+
             function getAmbxstDefault(section, key) {
-                if (ambxst[section] && ambxst[section][key]) {
+                if (defaultAmbxstBinds[section] && defaultAmbxstBinds[section][key]) {
+                    const bind = defaultAmbxstBinds[section][key];
                     return {
-                        "modifiers": ambxst[section][key].modifiers || [],
-                        "key": ambxst[section][key].key || "",
-                        "dispatcher": ambxst[section][key].dispatcher || "",
-                        "argument": ambxst[section][key].argument || "",
-                        "flags": ambxst[section][key].flags || ""
+                        "modifiers": bind.modifiers || [],
+                        "key": bind.key || "",
+                        "dispatcher": bind.dispatcher || "",
+                        "argument": bind.argument || "",
+                        "flags": bind.flags || ""
                     };
                 }
                 return null;
