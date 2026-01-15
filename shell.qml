@@ -70,7 +70,25 @@ ShellRoot {
 
         Loader {
             id: barLoader
-            active: true
+            
+            // Force reload when position changes to prevent artifacts
+            property bool _active: true
+            active: _active
+
+            Connections {
+                target: Config.bar
+                function onPositionChanged() {
+                    barLoader._active = false;
+                    barReloadTimer.restart();
+                }
+            }
+
+            Timer {
+                id: barReloadTimer
+                interval: 100
+                onTriggered: barLoader._active = true
+            }
+
             required property ShellScreen modelData
             sourceComponent: Bar {
                 screen: barLoader.modelData
