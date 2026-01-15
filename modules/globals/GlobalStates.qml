@@ -399,6 +399,14 @@ Singleton {
                         Config.system.idle.listeners = JSON.parse(JSON.stringify(val.listeners));
                     }
                 }
+                // Special handling for system.ocr (JsonObject)
+                else if (section === "system" && prop === "ocr" && val) {
+                    var keys = Object.keys(val);
+                    for (var k = 0; k < keys.length; k++) {
+                        var key = keys[k];
+                        Config.system.ocr[key] = val[key];
+                    }
+                }
                 // Deep copy arrays or objects
                 else if (typeof val === 'object' && val !== null) {
                     Config[section][prop] = JSON.parse(JSON.stringify(val));
