@@ -35,7 +35,10 @@ QtObject {
             // Helper to darken color (percent 0-100)
             const darken = (c, percent) => {
                 try {
-                    return Qt.tint(c, "#000000", percent / 100).toString()
+                    // Qt.tint takes (source, tintColor). 
+                    // To darken, we tint with black having alpha = percent/100.
+                    // Qt.rgba(r,g,b,a) takes values 0.0-1.0
+                    return Qt.tint(c, Qt.rgba(0, 0, 0, percent / 100)).toString()
                 } catch (err) {
                     console.error("PywalGenerator: Error darkening color:", c, err)
                     return "#000000"
