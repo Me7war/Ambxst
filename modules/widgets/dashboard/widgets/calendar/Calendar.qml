@@ -81,6 +81,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: Icons.caretLeft
+                            font.family: Icons.font
                             font.pixelSize: 16
                             color: leftButton.buttonItem
                         }
@@ -106,6 +107,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: Icons.caretRight
+                            font.family: Icons.font
                             font.pixelSize: 16
                             color: rightButton.buttonItem
                         }
