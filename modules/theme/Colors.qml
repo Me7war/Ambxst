@@ -14,6 +14,13 @@ FileView {
         generationTimer.restart()
     }
 
+    property Connections oledWatcher: Connections {
+        target: Config
+        function onOledModeChanged() {
+            generationTimer.restart()
+        }
+    }
+
     property QtCtGenerator qtCtGenerator: QtCtGenerator {
         id: qtCtGenerator
     }
