@@ -251,50 +251,59 @@ Item {
         }
     }
 
-    // Dashboard tab shortcuts
+    // Launcher standalone shortcuts
     GlobalShortcut {
         appid: root.appId
-        name: "dashboard-widgets"
-        description: "Open dashboard widgets tab (includes app launcher)"
+        name: "launcher"
+        description: "Open standalone launcher"
+
+        onPressed: toggleLauncher()
+    }
+
+    GlobalShortcut {
+        appid: root.appId
+        name: "clipboard"
+        description: "Open launcher clipboard"
+
+        onPressed: toggleLauncherWithPrefix(Config.prefix.clipboard + " ")
+    }
+
+    GlobalShortcut {
+        appid: root.appId
+        name: "emoji"
+        description: "Open launcher emoji picker"
+
+        onPressed: toggleLauncherWithPrefix(Config.prefix.emoji + " ")
+    }
+
+    GlobalShortcut {
+        appid: root.appId
+        name: "tmux"
+        description: "Open launcher tmux sessions"
+
+        onPressed: toggleLauncherWithPrefix(Config.prefix.tmux + " ")
+    }
+
+    GlobalShortcut {
+        appid: root.appId
+        name: "notes"
+        description: "Open launcher notes"
+
+        onPressed: toggleLauncherWithPrefix(Config.prefix.notes + " ")
+    }
+
+    // Dashboard shortcuts
+    GlobalShortcut {
+        appid: root.appId
+        name: "dashboard"
+        description: "Open dashboard widgets tab"
 
         onPressed: toggleDashboardTab(0)
     }
 
     GlobalShortcut {
         appid: root.appId
-        name: "dashboard-clipboard"
-        description: "Open dashboard clipboard (via prefix)"
-
-        onPressed: toggleDashboardWithPrefix(Config.prefix.clipboard + " ")
-    }
-
-    GlobalShortcut {
-        appid: root.appId
-        name: "dashboard-emoji"
-        description: "Open dashboard emoji picker (via prefix)"
-
-        onPressed: toggleDashboardWithPrefix(Config.prefix.emoji + " ")
-    }
-
-    GlobalShortcut {
-        appid: root.appId
-        name: "dashboard-tmux"
-        description: "Open dashboard tmux sessions (via prefix)"
-
-        onPressed: toggleDashboardWithPrefix(Config.prefix.tmux + " ")
-    }
-
-    GlobalShortcut {
-        appid: root.appId
-        name: "dashboard-kanban"
-        description: "Open dashboard kanban tab"
-
-        onPressed: toggleDashboardTab(2)
-    }
-
-    GlobalShortcut {
-        appid: root.appId
-        name: "dashboard-wallpapers"
+        name: "wallpapers"
         description: "Open dashboard wallpapers tab"
 
         onPressed: toggleDashboardTab(1)
@@ -302,15 +311,7 @@ Item {
 
     GlobalShortcut {
         appid: root.appId
-        name: "dashboard-notes"
-        description: "Open dashboard notes (via prefix)"
-
-        onPressed: toggleDashboardWithPrefix(Config.prefix.notes + " ")
-    }
-
-    GlobalShortcut {
-        appid: root.appId
-        name: "dashboard-assistant"
+        name: "assistant"
         description: "Open dashboard assistant tab"
 
         onPressed: toggleDashboardTab(3)

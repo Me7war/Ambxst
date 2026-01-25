@@ -308,25 +308,30 @@ Item {
         if (root.isEditingAmbxst) {
             // Save ambxst bind (still uses old format internally)
             const path = root.editingBind.path.split(".");
-            // path = ["ambxst", "dashboard"|"system", "bindName"]
-            const section = path[1];
-            const bindName = path[2];
-
+            // path = ["ambxst", "section"?, "bindName"]
+            
             const adapter = Config.keybindsLoader.adapter;
-            if (adapter && adapter.ambxst && adapter.ambxst[section] && adapter.ambxst[section][bindName]) {
-                // Use first key for ambxst binds
-                const firstKey = root.editKeys.length > 0 ? root.editKeys[0] : {
-                    modifiers: [],
-                    key: ""
-                };
-                
-                // Update all properties including dispatcher/argument/flags to ensure full reset works
-                const bindObj = adapter.ambxst[section][bindName];
-                bindObj.modifiers = firstKey.modifiers || [];
-                bindObj.key = firstKey.key || "";
-                bindObj.dispatcher = root.editActions[0].dispatcher || "";
-                bindObj.argument = root.editActions[0].argument || "";
-                bindObj.flags = root.editActions[0].flags || "";
+            if (adapter && adapter.ambxst) {
+                let bindObj = null;
+                if (path.length === 2) {
+                    // Top level: ambxst.bindName
+                    bindObj = adapter.ambxst[path[1]];
+                } else if (path.length === 3) {
+                    // Nested: ambxst.system.bindName
+                    bindObj = adapter.ambxst[path[1]][path[2]];
+                }
+
+                if (bindObj) {
+                    const firstKey = root.editKeys.length > 0 ? root.editKeys[0] : {
+                        modifiers: [],
+                        key: ""
+                    };
+                    bindObj.modifiers = firstKey.modifiers || [];
+                    bindObj.key = firstKey.key || "";
+                    bindObj.dispatcher = root.editActions[0].dispatcher || "";
+                    bindObj.argument = root.editActions[0].argument || "";
+                    bindObj.flags = root.editActions[0].flags || "";
+                }
             }
         } else if (root.isCreatingNew) {
             // Create new custom bind with new format
@@ -415,28 +420,26 @@ Item {
         const binds = [];
         const ambxst = adapter.ambxst;
 
-        // Dashboard binds
-        if (ambxst.dashboard) {
-            const dashboardKeys = ["widgets", "clipboard", "emoji", "tmux", "kanban", "wallpapers", "assistant", "notes"];
-            for (const key of dashboardKeys) {
-                if (ambxst.dashboard[key]) {
-                    binds.push({
-                        category: "Dashboard",
-                        name: key.charAt(0).toUpperCase() + key.slice(1),
-                        path: "ambxst.dashboard." + key,
-                        bind: ambxst.dashboard[key]
-                    });
-                }
+        // Core Ambxst binds (Launcher, Dashboard, etc.)
+        const coreKeys = ["launcher", "dashboard", "assistant", "clipboard", "emoji", "notes", "tmux", "wallpapers"];
+        for (const key of coreKeys) {
+            if (ambxst[key]) {
+                binds.push({
+                    category: "Ambxst",
+                    name: key.charAt(0).toUpperCase() + key.slice(1),
+                    path: "ambxst." + key,
+                    bind: ambxst[key]
+                });
             }
         }
 
-            // System binds
-            if (ambxst.system) {
-                const systemKeys = ["overview", "powermenu", "config", "lockscreen", "tools", "screenshot", "screenrecord", "lens", "reload", "quit"];
-                for (const key of systemKeys) {
-                    if (ambxst.system[key]) {
-                        binds.push({
-                            category: "System",
+        // System binds
+        if (ambxst.system) {
+            const systemKeys = ["overview", "powermenu", "config", "lockscreen", "tools", "screenshot", "screenrecord", "lens", "reload", "quit"];
+            for (const key of systemKeys) {
+                if (ambxst.system[key]) {
+                    binds.push({
+                        category: "System",
                         name: key.charAt(0).toUpperCase() + key.slice(1),
                         path: "ambxst.system." + key,
                         bind: ambxst.system[key]

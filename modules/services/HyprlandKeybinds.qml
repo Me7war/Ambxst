@@ -56,16 +56,17 @@ QtObject {
 
         const ambxst = Config.keybindsLoader.adapter.ambxst;
 
-        // Store dashboard keybinds
+        // Store ambxst core keybinds
         previousAmbxstBinds = {
-            dashboard: {
-                widgets: cloneKeybind(ambxst.dashboard.widgets),
-                clipboard: cloneKeybind(ambxst.dashboard.clipboard),
-                emoji: cloneKeybind(ambxst.dashboard.emoji),
-                tmux: cloneKeybind(ambxst.dashboard.tmux),
-                wallpapers: cloneKeybind(ambxst.dashboard.wallpapers),
-                assistant: cloneKeybind(ambxst.dashboard.assistant),
-                notes: cloneKeybind(ambxst.dashboard.notes)
+            ambxst: {
+                launcher: cloneKeybind(ambxst.launcher),
+                dashboard: cloneKeybind(ambxst.dashboard),
+                assistant: cloneKeybind(ambxst.assistant),
+                clipboard: cloneKeybind(ambxst.clipboard),
+                emoji: cloneKeybind(ambxst.emoji),
+                notes: cloneKeybind(ambxst.notes),
+                tmux: cloneKeybind(ambxst.tmux),
+                wallpapers: cloneKeybind(ambxst.wallpapers)
             },
             system: {
                 overview: cloneKeybind(ambxst.system.overview),
@@ -177,15 +178,16 @@ QtObject {
 
         // First, unbind previous keybinds if we have them stored
         if (hasPreviousBinds) {
-            // Unbind previous ambxst dashboard keybinds
-            if (previousAmbxstBinds.dashboard) {
-                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.dashboard.widgets));
-                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.dashboard.clipboard));
-                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.dashboard.emoji));
-                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.dashboard.tmux));
-                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.dashboard.wallpapers));
-                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.dashboard.assistant));
-                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.dashboard.notes));
+            // Unbind previous ambxst core keybinds
+            if (previousAmbxstBinds.ambxst) {
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.launcher));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.dashboard));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.assistant));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.clipboard));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.emoji));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.notes));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.tmux));
+                unbindCommands.push(createUnbindCommand(previousAmbxstBinds.ambxst.wallpapers));
             }
 
             // Unbind previous ambxst system keybinds
@@ -215,26 +217,27 @@ QtObject {
             }
         }
 
-        // Procesar Ambxst keybinds (still use old format)
+        // Procesar Ambxst core keybinds
         const ambxst = Config.keybindsLoader.adapter.ambxst;
 
-        // Dashboard keybinds
-        const dashboard = ambxst.dashboard;
-        unbindCommands.push(createUnbindCommand(dashboard.widgets));
-        unbindCommands.push(createUnbindCommand(dashboard.clipboard));
-        unbindCommands.push(createUnbindCommand(dashboard.emoji));
-        unbindCommands.push(createUnbindCommand(dashboard.tmux));
-        unbindCommands.push(createUnbindCommand(dashboard.wallpapers));
-        unbindCommands.push(createUnbindCommand(dashboard.assistant));
-        unbindCommands.push(createUnbindCommand(dashboard.notes));
+        // Core keybinds
+        unbindCommands.push(createUnbindCommand(ambxst.launcher));
+        unbindCommands.push(createUnbindCommand(ambxst.dashboard));
+        unbindCommands.push(createUnbindCommand(ambxst.assistant));
+        unbindCommands.push(createUnbindCommand(ambxst.clipboard));
+        unbindCommands.push(createUnbindCommand(ambxst.emoji));
+        unbindCommands.push(createUnbindCommand(ambxst.notes));
+        unbindCommands.push(createUnbindCommand(ambxst.tmux));
+        unbindCommands.push(createUnbindCommand(ambxst.wallpapers));
 
-        batchCommands.push(createBindCommand(dashboard.widgets, dashboard.widgets.flags || ""));
-        batchCommands.push(createBindCommand(dashboard.clipboard, dashboard.clipboard.flags || ""));
-        batchCommands.push(createBindCommand(dashboard.emoji, dashboard.emoji.flags || ""));
-        batchCommands.push(createBindCommand(dashboard.tmux, dashboard.tmux.flags || ""));
-        batchCommands.push(createBindCommand(dashboard.wallpapers, dashboard.wallpapers.flags || ""));
-        batchCommands.push(createBindCommand(dashboard.assistant, dashboard.assistant.flags || ""));
-        batchCommands.push(createBindCommand(dashboard.notes, dashboard.notes.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.launcher, ambxst.launcher.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.dashboard, ambxst.dashboard.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.assistant, ambxst.assistant.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.clipboard, ambxst.clipboard.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.emoji, ambxst.emoji.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.notes, ambxst.notes.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.tmux, ambxst.tmux.flags || ""));
+        batchCommands.push(createBindCommand(ambxst.wallpapers, ambxst.wallpapers.flags || ""));
 
         // System keybinds
         const system = ambxst.system;
