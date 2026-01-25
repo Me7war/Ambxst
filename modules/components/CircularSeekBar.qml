@@ -132,6 +132,10 @@ Item {
     property real waveFrequency: 12 // Adjust for visual density
     property real waveAmplitude: 2.5 // Pixel amplitude
 
+    Behavior on waveAmplitude {
+        NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+    }
+
     // Animation for the wave
     NumberAnimation on wavePhase {
         from: 0
@@ -148,6 +152,35 @@ Item {
 
         // Use dragValue while dragging, otherwise bound value
         property real progress: root.isDragging ? root.dragValue : root.value
+
+        CircularWavyProgress {
+            id: wavyProgress
+            anchors.fill: parent
+            visible: root.wavy
+
+            // Geometry Logic
+            property real pixelRadius: (Math.min(parent.width, parent.height) / 2) - root.ringPadding
+            radius: pixelRadius / parent.width
+            
+            startAngleRad: root.startAngleDeg * Math.PI / 180
+            
+            // Calculate progress angle relative to handle gap
+            property real spanRad: root.spanAngleDeg * Math.PI / 180
+            property real handleGapRad: root.handleSpacing / pixelRadius
+            property real rawProgress: progressCanvas.progress
+            
+            // Effective progress angle (0 to span - gap)
+            property real effectiveProgress: Math.max(0, (spanRad * rawProgress) - handleGapRad)
+            
+            progressAngleRad: effectiveProgress
+            
+            // Styling
+            color: root.accentColor
+            thickness: root.lineWidth / parent.width
+            amplitude: root.waveAmplitude / parent.width // Convert px to normalized
+            frequency: root.waveFrequency
+            phase: root.wavePhase
+        }
 
         Canvas {
             id: canvas
@@ -186,43 +219,15 @@ Item {
                     ctx.stroke();
                 }
 
-                // Draw progress
+                // Draw progress (Only if NOT wavy, or if wavy is failing/disabled)
                 // Ends at current position - gap
                 let progressEnd = startRad + currentSpan - handleGapRad;
                 
-                if (progressCanvas.progress > 0 && progressEnd > startRad) {
+                if (!root.wavy && progressCanvas.progress > 0 && progressEnd > startRad) {
                     ctx.strokeStyle = root.accentColor;
                     ctx.lineWidth = lineWidth;
                     ctx.beginPath();
-                    
-                    if (root.wavy) {
-                        // Wavy Draw Logic
-                        let step = 0.03; // ~1.7 degrees per step
-                        let amp = root.waveAmplitude;
-                        let freq = root.waveFrequency;
-                        let phase = root.wavePhase;
-                        
-                        // We iterate through the angle
-                        for (let a = startRad; a <= progressEnd; a += step) {
-                            // Calculate perturbed radius
-                            // We use (a - startRad) to make the wave consistent relative to start
-                            let r = radius + amp * Math.sin(freq * (a - startRad) + phase);
-                            
-                            let x = centerX + r * Math.cos(a);
-                            let y = centerY + r * Math.sin(a);
-                            
-                            if (a === startRad) ctx.moveTo(x, y);
-                            else ctx.lineTo(x, y);
-                        }
-                        
-                        // Ensure we connect to the exact end point
-                        let finalR = radius + amp * Math.sin(freq * (progressEnd - startRad) + phase);
-                        ctx.lineTo(centerX + finalR * Math.cos(progressEnd), centerY + finalR * Math.sin(progressEnd));
-                    } else {
-                        // Standard Arc
-                        ctx.arc(centerX, centerY, radius, startRad, progressEnd, false);
-                    }
-                    
+                    ctx.arc(centerX, centerY, radius, startRad, progressEnd, false);
                     ctx.stroke();
                 }
 
@@ -258,7 +263,7 @@ Item {
                 function onValueEdited() { canvas.requestPaint(); }
                 function onAnimatedHandleOffsetChanged() { canvas.requestPaint(); }
                 function onAnimatedHandleWidthChanged() { canvas.requestPaint(); }
-                function onWavePhaseChanged() { if(root.wavy) canvas.requestPaint(); }
+                // Wave properties drive the shader, not canvas paint (unless fallback logic is needed)
             }
         }
 

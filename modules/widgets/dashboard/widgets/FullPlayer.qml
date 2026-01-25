@@ -99,7 +99,7 @@ StyledRect {
                 trackColor: Colors.outline
                 lineWidth: 6
                 wavy: true // Enable wavy progress
-                waveAmplitude: 3
+                waveAmplitude: player.isPlaying ? 3 : 0
                 waveFrequency: 24
                 
                 // Half circle (Top) from 9 o'clock (180) to 3 o'clock (360)
