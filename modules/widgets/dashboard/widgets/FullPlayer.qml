@@ -262,7 +262,7 @@ StyledRect {
         // 3. Playback Controls
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 16
+            spacing: 8
             visible: player.hasActivePlayer
 
             // Player Selector

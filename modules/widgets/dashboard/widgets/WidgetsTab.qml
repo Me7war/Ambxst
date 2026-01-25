@@ -26,15 +26,8 @@ Rectangle {
 
         // Player (Replaces Loader)
         FullPlayer {
-            Layout.preferredWidth: root.leftPanelWidth
+            Layout.preferredWidth: 252
             Layout.fillHeight: true
-        }
-
-        // Separator
-        Separator {
-            Layout.preferredWidth: 2
-            Layout.fillHeight: true
-            vert: true
         }
 
         // Widgets column
