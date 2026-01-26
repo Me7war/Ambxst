@@ -1055,6 +1055,8 @@ PanelWindow {
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 smooth: true
+                sourceSize.width: wallpaper.width
+                sourceSize.height: wallpaper.height
                 layer.enabled: parent.tint
                 layer.effect: ShaderEffect {
                     property var paletteTexture: paletteTextureSource
