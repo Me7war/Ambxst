@@ -81,6 +81,10 @@ PanelWindow {
     // Proxy properties for Bar/Notch synchronization
     // Note: BarContent and NotchContent already handle their internal sync using Visibilities.
     
+    // Helper properties for shadow logic
+    readonly property bool keepBarShadow: Config.bar.keepBarShadow ?? false
+    readonly property bool containBar: Config.bar.containBar ?? false
+
     Component.onCompleted: {
         Visibilities.registerBarPanel(screen.name, unifiedPanel);
         Visibilities.registerNotchPanel(screen.name, unifiedPanel);
@@ -133,12 +137,34 @@ PanelWindow {
     // ═══════════════════════════════════════════════════════════════
 
     Item {
+        id: shadowMask
+        anchors.fill: parent
+        visible: false
+
+        Rectangle {
+            id: barCutout
+            visible: unifiedPanel.containBar && !unifiedPanel.keepBarShadow
+            color: "black" // Opaque for mask
+
+            // Bind to barHitbox geometry
+            x: barContent.barHitbox.x
+            y: barContent.barHitbox.y
+            width: barContent.barHitbox.width
+            height: barContent.barHitbox.height
+        }
+    }
+
+    Item {
         id: visualContainer
         anchors.fill: parent
         
         // Apply a single unified shadow to the composite of all components
         layer.enabled: true
-        layer.effect: Shadow {}
+        layer.effect: Shadow {
+            maskEnabled: barCutout.visible
+            maskSource: shadowMask
+            maskInverted: true
+        }
 
         ScreenFrameContent {
             id: frameContent

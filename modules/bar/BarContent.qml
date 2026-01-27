@@ -144,6 +144,9 @@ Item {
 
     readonly property int frameOffset: Config.bar?.frameEnabled ? (Config.bar?.frameThickness ?? 6) : 0
 
+    // Shadow logic for bar components
+    readonly property bool shadowsEnabled: Config.showBackground && (!Config.bar.containBar || Config.bar.keepBarShadow)
+
     // The hitbox for the mask
     property alias barHitbox: barMouseArea
 
@@ -317,6 +320,7 @@ Item {
                     id: launcherButton
                     startRadius: root.outerRadius
                     endRadius: root.innerRadius
+                    enableShadow: root.shadowsEnabled
                 }
 
                 Workspaces {
@@ -331,7 +335,7 @@ Item {
                 LayoutSelectorButton {
                     id: layoutSelectorButton
                     bar: root
-                    layerEnabled: Config.showBackground
+                    layerEnabled: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: (root.pinButtonVisible) ? root.innerRadius : (root.dockAtStart ? root.innerRadius : root.outerRadius)
                 }
@@ -350,7 +354,7 @@ Item {
                         background: StyledRect {
                             id: pinButtonBg
                             variant: root.pinned ? "primary" : "bg"
-                            enableShadow: Config.showBackground
+                            enableShadow: root.shadowsEnabled
                             
                             // PinButton is typically last in group 1 (unless IntegratedDock follows at start)
                             property real startRadius: root.innerRadius
@@ -418,6 +422,7 @@ Item {
                         bar: root
                         orientation: root.orientation
                         anchors.verticalCenter: parent.verticalCenter
+                        enableShadow: root.shadowsEnabled
 
                         // Connect to left/right groups if at start/end
                         startRadius: root.dockAtStart ? root.innerRadius : root.outerRadius
@@ -452,17 +457,19 @@ Item {
                     id: presetsButton
                     startRadius: root.dockAtEnd ? root.innerRadius : root.outerRadius
                     endRadius: root.innerRadius
+                    enableShadow: root.shadowsEnabled
                 }
 
                 ToolsButton {
                     id: toolsButton
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
+                    enableShadow: root.shadowsEnabled
                 }
 
                 SysTray {
                     bar: root
-                    layer.enabled: Config.showBackground
+                    enableShadow: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                 }
@@ -470,7 +477,7 @@ Item {
                 ControlsButton {
                     id: controlsButton
                     bar: root
-                    layerEnabled: Config.showBackground
+                    layerEnabled: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                 }
@@ -478,7 +485,7 @@ Item {
                 Bar.BatteryIndicator {
                     id: batteryIndicator
                     bar: root
-                    layerEnabled: Config.showBackground
+                    layerEnabled: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                 }
@@ -486,7 +493,7 @@ Item {
                 Clock {
                     id: clockComponent
                     bar: root
-                    layerEnabled: Config.showBackground
+                    layerEnabled: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                 }
@@ -495,6 +502,7 @@ Item {
                     id: powerButton
                     startRadius: root.innerRadius
                     endRadius: root.outerRadius
+                    enableShadow: root.shadowsEnabled
                 }
             }
 
@@ -511,11 +519,12 @@ Item {
                     startRadius: root.outerRadius
                     endRadius: root.innerRadius
                     vertical: true
+                    enableShadow: root.shadowsEnabled
                 }
 
                 SysTray {
                     bar: root
-                    layer.enabled: Config.showBackground
+                    enableShadow: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                 }
@@ -525,6 +534,7 @@ Item {
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                     vertical: true
+                    enableShadow: root.shadowsEnabled
                 }
 
                 PresetsButton {
@@ -532,6 +542,7 @@ Item {
                     startRadius: root.innerRadius
                     endRadius: root.outerRadius
                     vertical: true
+                    enableShadow: root.shadowsEnabled
                 }
 
                 // Center Group Container
@@ -560,7 +571,7 @@ Item {
                         LayoutSelectorButton {
                             id: layoutSelectorButtonVert
                             bar: root
-                            layerEnabled: Config.showBackground
+                            layerEnabled: root.shadowsEnabled
                             Layout.alignment: Qt.AlignHCenter
                             startRadius: root.outerRadius
                             endRadius: root.innerRadius
@@ -589,10 +600,10 @@ Item {
                                 implicitWidth: 36
                                 implicitHeight: 36
 
-                                background: StyledRect {
+                                    background: StyledRect {
                                     id: pinButtonVBg
                                     variant: root.pinned ? "primary" : "bg"
-                                    enableShadow: Config.showBackground
+                                    enableShadow: root.shadowsEnabled
                                     
                                     property real startRadius: root.innerRadius
                                     // In vertical, dock is always appended to this group if enabled
@@ -657,6 +668,7 @@ Item {
                             visible: integratedDockEnabled
                             Layout.fillHeight: true
                             Layout.fillWidth: true
+                            enableShadow: root.shadowsEnabled
                             
                             startRadius: root.innerRadius
                             endRadius: root.outerRadius
@@ -667,7 +679,7 @@ Item {
                 ControlsButton {
                     id: controlsButtonVert
                     bar: root
-                    layerEnabled: Config.showBackground
+                    layerEnabled: root.shadowsEnabled
                     startRadius: root.outerRadius
                     endRadius: root.innerRadius
                 }
@@ -675,7 +687,7 @@ Item {
                 Bar.BatteryIndicator {
                     id: batteryIndicatorVert
                     bar: root
-                    layerEnabled: Config.showBackground
+                    layerEnabled: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                 }
@@ -683,7 +695,7 @@ Item {
                 Clock {
                     id: clockComponentVert
                     bar: root
-                    layerEnabled: Config.showBackground
+                    layerEnabled: root.shadowsEnabled
                     startRadius: root.innerRadius
                     endRadius: root.innerRadius
                 }
@@ -694,6 +706,7 @@ Item {
                     startRadius: root.innerRadius
                     endRadius: root.outerRadius
                     vertical: true
+                    enableShadow: root.shadowsEnabled
                 }
             }
         }
