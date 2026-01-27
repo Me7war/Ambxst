@@ -35,7 +35,7 @@ PanelWindow {
     property string currentMatugenScheme: wallpaperConfig.adapter.matugenScheme
     property alias tintEnabled: wallpaperAdapter.tintEnabled
 
-    property string mpvShaderPath: Quickshell.dataDir + "/mpv_tint.glsl"
+    property string mpvShaderPath: Quickshell.dataDir + "/mpv_tint_0.glsl"
     property bool mpvShaderReady: false
     
     readonly property var optimizedPalette: [
@@ -400,6 +400,8 @@ PanelWindow {
         }
     }
 
+    property int shaderToggle: 0
+
     function updateMpvRuntime(enable) {
         var cmdString;
         if (enable) {
@@ -416,8 +418,6 @@ PanelWindow {
         mpvIpcProcess.command = ["bash", "-c", cmdString];
         mpvIpcProcess.running = true;
     }
-
-    property int shaderToggle: 0
 
     function updateMpvShader() {
         if (!wallpaperAdapter.tintEnabled) {
@@ -438,7 +438,10 @@ PanelWindow {
             }
         }
         
-        if (colors.length === 0) return;
+        if (colors.length === 0) {
+            console.warn("MpvShaderGenerator: No valid colors found for palette! Aborting.");
+            return;
+        }
 
         var shaderContent = ShaderGenerator.generate(colors);
         
@@ -446,14 +449,24 @@ PanelWindow {
         shaderToggle = 1 - shaderToggle;
         var currentShaderPath = Quickshell.dataDir + "/mpv_tint_" + shaderToggle + ".glsl";
         
+        // Cleanup the OTHER shader file to prevent proliferation and confusion
+        var otherShaderPath = Quickshell.dataDir + "/mpv_tint_" + (1 - shaderToggle) + ".glsl";
+        var legacyShaderPath = Quickshell.dataDir + "/mpv_tint.glsl";
+
         // Store the current active path so updateMpvRuntime knows which one to use
         wallpaper.mpvShaderPath = currentShaderPath;
         
         var cmd = [
             "python3", "-c", 
-            "import sys; open(sys.argv[1], 'w').write(sys.argv[2])", 
+            "import sys, os; " +
+            "open(sys.argv[1], 'w').write(sys.argv[2]); " +
+            "print('Wrote shader to ' + sys.argv[1]); " +
+            "os.remove(sys.argv[3]) if os.path.exists(sys.argv[3]) else None; " +
+            "os.remove(sys.argv[4]) if os.path.exists(sys.argv[4]) else None;",
             currentShaderPath, 
-            shaderContent
+            shaderContent,
+            otherShaderPath,
+            legacyShaderPath
         ];
         
         mpvShaderWriter.command = cmd;
