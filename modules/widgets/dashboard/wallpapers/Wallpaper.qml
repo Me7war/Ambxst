@@ -403,13 +403,10 @@ PanelWindow {
     function updateMpvRuntime(enable) {
         var cmdString;
         if (enable) {
-            // Force reload: Clear shaders first, then set the new one.
-            // MPV won't re-read the file if we just set the same path that's already active.
-            var clearCmd = JSON.stringify({ "command": ["set_property", "glsl-shaders", ""] });
+            // Since we are rotating filenames (A/B), we can just set the new path.
+            // MPV will handle the switch smoothly.
             var setCmd = JSON.stringify({ "command": ["set_property", "glsl-shaders", mpvShaderPath] });
-            
-            // Send clear, wait a tiny bit, then send set.
-            cmdString = "echo '" + clearCmd + "' | socat - " + mpvSocket + "; sleep 0.05; echo '" + setCmd + "' | socat - " + mpvSocket;
+            cmdString = "echo '" + setCmd + "' | socat - " + mpvSocket;
         } else {
             // Clear shaders
             var jsonCmd = JSON.stringify({ "command": ["set_property", "glsl-shaders", ""] });
