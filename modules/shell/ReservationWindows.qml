@@ -14,7 +14,8 @@ Item {
     property bool barPinned: true
     property bool barReveal: true
     property bool barFullscreen: false
-    property int barHeight: Config.showBackground ? 44 : 40
+    property int barSize: 0
+    property int barOuterMargin: 0
     property bool containBar: Config.bar?.containBar ?? false
 
     readonly property int borderWidth: Config.theme.srBg.border[1]
@@ -38,12 +39,14 @@ Item {
 
     // Helper to check if a component is active for exclusive zone on a specific side
     function getExtraZone(side) {
+        if (!Config.barReady) return 0;
+        
         let zone = actualFrameSize > 0 ? actualFrameSize + borderWidth : 0;
 
         // Bar zone
         if (barEnabled && barPosition === side && barPinned && barReveal && !barFullscreen) {
             if (zone === 0) zone = borderWidth;
-            zone += barHeight;
+            zone += barSize + barOuterMargin;
             // Add extra thickness if containing bar
             if (containBar) {
                 zone += actualFrameSize;

@@ -88,6 +88,8 @@ ShellRoot {
                 barPinned: unifiedPanel.pinned
                 barReveal: unifiedPanel.reveal
                 barFullscreen: unifiedPanel.activeWindowFullscreen
+                barSize: (unifiedPanel.barPosition === "left" || unifiedPanel.barPosition === "right") ? unifiedPanel.barTargetWidth : unifiedPanel.barTargetHeight
+                barOuterMargin: unifiedPanel.barOuterMargin
 
                 // Dock status for reservations
                 dockEnabled: {

@@ -9,9 +9,14 @@ Item {
     id: root
     required property string position
 
-    visible: Config.showBackground
+    default property alias content: contentContainer.data
 
-    readonly property int cornerSize: (Config.theme.enableCorners && !Config.bar.containBar) ? Styling.radius(4) : 0
+    // Item should be always visible to allow children (widgets) to render
+    // even if background is hidden.
+    visible: true
+
+    // Corner size logic: only when at the very edge (no margins)
+    readonly property int cornerSize: (Config.theme.enableCorners && !Config.bar.containBar && root.outerMargin === 0) ? Styling.radius(4) : 0
     readonly property bool isHorizontal: position === "top" || position === "bottom"
     readonly property bool cornersVisible: Config.theme.enableCorners && cornerSize > 0
 
@@ -31,6 +36,7 @@ Item {
     StyledRect {
         id: barBackground
         variant: "barbg"
+        visible: Config.showBackground
         radius: Config.bar.containBar ? Styling.radius(4) : 0
         enableBorder: true
 
@@ -47,6 +53,12 @@ Item {
             maskThresholdMin: 0.5
             maskSpreadAtMin: 1.0
         }
+    }
+
+    Item {
+        id: contentContainer
+        anchors.fill: parent
+        anchors.margins: root.padding
     }
 
     // Mascara combinada para la bar + corners

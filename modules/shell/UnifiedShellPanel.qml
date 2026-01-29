@@ -41,6 +41,7 @@ PanelWindow {
     readonly property alias barReveal: barContent.reveal
     readonly property alias barTargetWidth: barContent.barTargetWidth
     readonly property alias barTargetHeight: barContent.barTargetHeight
+    readonly property alias barOuterMargin: barContent.baseOuterMargin
 
     readonly property alias dockPosition: dockContent.position
     readonly property alias dockPinned: dockContent.pinned
