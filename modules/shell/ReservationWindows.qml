@@ -10,13 +10,22 @@ Item {
 
     // States from Bar and Dock
     property bool barEnabled: true
-    property string barPosition: "top"
+    property string barPosition: Config.bar?.position ?? "top"
     property bool barPinned: true
     property bool barReveal: true
     property bool barFullscreen: false
     property int barSize: 0
     property int barOuterMargin: 0
     property bool containBar: Config.bar?.containBar ?? false
+
+    // Force update when any bar state changes
+    onBarEnabledChanged: updateAllZones();
+    onBarPinnedChanged: updateAllZones();
+    onBarRevealChanged: updateAllZones();
+    onBarFullscreenChanged: updateAllZones();
+    onBarSizeChanged: updateAllZones();
+    onBarOuterMarginChanged: updateAllZones();
+    onContainBarChanged: updateAllZones();
 
     readonly property int borderWidth: Config.theme.srBg.border[1]
 
@@ -76,6 +85,46 @@ Item {
         // So Ignore is likely wrong for the case where we WANT reservation.
         
         return getExtraZone(side) > 0 ? ExclusionMode.Normal : ExclusionMode.Ignore;
+    }
+
+    // Force update all reservation windows when bar position changes
+    onBarPositionChanged: {
+        console.log("ReservationWindows: barPosition changed to", barPosition, "- updating all zones");
+        updateAllZones();
+    }
+
+    // Function to force update all exclusive zones
+    function updateAllZones() {
+        // Force re-evaluation of all zones by temporarily setting them to 0 and back
+        const originalTopZone = topWindow.exclusiveZone;
+        const originalBottomZone = bottomWindow.exclusiveZone;
+        const originalLeftZone = leftWindow.exclusiveZone;
+        const originalRightZone = rightWindow.exclusiveZone;
+
+        // Clear all zones first
+        topWindow.exclusiveZone = 0;
+        bottomWindow.exclusiveZone = 0;
+        leftWindow.exclusiveZone = 0;
+        rightWindow.exclusiveZone = 0;
+
+        // Restore zones (this triggers re-evaluation)
+        Qt.callLater(() => {
+            topWindow.exclusiveZone = getExtraZone("top");
+            bottomWindow.exclusiveZone = getExtraZone("bottom");
+            leftWindow.exclusiveZone = getExtraZone("left");
+            rightWindow.exclusiveZone = getExtraZone("right");
+
+            // Update exclusion modes too
+            topWindow.exclusionMode = getExclusionMode("top");
+            bottomWindow.exclusionMode = getExclusionMode("bottom");
+            leftWindow.exclusionMode = getExclusionMode("left");
+            rightWindow.exclusionMode = getExclusionMode("right");
+
+            console.log("ReservationWindows: Updated zones - top:", topWindow.exclusiveZone, 
+                       "bottom:", bottomWindow.exclusiveZone, 
+                       "left:", leftWindow.exclusiveZone, 
+                       "right:", rightWindow.exclusiveZone);
+        });
     }
 
     Item {
