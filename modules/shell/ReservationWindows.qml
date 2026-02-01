@@ -26,8 +26,19 @@ Item {
     onBarSizeChanged: updateAllZones();
     onBarOuterMarginChanged: updateAllZones();
     onContainBarChanged: updateAllZones();
-    onFrameEnabledChanged: updateAllZones();
-    onFrameThicknessChanged: updateAllZones();
+    
+    onBarPositionChanged: {
+        console.log("ReservationWindows: barPosition changed to", barPosition, "- updating all zones");
+        updateAllZones();
+    }
+
+    Connections {
+        target: Config
+        function onBarReadyChanged() {
+            console.log("ReservationWindows: Config.barReady changed to", Config.barReady, "- updating all zones");
+            root.updateAllZones();
+        }
+    }
 
     // Reference the full border array first (helps QML detect changes)
     readonly property var borderData: Config.theme.srBg.border
@@ -58,9 +69,12 @@ Item {
             return 6;
         return Math.max(1, Math.min(Math.round(value), 40));
     }
+    
+    onFrameEnabledChanged: updateAllZones();
+    onFrameThicknessChanged: updateAllZones();
+
     readonly property int actualFrameSize: frameEnabled ? frameThickness : 0
 
-    // Helper to check if a component is active for exclusive zone on a specific side
     function getExtraZone(side) {
         if (!Config.barReady) return 0;
         
@@ -85,35 +99,31 @@ Item {
         return zone;
     }
     
-    // Determine exclusion mode based on whether we are reserving ANY space
-    // If zone > 0 we should probably be ExclusionMode.Normal to ensure it takes effect
     function getExclusionMode(side) {
-        // If we are calculating a zone > 0, we generally want Normal.
-        // But the original code had Ignore everywhere.
-        // Assuming the user wants to FIX reservation, we likely need Normal.
-        // However, let's respect if the zone is 0 or minimal.
-        // But actualFrameSize is at least 6 if enabled.
-        
-        // Wait, if original was Ignore, maybe it was just overlay?
-        // But user says "no reserva el espacio que debería". This implies it SHOULD reserve.
-        // So Ignore is likely wrong for the case where we WANT reservation.
-        
         return getExtraZone(side) > 0 ? ExclusionMode.Normal : ExclusionMode.Ignore;
     }
 
-    // Force update all reservation windows when bar position changes
-    onBarPositionChanged: {
-        console.log("ReservationWindows: barPosition changed to", barPosition, "- updating all zones");
-        updateAllZones();
-    }
-
-    // Function to force update all exclusive zones
     function updateAllZones() {
-        // Force re-evaluation of all zones by temporarily setting them to 0 and back
-        const originalTopZone = topWindow.exclusiveZone;
-        const originalBottomZone = bottomWindow.exclusiveZone;
-        const originalLeftZone = leftWindow.exclusiveZone;
-        const originalRightZone = rightWindow.exclusiveZone;
+        // Calculate new zones
+        const newTop = getExtraZone("top");
+        const newBottom = getExtraZone("bottom");
+        const newLeft = getExtraZone("left");
+        const newRight = getExtraZone("right");
+
+        // Only update if something actually changed to avoid flickering
+        if (topWindow.exclusiveZone === newTop && 
+            bottomWindow.exclusiveZone === newBottom && 
+            leftWindow.exclusiveZone === newLeft && 
+            rightWindow.exclusiveZone === newRight) {
+            
+            // Check exclusion modes too
+            if (topWindow.exclusionMode === getExclusionMode("top") &&
+                bottomWindow.exclusionMode === getExclusionMode("bottom") &&
+                leftWindow.exclusionMode === getExclusionMode("left") &&
+                rightWindow.exclusionMode === getExclusionMode("right")) {
+                return;
+            }
+        }
 
         // Clear all zones first
         topWindow.exclusiveZone = 0;
@@ -123,10 +133,10 @@ Item {
 
         // Restore zones (this triggers re-evaluation)
         Qt.callLater(() => {
-            topWindow.exclusiveZone = getExtraZone("top");
-            bottomWindow.exclusiveZone = getExtraZone("bottom");
-            leftWindow.exclusiveZone = getExtraZone("left");
-            rightWindow.exclusiveZone = getExtraZone("right");
+            topWindow.exclusiveZone = newTop;
+            bottomWindow.exclusiveZone = newBottom;
+            leftWindow.exclusiveZone = newLeft;
+            rightWindow.exclusiveZone = newRight;
 
             // Update exclusion modes too
             topWindow.exclusionMode = getExclusionMode("top");
