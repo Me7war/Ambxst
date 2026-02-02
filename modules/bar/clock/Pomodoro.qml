@@ -20,6 +20,11 @@ Item {
     
     // Internal countdown state
     property int timeLeft: Config.system.pomodoro.workTime
+    property int totalTime: Config.system.pomodoro.workTime
+    property real visualProgress: 1.0
+
+    readonly property bool isResuming: !isRunning && !alarmActive && timeLeft > 0 && 
+                                      timeLeft < (isWorkSession ? Config.system.pomodoro.workTime : Config.system.pomodoro.restTime)
 
     function toggleTimer() {
         if (alarmActive) {
@@ -27,7 +32,34 @@ Item {
             nextSession();
             return;
         }
-        isRunning = !isRunning;
+        
+        if (!isRunning) {
+            let configTime = isWorkSession ? Config.system.pomodoro.workTime : Config.system.pomodoro.restTime;
+            if (timeLeft === configTime) {
+                totalTime = timeLeft;
+            }
+            isRunning = true;
+        } else {
+            isRunning = false;
+        }
+    }
+
+    // Smooth progress animation
+    NumberAnimation {
+        id: progressAnim
+        target: root
+        property: "visualProgress"
+        from: root.totalTime > 0 ? root.timeLeft / root.totalTime : 0
+        to: 0
+        duration: root.timeLeft * 1000
+        running: root.isRunning && root.timeLeft > 0
+    }
+
+    // Reset visual progress when not running and time is adjusted
+    onTimeLeftChanged: {
+        if (!isRunning && !alarmActive) {
+            visualProgress = totalTime > 0 ? timeLeft / totalTime : 0;
+        }
     }
 
     function resetTimer() {
@@ -35,11 +67,14 @@ Item {
         isRunning = false;
         isWorkSession = true;
         timeLeft = Config.system.pomodoro.workTime;
+        totalTime = timeLeft;
+        visualProgress = 1.0;
     }
 
     function startAlarm() {
         isRunning = false;
         alarmActive = true;
+        visualProgress = 0; // Ensure it's exactly 0
         alarmSound.loops = Config.system.pomodoro.autoStart ? 4 : SoundEffect.Infinite;
         alarmSound.play();
     }
@@ -52,6 +87,8 @@ Item {
     function nextSession() {
         isWorkSession = !isWorkSession;
         timeLeft = isWorkSession ? Config.system.pomodoro.workTime : Config.system.pomodoro.restTime;
+        totalTime = timeLeft;
+        visualProgress = 1.0;
         if (Config.system.pomodoro.autoStart) {
             isRunning = true;
         }
@@ -178,7 +215,6 @@ Item {
             Layout.preferredHeight: 60
             clip: true
 
-            // Animación de entrada/salida para el tipo de sesión
             ColumnLayout {
                 id: timerInputs
                 anchors.centerIn: parent
@@ -195,6 +231,7 @@ Item {
                             let newSeconds = (val * 60) + (root.timeLeft % 60);
                             root.timeLeft = newSeconds;
                             if (!root.isRunning) {
+                                root.totalTime = newSeconds;
                                 if (root.isWorkSession) Config.system.pomodoro.workTime = newSeconds;
                                 else Config.system.pomodoro.restTime = newSeconds;
                             }
@@ -217,6 +254,7 @@ Item {
                             let newSeconds = (Math.floor(root.timeLeft / 60) * 60) + val;
                             root.timeLeft = newSeconds;
                             if (!root.isRunning) {
+                                root.totalTime = newSeconds;
                                 if (root.isWorkSession) Config.system.pomodoro.workTime = newSeconds;
                                 else Config.system.pomodoro.restTime = newSeconds;
                             }
@@ -225,16 +263,22 @@ Item {
                 }
             }
 
-            // Indicador visual de la sesión activa (Work vs Rest)
-            Rectangle {
+            // Inverse Progress Bar
+            StyledRect {
+                variant: "common"
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                height: 2; width: 40
-                radius: 1
-                color: Styling.srItem("overprimary")
-                x: root.isWorkSession ? parent.width/2 - 50 : parent.width/2 + 10
+                height: 4
+                width: 180
+                radius: 2
+                opacity: root.isRunning || root.alarmActive || root.visualProgress < 1.0 ? 1.0 : 0.3
                 
-                Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.OutBack } }
+                Rectangle {
+                    height: parent.height
+                    width: root.visualProgress * parent.width
+                    radius: parent.radius
+                    color: Styling.srItem("overprimary")
+                }
             }
         }
 
@@ -265,7 +309,7 @@ Item {
                 
                 Text {
                     anchors.centerIn: parent
-                    text: root.alarmActive ? "STOP ALARM" : (root.isRunning ? "PAUSE" : "START " + (root.isWorkSession ? "WORK" : "REST"))
+                    text: root.alarmActive ? "STOP ALARM" : (root.isRunning ? "PAUSE" : (root.isResuming ? "RESUME" : "START " + (root.isWorkSession ? "WORK" : "REST")))
                     font.family: Config.theme.font
                     font.pixelSize: Styling.fontSize(0)
                     font.weight: Font.Black
