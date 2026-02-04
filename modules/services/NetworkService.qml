@@ -13,22 +13,40 @@ Singleton {
 
     property bool wifiEnabled: false
     property bool wifiScanning: false
+    property var lastScanTime: 0
     property bool wifiConnecting: isUpdating && wifiStatus === "connecting"
     property bool isUpdating: false
     property WifiAccessPoint wifiConnectTarget: null
     readonly property list<WifiAccessPoint> wifiNetworks: []
-    readonly property WifiAccessPoint active: wifiNetworks.find(n => n.active) ?? null
-    readonly property list<var> friendlyWifiNetworks: [...wifiNetworks].sort((a, b) => {
-        if (a.active && !b.active)
-            return -1;
-        if (!a.active && b.active)
-            return 1;
-        return b.strength - a.strength;
-    })
+    property WifiAccessPoint active: null
+
+    function updateActive() {
+        for (let i = 0; i < wifiNetworks.length; i++) {
+            if (wifiNetworks[i].active) {
+                active = wifiNetworks[i];
+                return;
+            }
+        }
+        active = null;
+    }
+
     property string wifiStatus: "disconnected"
 
     property string networkName: ""
     property int networkStrength: 0
+
+    property list<var> friendlyWifiNetworks: []
+
+    function updateFriendlyList() {
+        friendlyWifiNetworks = [...wifiNetworks].sort((a, b) => {
+            if (a.active && !b.active)
+                return -1;
+            if (!a.active && b.active)
+                return 1;
+            return b.strength - a.strength;
+        });
+        updateActive();
+    }
 
     Component {
         id: asyncProcessComp
@@ -83,6 +101,13 @@ Singleton {
     }
 
     function rescanWifi(): void {
+        const now = Date.now();
+        if (now - lastScanTime < 10000) { // 10 seconds throttle
+            getNetworks.running = true;
+            return;
+        }
+        
+        lastScanTime = now;
         wifiScanning = true;
         runAsync(["nmcli", "dev", "wifi", "list", "--rescan", "yes"]).then(() => {
             update();
@@ -220,6 +245,7 @@ Singleton {
             root.wifiStatus = wifiStatus;
             root.ethernet = hasEthernet;
             root.wifi = hasWifi;
+            root.isUpdating = false;
         }
     }
 
@@ -279,56 +305,69 @@ Singleton {
             getNetworks.buffer = "";
             
             Qt.callLater(() => {
+                if (text.length === 0) {
+                    root.updateFriendlyList();
+                    return;
+                }
+
                 const PLACEHOLDER = "STRINGWHICHHOPEFULLYWONTBEUSED";
-                const rep = new RegExp("\\\\:", "g");
+                const rep = /\\:/g;
                 const rep2 = new RegExp(PLACEHOLDER, "g");
 
-                const allNetworks = text.trim().split("\n").map(n => {
-                    const net = n.replace(rep, PLACEHOLDER).split(":");
-                    return {
+                const lines = text.trim().split("\n");
+                const networkMap = new Map();
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].replace(rep, PLACEHOLDER);
+                    const net = line.split(":");
+                    if (net.length < 6) continue;
+
+                    const ssid = net[3] || "";
+                    if (!ssid) continue;
+
+                    const network = {
                         active: net[0] === "yes",
                         strength: parseInt(net[1]) || 0,
                         frequency: parseInt(net[2]) || 0,
-                        ssid: net[3] || "",
+                        ssid: ssid,
                         bssid: (net[4] || "").replace(rep2, ":"),
                         security: net[5] || ""
                     };
-                }).filter(n => n.ssid && n.ssid.length > 0);
 
-                // Group networks by SSID and prioritize connected ones
-                const networkMap = new Map();
-                for (const network of allNetworks) {
-                    const existing = networkMap.get(network.ssid);
-                    if (!existing) {
-                        networkMap.set(network.ssid, network);
-                    } else {
-                        if (network.active && !existing.active) {
-                            networkMap.set(network.ssid, network);
-                        } else if (!network.active && !existing.active) {
-                            if (network.strength > existing.strength) {
-                                networkMap.set(network.ssid, network);
-                            }
-                        }
+                    const existing = networkMap.get(ssid);
+                    if (!existing || (network.active && !existing.active) || (!network.active && !existing.active && network.strength > existing.strength)) {
+                        networkMap.set(ssid, network);
                     }
                 }
 
-                const wifiNetworks = Array.from(networkMap.values());
+                const wifiNetworksData = Array.from(networkMap.values());
                 const rNetworks = root.wifiNetworks;
 
-                const destroyed = rNetworks.filter(rn => !wifiNetworks.find(n => n.frequency === rn.frequency && n.ssid === rn.ssid && n.bssid === rn.bssid));
-                for (const network of destroyed)
-                    rNetworks.splice(rNetworks.indexOf(network), 1).forEach(n => n.destroy());
+                // Sync current list with new data
+                // 1. Remove gone networks
+                for (let i = rNetworks.length - 1; i >= 0; i--) {
+                    const rn = rNetworks[i];
+                    const found = wifiNetworksData.find(n => n.frequency === rn.frequency && n.ssid === rn.ssid && n.bssid === rn.bssid);
+                    if (!found) {
+                        rNetworks.splice(i, 1);
+                        rn.destroy();
+                    }
+                }
 
-                for (const network of wifiNetworks) {
-                    const match = rNetworks.find(n => n.frequency === network.frequency && n.ssid === network.ssid && n.bssid === network.bssid);
-                    if (match) {
-                        match.lastIpcObject = network;
+                // 2. Update existing or add new
+                for (let i = 0; i < wifiNetworksData.length; i++) {
+                    const data = wifiNetworksData[i];
+                    const existing = rNetworks.find(n => n.frequency === data.frequency && n.ssid === data.ssid && n.bssid === data.bssid);
+                    if (existing) {
+                        existing.lastIpcObject = data;
                     } else {
                         rNetworks.push(apComp.createObject(root, {
-                            lastIpcObject: network
+                            lastIpcObject: data
                         }));
                     }
                 }
+
+                root.updateFriendlyList();
             });
         }
     }

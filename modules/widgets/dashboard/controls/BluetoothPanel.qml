@@ -42,6 +42,8 @@ Item {
         anchors.fill: parent
         clip: true
         spacing: 4
+        cacheBuffer: 1000
+        reuseItems: true
 
         model: BluetoothService.friendlyDeviceList
 

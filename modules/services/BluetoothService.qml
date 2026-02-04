@@ -267,6 +267,7 @@ Singleton {
                     root.connected = false;
                     root.connectedDevices = 0;
                     root.discovering = false;
+                    root.isUpdating = false;
                 }
             }
         }
@@ -281,6 +282,7 @@ Singleton {
                 const output = data ? data.trim() : "0";
                 root.connectedDevices = parseInt(output) || 0;
                 root.connected = root.connectedDevices > 0;
+                root.isUpdating = false;
             }
         }
     }
@@ -309,45 +311,48 @@ Singleton {
             
             Qt.callLater(() => {
                 const deviceLines = text.trim().split("\n").filter(l => l.startsWith("Device "));
-                const deviceAddresses = deviceLines.map(line => {
+                const deviceDataList = [];
+                for (let i = 0; i < deviceLines.length; i++) {
+                    const line = deviceLines[i];
                     const parts = line.split(" ");
-                    return {
-                        address: parts[1] || "",
+                    if (parts.length < 2) continue;
+                    deviceDataList.push({
+                        address: parts[1],
                         name: parts.slice(2).join(" ") || "Unknown"
-                    };
-                }).filter(d => d.address);
+                    });
+                }
 
-                // Update existing devices and add new ones
                 const rDevices = root.devices;
                 
-                // Remove devices that no longer exist
-                const toRemove = rDevices.filter(rd => !deviceAddresses.find(d => d.address === rd.address));
-                for (const device of toRemove) {
-                    const idx = rDevices.indexOf(device);
-                    if (idx >= 0) {
-                        rDevices.splice(idx, 1);
-                        device.destroy();
+                // 1. Remove gone devices
+                for (let i = rDevices.length - 1; i >= 0; i--) {
+                    const rd = rDevices[i];
+                    if (!deviceDataList.find(d => d.address === rd.address)) {
+                        rDevices.splice(i, 1);
+                        rd.destroy();
                     }
                 }
                 
-                // Add or update devices
-                for (const deviceData of deviceAddresses) {
-                    const existing = rDevices.find(d => d.address === deviceData.address);
+                // 2. Add or update devices
+                for (let i = 0; i < deviceDataList.length; i++) {
+                    const data = deviceDataList[i];
+                    const existing = rDevices.find(d => d.address === data.address);
                     if (existing) {
-                        existing.name = deviceData.name;
+                        if (existing.name !== data.name) {
+                            existing.name = data.name;
+                        }
                         root.queueInfoUpdate(existing);
                     } else {
                         const newDevice = deviceComp.createObject(root, {
-                            address: deviceData.address,
-                            name: deviceData.name
+                            address: data.address,
+                            name: data.name
                         });
                         rDevices.push(newDevice);
                         root.queueInfoUpdate(newDevice);
                     }
                 }
                 
-                // If no devices to update, just refresh the list
-                if (deviceAddresses.length === 0) {
+                if (deviceDataList.length === 0) {
                     root.updateFriendlyList();
                 }
             });
