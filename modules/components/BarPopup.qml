@@ -62,7 +62,9 @@ PopupWindow {
     readonly property bool frameEnabled: Config.bar?.frameEnabled ?? false
     readonly property bool containBar: Config.bar?.containBar ?? false
     readonly property int frameThickness: Config.bar?.frameThickness ?? 0
-    readonly property int effectiveFrameOffset: (frameEnabled && containBar) ? frameThickness : 0
+    readonly property int borderSize: Config.theme?.srBg.border[1] ?? 0
+    readonly property int frameOffset: (frameEnabled && containBar) ? (frameThickness + borderSize) : 0
+    readonly property int effectiveFrameOffset: (frameEnabled && containBar) ? frameOffset : 0
 
     // Anchor positioning
     // The anchor.rect defines where the popup window's top-left corner will be placed
@@ -169,9 +171,7 @@ PopupWindow {
             return;
 
         // Debug positioning
-        console.log("BarPopup OPEN - position:", barPosition, 
-                    "anchorItem:", anchorItem.width, "x", anchorItem.height,
-                    "rect.x:", anchor.rect.x, "rect.y:", anchor.rect.y);
+        console.log("BarPopup OPEN - position:", barPosition, "anchorItem:", anchorItem.width, "x", anchorItem.height, "rect.x:", anchor.rect.x, "rect.y:", anchor.rect.y);
 
         // Set logical state immediately
         isOpen = true;
