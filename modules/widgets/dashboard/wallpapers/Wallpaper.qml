@@ -244,7 +244,7 @@ PanelWindow {
     function scanSubfolders() {
         if (!wallpaperDir) return;
         // Explicitly update command with current wallpaperDir
-        var cmd = ["find", wallpaperDir, "-type", "d", "-mindepth", "1"];
+        var cmd = ["find", wallpaperDir, "-mindepth", "1", "-name", ".*", "-prune", "-o", "-type", "d", "-print"];
         scanSubfoldersProcess.command = cmd;
         scanSubfoldersProcess.running = true;
     }
@@ -267,7 +267,7 @@ PanelWindow {
         directoryWatcher.path = wallpaperDir;
         
         // Force update scan command
-        var cmd = ["find", wallpaperDir, "-type", "f", "!", "-name", ".*", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"];
+        var cmd = ["find", wallpaperDir, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"];
         scanWallpapers.command = cmd;
         scanWallpapers.running = true;
         
@@ -688,7 +688,7 @@ PanelWindow {
                         directoryWatcher.reload();
                         
                         // Perform initial wallpaper scan
-                        var cmd = ["find", wallPath, "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"];
+                        var cmd = ["find", wallPath, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"];
                         scanWallpapers.command = cmd;
                         scanWallpapers.running = true;
                         wallpaper.scanSubfolders();
@@ -841,7 +841,7 @@ PanelWindow {
     Process {
         id: scanSubfoldersProcess
         running: false
-        command: wallpaperDir ? ["find", wallpaperDir, "-type", "d", "-mindepth", "1"] : []
+        command: wallpaperDir ? ["find", wallpaperDir, "-mindepth", "1", "-name", ".*", "-prune", "-o", "-type", "d", "-print"] : []
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -914,6 +914,7 @@ PanelWindow {
         delegate: FileView {
             path: modelData
             watchChanges: true
+            printErrors: false
             onFileChanged: {
                 console.log("Subdirectory content changed (" + path + "), rescanning...");
                 scanWallpapers.running = true;
@@ -955,7 +956,7 @@ PanelWindow {
     Process {
         id: scanWallpapers
         running: false
-        command: wallpaperDir ? ["find", wallpaperDir, "-type", "f", "!", "-name", ".*", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"] : []
+        command: wallpaperDir ? ["find", wallpaperDir, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"] : []
 
         onRunningChanged: {
             if (running && wallpaperDir === "") {
@@ -1032,7 +1033,7 @@ PanelWindow {
     Process {
         id: scanFallback
         running: false
-        command: ["find", fallbackDir, "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")"]
+        command: ["find", fallbackDir, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"]
 
         stdout: StdioCollector {
             onStreamFinished: {
