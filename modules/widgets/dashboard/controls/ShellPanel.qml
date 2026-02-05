@@ -96,7 +96,7 @@ Item {
         id: actionBtn
         required property string text
         property string icon: ""
-        signal clicked()
+        signal clicked
 
         property bool isHovered: false
 
@@ -1625,7 +1625,7 @@ Item {
                         }
 
                         ActionButton {
-                            text: "About Ambxst"
+                            text: "About Ambxst " + Config.version
                             icon: Icons.info
                             onClicked: Quickshell.execDetached(["xdg-open", "https://axeni.de/ambxst"])
                         }
