@@ -41,10 +41,11 @@ Item {
             // Calculate phase shift per tick
             // Wave equation: y = A * sin(kx - wt)
             // k = 2PI / wavelength
-            // wavelength = width / frequency (pixels per cycle)
             
+            // Use fullLength if available to ensure constant wavelength regardless of current width
+            let baseLen = (root.fullLength > 0) ? root.fullLength : root.width;
             let freq = (root.frequency > 0) ? root.frequency : 1;
-            let wavelength = root.width / freq;
+            let wavelength = baseLen / freq;
             
             // Speed is pixels per second
             // dx per tick = speed * dt
@@ -73,6 +74,8 @@ Item {
         let h = root.height;
         let cy = h / 2;
         let amp = root.actualAmplitude;
+        
+        let baseLen = (root.fullLength > 0) ? root.fullLength : root.width;
         let freq = (root.frequency > 0) ? root.frequency : 1;
         
         // Step size: 2px is a good balance for smoothness vs performance
@@ -83,8 +86,9 @@ Item {
         for (let x = 0; x <= w + step; x += step) {
             let cx = Math.min(x, w);
             
-            // Map x to angle: 0 -> 2PI * freq
-            let angle = (cx / w) * freq * 2 * Math.PI;
+            // Calculate angle based on fixed baseLength/fullLength to prevent squashing
+            // angle = x * (2PI * frequency / fullLength)
+            let angle = cx * (freq * 2 * Math.PI / baseLen);
             
             // Apply phase
             let yOffset = Math.sin(angle + phase) * amp;
