@@ -272,28 +272,52 @@ StyledRect {
                     to: 360
                     duration: 8000
                     loops: Animation.Infinite
-                    running: player.isPlaying && player.visible
+                    running: false // Controlled manually to avoid flicker
                 }
 
-                Behavior on rotation {
-                    enabled: !player.isPlaying
-                    SpringAnimation {
-                        spring: 0.8
-                        damping: 0.05
-                        epsilon: 0.25
-                    }
+                // Standalone spring animation for inertia (can be stopped)
+                SpringAnimation {
+                    id: springAnim
+                    target: coverDiscContainer
+                    property: "rotation"
+                    spring: 0.8
+                    damping: 0.05
+                    epsilon: 0.25
                 }
 
                 Connections {
                     target: player
                     function onIsPlayingChanged() {
-                        if (!player.isPlaying) {
+                        if (player.isPlaying && player.visible) {
+                            // Stop spring animation immediately and capture current position
+                            springAnim.stop();
                             let currentRotation = coverDiscContainer.rotation % 360;
-                            if (currentRotation > 180) {
-                                coverDiscContainer.rotation = 360;
-                            } else {
-                                coverDiscContainer.rotation = 0;
-                            }
+                            if (currentRotation < 0) currentRotation += 360;
+                            rotateAnim.from = currentRotation;
+                            rotateAnim.to = currentRotation + 360;
+                            rotateAnim.restart();
+                        } else {
+                            // Stop continuous rotation
+                            rotateAnim.stop();
+                            // Animate to nearest rest position with inertia
+                            let currentRotation = coverDiscContainer.rotation % 360;
+                            if (currentRotation < 0) currentRotation += 360;
+                            springAnim.to = currentRotation > 180 ? 360 : 0;
+                            springAnim.start();
+                        }
+                    }
+
+                    function onVisibleChanged() {
+                        if (!player.visible) {
+                            rotateAnim.stop();
+                            springAnim.stop();
+                        } else if (player.isPlaying) {
+                            springAnim.stop();
+                            let currentRotation = coverDiscContainer.rotation % 360;
+                            if (currentRotation < 0) currentRotation += 360;
+                            rotateAnim.from = currentRotation;
+                            rotateAnim.to = currentRotation + 360;
+                            rotateAnim.restart();
                         }
                     }
                 }
