@@ -160,6 +160,7 @@ Item {
             color: "transparent"
 
             Image {
+                mipmap: true
                 id: backgroundArt
                 anchors.fill: parent
                 source: (compactPlayer.player?.trackArtUrl ?? "") !== "" ? compactPlayer.player.trackArtUrl : compactPlayer.wallpaperPath
@@ -236,6 +237,7 @@ Item {
                     radius: compactPlayer.isPlaying ? Styling.radius(-8) : Styling.radius(-4)
                     color: "transparent"
                     Image {
+                        mipmap: true
                         id: artworkImage
                         anchors.fill: parent
                         source: (compactPlayer.player?.trackArtUrl ?? "") !== "" ? compactPlayer.player.trackArtUrl : compactPlayer.wallpaperPath

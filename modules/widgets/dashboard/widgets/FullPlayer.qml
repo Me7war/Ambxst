@@ -108,6 +108,7 @@ StyledRect {
     // Background with blur effect
 
     Image {
+        mipmap: true
         id: backgroundArtBlurred
         anchors.fill: parent
         source: (MprisController.activePlayer?.trackArtUrl ?? "") !== "" ? MprisController.activePlayer.trackArtUrl : player.wallpaperPath
@@ -136,6 +137,7 @@ StyledRect {
     }
 
     Image {
+        mipmap: true
         id: backgroundArtFull
         anchors.fill: parent
         source: (MprisController.activePlayer?.trackArtUrl ?? "") !== "" ? MprisController.activePlayer.trackArtUrl : player.wallpaperPath
@@ -239,6 +241,7 @@ StyledRect {
                     color: Colors.surface
 
                     Image {
+                        mipmap: true
                         id: coverArt
                         anchors.fill: parent
                         source: (MprisController.activePlayer?.trackArtUrl ?? "") !== "" ? MprisController.activePlayer.trackArtUrl : player.wallpaperPath

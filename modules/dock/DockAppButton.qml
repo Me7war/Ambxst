@@ -104,6 +104,7 @@ Button {
                         sourceSize.width: root.iconSize * 2
                         sourceSize.height: root.iconSize * 2
                         fillMode: Image.PreserveAspectFit
+                        mipmap: true
                     }
 
                     Tinted {

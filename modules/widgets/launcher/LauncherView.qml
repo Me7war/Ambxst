@@ -736,6 +736,7 @@ Rectangle {
                             Layout.preferredHeight: 32
 
                             Image {
+                                mipmap: true
                                 id: appIconImage
                                 anchors.fill: parent
                                 source: "image://icon/" + appIcon
